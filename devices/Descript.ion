@@ -1,0 +1,12 @@
+ccbill.cpp Купюроприемник - CCNet
+cctalkbill.cpp Купюроприемник - CCTalk
+coin.cpp Монетоприемник - CCTalk
+coinpulse.cpp Импульсный монетник - Impulse
+engine.cpp Двигатель
+engine_E8100.cpp Двигатель
+engine_E9300.cpp Двигатель
+engine_Emu.cpp Двигатель
+monitor.cpp *** Вывод - LCD, 7Seg
+relays.cpp Управления реле
+rfid.cpp Магнитные карты
+sensors.cpp Датчики
