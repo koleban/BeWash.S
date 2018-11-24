@@ -2,7 +2,7 @@
 #define _REMOTECTRL_H_
 
 #ifndef DWORD
-#define DWORD			unsigned int
+#define DWORD			unsigned long
 #define WORD			unsigned short
 #define BYTE			unsigned char
 #define SDWORD			int
@@ -24,10 +24,10 @@ typedef struct _Remote_Ctrl_
     bool	doCmd;			// Выполнить команду
     bool	cmdCheck;			// Выполнить команду
     bool	cmdRead;		// Команда на чтение
-    DWORD	cmdReadPrm;		// Параметры команды чтения
+    unsigned long	cmdReadPrm;		// Параметры команды чтения
     bool	cmdWrite;		// Команда на запись
-    DWORD	cmdWritePrm;	// Параметры команды записи
-    DWORD	cmdResult;		// Результат выполнения команды
+    unsigned long	cmdWritePrm;	// Параметры команды записи
+    unsigned long	cmdResult;		// Результат выполнения команды
 
 	WORD	devId;
 	WORD	devBaud;

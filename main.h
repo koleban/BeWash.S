@@ -1,4 +1,9 @@
+//#include <iostream>
+//#include <queue>
+//using namespace std;
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+//#define CRYPTOPP
+//#define __SECURITY_DEBUG_
 
 //#ifndef _RFID_DEVICE_CRT288K_
 //#define _RFID_DEVICE_CRT288K_
@@ -79,6 +84,8 @@
 #include "other/queue.h"
 #include "other/md5.h"
 
+#include "drvfr/DrvFR_Conn.h"
+
 #define ERROR(fmt, ...) do { printf(fmt, __VA_ARGS__); return -1; } while(0)
 
 
@@ -91,25 +98,25 @@
 #endif
 
 #ifndef NULL
-#define NULL         0
+#define NULL			0
 #endif
 
 #ifndef MAX_PARAM_ARRAY_ITEM
-#define MAX_PARAM_ARRAY_ITEM   20
+#define MAX_PARAM_ARRAY_ITEM	20
 #endif
 
-#define DWORD         unsigned int
-#define WORD         unsigned short
-#define BYTE         unsigned char
-#define SDWORD         int
+#define DWORD			unsigned int
+#define WORD			unsigned short
+#define BYTE			unsigned char
+#define SDWORD			int
 
 #ifndef PIN_INPUT
-#define PIN_INPUT   1
-#define PIN_OUTPUT   0
+#define PIN_INPUT	1
+#define PIN_OUTPUT	0
 #endif
 
 #ifndef EEPROM_DELAY
-#define EEPROM_DELAY   10
+#define EEPROM_DELAY	10
 #endif
 
 
@@ -155,45 +162,45 @@ PI_THREAD(ButtonMasterWatch);
 
 
 // ����������
-extern Settings*       settings;
-extern NetServer*       netServer;
-extern NetClient*       netClient;
-extern Database*      commonDb;
+extern Settings* 		settings;
+extern NetServer* 		netServer;
+extern NetClient* 		netClient;
+extern Database*		commonDb;
 
 // ����������
-extern Monitor*         monitor;
-extern RelaySwitch*    relay;
-extern Sensors*         sensors;
-extern Engine*         engine;
+extern Monitor*			monitor;
+extern RelaySwitch* 	relay;
+extern Sensors*			sensors;
+extern Engine*			engine;
 #ifndef _RFID_DEVICE_CRT288K_
-extern RFIDDevice*       rfid;
+extern RFIDDevice* 		rfid;
 #endif
 #ifdef _RFID_DEVICE_CRT288K_
 extern Crt288KDevice* rfid;
 #endif
-extern CoinDevice*       coinDevice;
+extern CoinDevice* 		coinDevice;
 extern CoinPulseDevice* coinPulseDevice;
-extern CCBillDevice*    billDevice;
-extern EEPROM*          eeprom;
+extern CCBillDevice* 	billDevice;
+extern EEPROM* 			eeprom;
 //extern CCTalkBillDevice* ccTalkBillDevice;
 
 extern QueueArray* queueLog;
 
 extern RejectedCoinInfo rejectedCoinInfo;
 
-extern DeviceInfo       status;
+extern DeviceInfo 		status;
 
-extern int             winterModeActive;
-extern int             winterModeEngineActive;
-extern int             exitStatus;
+extern int 				winterModeActive;
+extern int 				winterModeEngineActive;
+extern int 				exitStatus;
 
-extern DBParam_DiscountDate      DiscountDates[MAX_PARAM_ARRAY_ITEM + 1];
-extern DBParam_DiscountParam   DiscountParams[MAX_PARAM_ARRAY_ITEM + 1];
+extern DBParam_DiscountDate		DiscountDates[MAX_PARAM_ARRAY_ITEM + 1];
+extern DBParam_DiscountParam	DiscountParams[MAX_PARAM_ARRAY_ITEM + 1];
 
 extern RemoteCtrl remoteCtrl[30];
 
-extern int            wrkOpenedFlag;
-extern time_t         wrkOpenedDateTime;
+extern int				wrkOpenedFlag;
+extern time_t			wrkOpenedDateTime;
 
 extern char idkfa[10];
 extern char iddqd[50];

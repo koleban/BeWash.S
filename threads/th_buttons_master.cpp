@@ -111,9 +111,10 @@ PI_THREAD(ButtonMasterWatch)
 					///
 					// !!!!!!!!!!!!!!!!!!!!
 					remoteCtrl[index].cmdWrite = 1;
+
 					remoteCtrl[index].cmdWritePrm = 0x06;
 					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm << 16;
-					remoteCtrl[index].cmdWritePrm += status.intDeviceInfo.money_currentBalance;
+					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm + status.intDeviceInfo.money_currentBalance;
 					remoteCtrl[index].doCmd = 1;
 					// !!!!!!!!!!!!!!!!!!!!
 					///
