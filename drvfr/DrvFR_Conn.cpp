@@ -289,21 +289,27 @@ int DrvFR_Conn::checkstate(void)
 	unsigned char repl;
 
 	connected = sendENQ();
+	#ifdef DEBUG
+		printf ("fr_conn: Timeout value is %d\n", drvFR->Timeout);
+	#endif
 	repl = readbyte(drvFR->Timeout);
 	if (connected == 0) return -1;
 	switch (repl)
 	{
 	case NAK:
 	#ifdef DEBUG
-	//	printf ("recv NAK\n");
+		printf ("fr_conn: recv NAK\n");
 	#endif
 		return NAK;
 	case ACK:
 	#ifdef DEBUG
-	//	printf ("recv ACK\n");
+		printf ("fr_conn: recv ACK\n");
 	#endif
 		return ACK;
 	default:
+	#ifdef DEBUG
+		printf ("fr_conn: recv EMPTY\n");
+	#endif
 		return -1;
 	};
 };

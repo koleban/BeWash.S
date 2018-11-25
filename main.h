@@ -159,7 +159,7 @@ PI_THREAD(TurnLightWatch);
 
 PI_THREAD(RemoteCtrlWatch);
 PI_THREAD(ButtonMasterWatch);
-
+PI_THREAD(KKMWatch);
 
 // ����������
 extern Settings* 		settings;

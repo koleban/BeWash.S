@@ -169,6 +169,7 @@ struct ThreadFlag
 	BYTE Lcd20x4Watch;				// Процесс вывода информации на LCD дисплей (Пылесос)
 	BYTE RemoteCtrlThread;			// Процесс работы с удалеными MODBUS контроллерами
 	BYTE ButtonMasterThread;		// Процесс работы с кнопками при режиме "БОКС ПОПОЛНЕНИЯ"
+	BYTE KKMWatch;						// Процесс для работы с Online KKM (Штрих-М)
 };
 
 struct ErrorFlag
@@ -273,6 +274,14 @@ struct RejectedCoinInfo
 	int dataRes;
 };
 
+struct KKMParam
+{
+	char kkmAddr[250];
+	int kkmPort;
+	BYTE kkmPass;
+	int QueryTime;
+};
+
 class Settings
 {
 private:
@@ -340,6 +349,10 @@ public:
 	//
 	// Подсистема "КЛИЕНТ"
 	NetClientConfig		extPanelNetConfig;
+
+	//
+	// Работа с ККМ
+	KKMParam					kkmParam;
 
 	//
 	// Обмен по MODBUS

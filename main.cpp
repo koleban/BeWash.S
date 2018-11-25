@@ -278,6 +278,7 @@ int main(int argc, char *argv[])
 	piThreadCreate(Lcd20x4);
 	piThreadCreate(RemoteCtrlWatch);
 	piThreadCreate(ButtonMasterWatch);
+	piThreadCreate(KKMWatch);
 
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;

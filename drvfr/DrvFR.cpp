@@ -18,6 +18,8 @@
 #include "errdefs.h"
 #include "DrvFR_Conn.h"
 
+//#define DEBUG
+
 using namespace DriverFR;
 
 DrvFR::DrvFR(int password,
@@ -1893,6 +1895,7 @@ int DrvFR::CheckConnection(void)
 	int tries = 0;
 	int state = 0;
 	answer      a;
+	int tmout = 0;
 
 	if (conn == NULL) return -1;
 
@@ -1904,19 +1907,31 @@ int DrvFR::CheckConnection(void)
 		if (tries > 0)
 			printf("fn: CheckConnection [%d]\n", tries);
 		#endif
+		tmout	= 0;
 		state = conn->checkstate();
 		switch (state)
 		{
 		case NAK:
+		#ifdef DEBUG
+			printf("fn: CheckConnection [NAK]\n");
+		#endif
 			Connected = true;
 			return 1;
 		case ACK:
+		#ifdef DEBUG
+			printf("fn: CheckConnection [ACK]\n");
+		#endif
 			Connected = true;
 			conn->readanswer(&a);
-			conn->checkstate();
+			while ((tmout++ < 5) && (conn->checkstate() == ACK))
+				conn->readanswer(&a);
 			return 1;
 		case -1:
+		#ifdef DEBUG
+			printf("fn: CheckConnection [ERR]\n");
+		#endif
 			tries++;
+		fflush(stdout);
 		};
 	};
 	#ifdef DEBUG

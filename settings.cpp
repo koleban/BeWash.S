@@ -31,6 +31,7 @@ Settings::Settings()
 	memset(&debugFlag, 0, sizeof(debugFlag));
 	memset(&intErrorCode, 0, sizeof(intErrorCode));
 	memset(&extErrorCode, 0, sizeof(extErrorCode));
+	memset(&kkmParam, 0, sizeof(kkmParam));
 
 	int model, rev, mem, maker, overVolted ;
 	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
@@ -171,6 +172,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.Lcd20x4Watch				= iniparser_getuint(ini, "ThreadFlag:Lcd20x4Watch", 	0);
 	threadFlag.RemoteCtrlThread			= iniparser_getuint(ini, "ThreadFlag:RemoteCtrlThread", 	0);
 	threadFlag.ButtonMasterThread		= iniparser_getuint(ini, "ThreadFlag:ButtonMasterThread", 	0) & !threadFlag.ButtonWatch;
+	threadFlag.KKMWatch					= iniparser_getuint(ini, "ThreadFlag:KKMWatch", 	0);
 
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
@@ -194,14 +196,19 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.Lcd20x4Watch				= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:Lcd20x4Watch", 	0);
 	debugFlag.RemoteCtrlThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCtrlThread", 	0);
 	debugFlag.ButtonMasterThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonMasterThread", 	0);
+	debugFlag.KKMWatch					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:KKMWatch", 	0);
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
-	modbus.baudRate 			= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
-	modbus.dataParity 			= (char)(0xFF & iniparser_getuint(ini, 	"Modbus:PARITY",		'N'));	// œ–»Õ»Ã¿≈“ "—»Ã¬ŒÀ" (char)
-																										// N O D
-	modbus.dataBit 				= iniparser_getuint(ini, 	"Modbus:BIT",			8);
-	modbus.stopBit 				= iniparser_getuint(ini, 	"Modbus:STOPBIT",		0);
-	modbus.slaveCount			= iniparser_getuint(ini, 	"Modbus:SlaveCount",	0);
+	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
+	modbus.dataParity 					= (char)(0xFF & iniparser_getuint(ini, 	"Modbus:PARITY",		'N'));	// œ–»Õ»Ã¿≈“ "—»Ã¬ŒÀ" (char) Val: 'N' 'O' 'D'
+	modbus.dataBit 						= iniparser_getuint(ini, 	"Modbus:BIT",			8);
+	modbus.stopBit 						= iniparser_getuint(ini, 	"Modbus:STOPBIT",		0);
+	modbus.slaveCount						= iniparser_getuint(ini, 	"Modbus:SlaveCount",	0);
+
+	sprintf(kkmParam.kkmAddr, "%s", iniparser_getstring(ini,	"KKM:ADDR", "192.168.254.222"	));
+	kkmParam.kkmPort 						= iniparser_getuint(ini, 	"KKM:PORT",			7778);
+	kkmParam.kkmPass 						= (BYTE)iniparser_getuint(ini, 	"KKM:PASS",			30);
+	kkmParam.QueryTime					= iniparser_getuint(ini, 	"KKM:QueryTime",			7778);
 
 	winterMode.winterMode				= iniparser_getuint(ini, "WinterMode:WinterMode", 		0);
 	winterMode.winterDelay				= iniparser_getuint(ini, "WinterMode:WinterDelay", 		0);
