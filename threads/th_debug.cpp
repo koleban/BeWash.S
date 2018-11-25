@@ -347,7 +347,7 @@ PI_THREAD(DebugThread)
 		printf("Queue log: %5d", queueLog->QueueCount);	// 17 chars
 		printf("|");
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Queue KKM: %5d", queueLog->QueueCount);	// 17 chars
+		printf("Queue KKM: %5d", queueKkm->QueueCount);	// 17 chars
 		printf("|");
 
 		cur_loadattr();

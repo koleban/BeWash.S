@@ -206,6 +206,7 @@ bool Settings::loadConfig (char* fileName)
 	modbus.slaveCount						= iniparser_getuint(ini, 	"Modbus:SlaveCount",	0);
 
 	sprintf(kkmParam.kkmAddr, "%s", iniparser_getstring(ini,	"KKM:ADDR", "192.168.254.222"	));
+	sprintf(kkmParam.ServiceName, "%s", iniparser_getstring(ini,	"KKM:ServiceName", "Аренда автомоечного оборудования"));
 	kkmParam.kkmPort 						= iniparser_getuint(ini, 	"KKM:PORT",			7778);
 	kkmParam.kkmPass 						= (BYTE)iniparser_getuint(ini, 	"KKM:PASS",			30);
 	kkmParam.QueryTime					= iniparser_getuint(ini, 	"KKM:QueryTime",			7778);

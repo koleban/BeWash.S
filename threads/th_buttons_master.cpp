@@ -110,12 +110,19 @@ PI_THREAD(ButtonMasterWatch)
 					delay_ms(1000);
 					///
 					// !!!!!!!!!!!!!!!!!!!!
+					// Add to structure remoteCtrl information for send to slave ctrl other modbus protocole
+					//
 					remoteCtrl[index].cmdWrite = 1;
 
 					remoteCtrl[index].cmdWritePrm = 0x06;
 					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm << 16;
 					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm + status.intDeviceInfo.money_currentBalance;
 					remoteCtrl[index].doCmd = 1;
+
+					// Add information for print KKM documents
+					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
+					//
+					queueKkm->QueuePut(status.intDeviceInfo.money_currentBalance, 0, 0, settings->kkmParam.ServiceName);
 					// !!!!!!!!!!!!!!!!!!!!
 					///
 
