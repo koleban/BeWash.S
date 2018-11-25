@@ -185,6 +185,7 @@ extern EEPROM* 			eeprom;
 //extern CCTalkBillDevice* ccTalkBillDevice;
 
 extern QueueArray* queueLog;
+extern QueueArray* queueKkm;
 
 extern RejectedCoinInfo rejectedCoinInfo;
 

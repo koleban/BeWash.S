@@ -148,11 +148,11 @@ struct ThreadFlag
 	BYTE MainWatch;					// Основной поток
 	BYTE RFIDWatch;					// Считыватель карт RFID
 	BYTE CoinWatch;					// Монетоприемник
-	BYTE CoinPulseWatch;			// Монетоприемник ПУЛЬСОВЫЙ РЕЖИМ
-	BYTE MoneyWatch;				// Купюроприемник
+	BYTE CoinPulseWatch;				// Монетоприемник ПУЛЬСОВЫЙ РЕЖИМ
+	BYTE MoneyWatch;					// Купюроприемник
 	BYTE MoneyCCTalkWatch;			// Монетоприемник
-	BYTE EngineWatch;				// Двигатель
-	BYTE ButtonWatch;				// Кнопки
+	BYTE EngineWatch;					// Двигатель
+	BYTE ButtonWatch;					// Кнопки
 
 	BYTE DataExchangeThread;
 	BYTE NetServer;					// Подсистема "Сетевой обмен"
@@ -160,12 +160,12 @@ struct ThreadFlag
 	BYTE MonitorWatch;				// Подсистема "Отображения - дисплей"
 	BYTE ExtCommonThread;			// Подсистема "Общие фукции внешнего бокса"
 	BYTE IntCommonThread;			// Подсистема "Общие фукции внутреннего бокса"
-	BYTE TimeTickThread;			// Подсистема отсчета времени ВНУТРЕННИЙ БОКС
-	BYTE DebugThread;				// Процесс вывода отладочной информации
+	BYTE TimeTickThread;				// Подсистема отсчета времени ВНУТРЕННИЙ БОКС
+	BYTE DebugThread;					// Процесс вывода отладочной информации
 	BYTE ConsoleWatch;				// Процесс консольного управления
 	BYTE ThermalWatch;				// Процесс температурного наблюдения
 	BYTE GPIOExtWatch;				// Процесс обнаруживающий зависание MCP23x17
-	BYTE QueueLog;					// Процесс обрабатывающий запись очереди Лога в базу
+	BYTE QueueLog;						// Процесс обрабатывающий запись очереди Лога в базу
 	BYTE Lcd20x4Watch;				// Процесс вывода информации на LCD дисплей (Пылесос)
 	BYTE RemoteCtrlThread;			// Процесс работы с удалеными MODBUS контроллерами
 	BYTE ButtonMasterThread;		// Процесс работы с кнопками при режиме "БОКС ПОПОЛНЕНИЯ"
@@ -177,10 +177,10 @@ struct ErrorFlag
 	BYTE MainWatch;					// Основной поток
 	BYTE RFIDWatch;					// Считыватель карт RFID
 	BYTE CoinWatch;					// Монетоприемник
-	BYTE CoinPulseWatch;			// Монетоприемник ПУЛЬСОВЫЙ РЕЖИМ
-	BYTE MoneyWatch;				// Купюроприемник
-	BYTE EngineWatch;				// Двигатель
-	BYTE ButtonWatch;				// Кнопки
+	BYTE CoinPulseWatch;				// Монетоприемник ПУЛЬСОВЫЙ РЕЖИМ
+	BYTE MoneyWatch;					// Купюроприемник
+	BYTE EngineWatch;					// Двигатель
+	BYTE ButtonWatch;					// Кнопки
 
 	BYTE DataExchangeThread;
 	BYTE NetServer;					// Подсистема "Сетевой обмен"
@@ -188,8 +188,8 @@ struct ErrorFlag
 	BYTE MonitorWatch;				// Подсистема "Отображения - дисплей"
 	BYTE ExtCommonThread;			// Подсистема "Общие фукции внешнего бокса"
 	BYTE IntCommonThread;			// Подсистема "Общие фукции внутреннего бокса"
-	BYTE TimeTickThread;			// Подсистема отсчета времени ВНУТРЕННИЙ БОКС
-	BYTE DebugThread;				// Процесс вывода отладочной информации
+	BYTE TimeTickThread;				// Подсистема отсчета времени ВНУТРЕННИЙ БОКС
+	BYTE DebugThread;					// Процесс вывода отладочной информации
 	BYTE ConsoleWatch;				// Процесс консольного управления
 	BYTE ThermalWatch;				// Процесс температурного наблюдения
 };

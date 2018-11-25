@@ -12,6 +12,8 @@ unsigned long gEngineFullWorkTime = 0;
 int	wrkOpenedFlag = 1;
 time_t wrkOpenedDateTime = (time_t)0;
 QueueArray* queueLog = new QueueArray(1000);
+QueueArray* queueKkm = new QueueArray(1000);
+
 volatile bool detectInProgress = false;
 
 int main(int argc, char *argv[])

@@ -5,6 +5,86 @@ using namespace DriverFR;
 int errorCode = 0;
 static DrvFR* drv;
 
+//---------------------------------------------------------------------
+int OpenPaymentDocument()
+{
+	return 0;
+}
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double price, char* stringForPrinting, int taxType, int paymentItemSign, int paymentTypeSign)
+{
+	drvFr->Price = price;
+	drvFr->Quantity = quantity;
+	drvFr->Summ1 = drvFr->Price * drvFr->Quantity;
+	drvFr->Summ1Enabled = 0x00;
+	drvFr->CheckType = (int)checkType;
+	drvFr->TaxType = taxType;
+	drvFr->TaxValue = 0;
+	drvFr->TaxValueEnabled = 0x00;
+	drvFr->DiscountOnCheck = 0x00;
+	drvFr->PaymentItemSign = paymentItemSign;
+	drvFr->PaymentTypeSign = paymentTypeSign;
+	strncpy(drvFr->StringForPrinting, stringForPrinting, 40);
+
+	int res = drvFr->FNOperation();
+	if ((res != 0) && (res != 69) && (res != 70))
+		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+	return res;
+}
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+int ClosePaymentDocument(DrvFR* drvFr, double Summ1 = 0, double Summ2 = 0, double Summ3 = 0, double Summ4 = 0, double Summ5 = 0, double Summ6 = 0, double Summ7 = 0, double Summ8 = 0, double Summ9 = 0, double Summ10 = 0, double Summ11 = 0, double Summ12 = 0, double Summ13 = 0, double Summ14 = 0, double Summ15 = 0, double Summ16 = 0)
+{
+	drvFr->Summ1 = Summ1;
+	drvFr->Summ2 = Summ2;
+	drvFr->Summ3 = Summ3;
+	drvFr->Summ4 = Summ4;
+	drvFr->Summ5 = Summ5;
+	drvFr->Summ6 = Summ6;
+	drvFr->Summ7 = Summ7;
+	drvFr->Summ8 = Summ8;
+	drvFr->Summ9 = Summ9;
+	drvFr->Summ10 = Summ10;
+	drvFr->Summ11 = Summ11;
+	drvFr->Summ12 = Summ12;
+	drvFr->Summ13 = Summ13;
+	drvFr->Summ14 = Summ14;
+	drvFr->Summ15 = Summ15;
+	drvFr->Summ16 = Summ16;
+
+	drvFr->TaxValue1 = 0;
+	drvFr->TaxValue2 = 0;
+	drvFr->TaxValue3 = 0;
+	drvFr->TaxValue4 = 0;
+	drvFr->TaxValue5 = 0;
+	drvFr->TaxValue6 = 0;
+
+	drvFr->RoundingSumm = 0;
+	drvFr->TaxType = (int)TDocumentTaxType::Tax6;
+
+	strncpy(drvFr->StringForPrinting, "", 40);
+
+	int res = drvFr->FNCloseCheckEx();
+	if ((res != 0) && (res != 69) && (res != 70))
+		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+	return res;
+}
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+
 void CheckDevice(DrvFR* drv)
 {
 	drv->GetECRStatus();
@@ -149,13 +229,17 @@ void CheckDevice(DrvFR* drv)
 		drv->GetECRStatus();
 	}
 }
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
 
 PI_THREAD(KKMWatch)
 {
-	printf("KKM is starting \n");
 	Settings* settings = Settings::getInstance();
 	if (!settings->threadFlag.KKMWatch) return (void*)0;
-	printf("KKM is init DB \n");
 	Database* db = new Database();
 	db->Init(settings);
 	if (db->Open())
@@ -164,7 +248,8 @@ PI_THREAD(KKMWatch)
 	sprintf(myNote, "[THREAD] KKM: Online KMM thread init");
 	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
-	printf("KKM is wpork done \n");
+	printf("Thread KKM is now working\n");
+	QueueType valueKkm;
 
 	struct tm* now;
 	time_t rawtime;
@@ -172,10 +257,12 @@ PI_THREAD(KKMWatch)
 	while (settings->threadFlag.KKMWatch)
 	{
 		drv = new DrvFR(settings->kkmParam.kkmPass, 0, 0, 1000, 0, TConnectionType::ctSocket, settings->kkmParam.kkmPort, settings->kkmParam.kkmAddr, true);
-		printf("KKM is connection to KKM \n");
+		sprintf(myNote, "[THREAD] KKM: Creating KKM driver instance and trying to connect to the device");
+		db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 		if (drv->Connect() > 0)
 		{
-			printf("KKM is connected ...\n");
+			sprintf(myNote, "[THREAD] KKM: Connecting to KKM device successfully");
+			db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 			settings->workFlag.KKMWatch = 0;
 			while (settings->threadFlag.KKMWatch)
 			{
@@ -192,11 +279,46 @@ PI_THREAD(KKMWatch)
 					break;
 				}
 				if (error)
+				{
+					sprintf(myNote, "[THREAD] KKM: Connection worked. Device: %s", drv->UDescription);
+					db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 					printf ("[%s] Connection OK!\nDevice: %s\n", asctime(now), drv->UDescription);
+				}
 				error = false;
 	
 				CheckDevice(drv);
+				int result = 0;
+				while(queueKkm->QueueGet(&valueKkm) >= 0)
+				{
+					result = OpenPaymentDocument();
+					sprintf(myNote, "[THREAD] KKM: Opening the payment document");
+					db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
+					result = AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
+					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
+						sprintf(myNote, "[THREAD] KKM: Adding service to payment document");
+					else
+						sprintf(myNote, "[ERROR] KKM: Can't add service to payment document: [%d] %s", drv->ResultCode, drv->ResultCodeDescription);
+//					printf("%s\n", myNote);
+					db->Log(DB_EVENT_TYPE_KKM_ERROR, valueKkm.eventId, 0, myNote);
+					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
+						{ queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
 
+					CheckDevice(drv);
+					result = ClosePaymentDocument(drv, valueKkm.eventId);
+					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
+						sprintf(myNote, "[THREAD] KKM: Close the payment document");
+					else
+						sprintf(myNote, "[ERROR] KKM: Can't close the payment document: [%d] %s", drv->ResultCode, drv->ResultCodeDescription);
+//					printf("%s\n", myNote);
+					db->Log(DB_EVENT_TYPE_KKM_ERROR, valueKkm.eventId, 0, myNote);
+					if (drv->ResultCode == 69)
+						{ drv->CancelCheck(); queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
+					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
+						{ queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
+
+					delay_ms(settings->kkmParam.QueryTime);
+					CheckDevice(drv);
+				}
 				settings->workFlag.MoneyWatch = 0;
 				delay_ms(settings->kkmParam.QueryTime);
 			}
