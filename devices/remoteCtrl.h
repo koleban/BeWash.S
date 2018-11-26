@@ -31,8 +31,8 @@ typedef struct _Remote_Ctrl_
 
 	WORD	devId;
 	WORD	devBaud;
-	WORD	devImp[4];
-	WORD	devSens[4];
+	WORD	devImpPrm[4];
+	WORD	devImpVal[4];
 	WORD	devPrm;
 
 } RemoteCtrl;

@@ -17,8 +17,9 @@ QueueArray::QueueArray()
 	QueueSize = 100;
 	QUEUE_ELEMENTS = 100;
 	QUEUE_SIZE = QUEUE_ELEMENTS + 1;
-    QueueIn = QueueOut = 0;
+	QueueIn = QueueOut = 0;
 	Queue = (QueueType*)malloc(QUEUE_ELEMENTS * sizeof(QueueType));
+	memset(Queue, 0, QUEUE_ELEMENTS * sizeof(QueueType));
 }
 	
 QueueArray::QueueArray(unsigned int queueSize)
