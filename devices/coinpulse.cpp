@@ -8,7 +8,13 @@ void intCoin1()
 {
 	int sigTime = 0;
 	BYTE coinNum = 4;
-	while ((!digitalRead(exchangeDevice->pinCoinType1)) && (sigTime++ < 1000)) delay_ms(1);
+	int fallCount = 0;
+	while ((fallCount < 10) && (sigTime++ < 500)) 
+	{
+		if (digitalRead(exchangeDevice->pinCoinType1)) fallCount++;
+		delay_ms(1);
+	}
+//	while ((!digitalRead(exchangeDevice->pinCoinType1)) && (sigTime++ < 500)) delay_ms(1);
 	if (sigTime < 5) return;
 	printf("[DEBUG] CoinPulseDevice: interrupt 1 handle: TIME: %d [%d]\n", coinNum, sigTime);
 	if (sigTime >= exchangeDevice->sigWidth)
@@ -25,7 +31,12 @@ void intCoin2()
 {
 	int sigTime = 0;
 	BYTE coinNum = 6;
-	while ((!digitalRead(exchangeDevice->pinCoinType2)) && (sigTime++ < 1000)) delay_ms(1);
+	int fallCount = 0;
+	while ((fallCount < 10) && (sigTime++ < 500)) 
+	{
+		if (digitalRead(exchangeDevice->pinCoinType2)) fallCount++;
+		delay_ms(1);
+	}
 	if (sigTime < 5) return;
 	printf("[DEBUG] CoinPulseDevice: interrupt 2 handle: TIME: %d [%d]\n", coinNum, sigTime);
 	if (sigTime >= exchangeDevice->sigWidth)
@@ -42,7 +53,12 @@ void intCoin3()
 {
 	int sigTime = 0;
 	BYTE coinNum = 8;
-	while ((!digitalRead(exchangeDevice->pinCoinType3)) && (sigTime++ < 1000)) delay_ms(1);
+	int fallCount = 0;
+	while ((fallCount < 10) && (sigTime++ < 500)) 
+	{
+		if (digitalRead(exchangeDevice->pinCoinType3)) fallCount++;
+		delay_ms(1);
+	}
 	if (sigTime < 5) return;
 	printf("[DEBUG] CoinPulseDevice: interrupt 3 handle: TIME: %d [%d]\n", coinNum, sigTime);
 	if (sigTime >= exchangeDevice->sigWidth)
@@ -59,7 +75,12 @@ void intCoin4()
 {
 	int sigTime = 0;
 	BYTE coinNum = 10;
-	while ((!digitalRead(exchangeDevice->pinCoinType4)) && (sigTime++ < 1000)) delay_ms(1);
+	int fallCount = 0;
+	while ((fallCount < 10) && (sigTime++ < 500)) 
+	{
+		if (digitalRead(exchangeDevice->pinCoinType4)) fallCount++;
+		delay_ms(1);
+	}
 	if (sigTime < 5) return;
 	printf("[DEBUG] CoinPulseDevice: interrupt 4 handle: TIME: %d [%d]\n", coinNum, sigTime);
 	if (sigTime >= exchangeDevice->sigWidth)
