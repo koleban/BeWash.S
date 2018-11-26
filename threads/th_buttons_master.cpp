@@ -97,6 +97,8 @@ PI_THREAD(ButtonMasterWatch)
 						printf("[DEBUG] ButtonMasterThread: Send ballance to device %d\n", index);
 					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonMasterThread]: Send money to the remote controller");
 
+					int slaveId = index;
+					
 					for (index = 0; index < 12; index++)
 					{
 						currentDeviceID = DVC_BUTTON01 + index;
@@ -112,12 +114,11 @@ PI_THREAD(ButtonMasterWatch)
 					// !!!!!!!!!!!!!!!!!!!!
 					// Add to structure remoteCtrl information for send to slave ctrl other modbus protocole
 					//
-					remoteCtrl[index].cmdWrite = 1;
-
-					remoteCtrl[index].cmdWritePrm = 0x06;
-					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm << 16;
-					remoteCtrl[index].cmdWritePrm = remoteCtrl[index].cmdWritePrm + status.intDeviceInfo.money_currentBalance;
-					remoteCtrl[index].doCmd = 1;
+					printf ("Add to queue MODBUS command. index: %d devId: %d\n", slaveId, remoteCtrl[slaveId].devId);
+					remoteCtrl[slaveId].cmdWrite = 1;
+					remoteCtrl[slaveId].devImpVal[0] = (status.intDeviceInfo.money_currentBalance / 10);	// 10 rur/imp
+					remoteCtrl[slaveId].devImpVal[1] = (status.intDeviceInfo.money_currentBalance % 10);	// 1  rur/imp
+					remoteCtrl[slaveId].doCmd = 1;
 
 					// Add information for print KKM documents
 					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
