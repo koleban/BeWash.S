@@ -32,7 +32,7 @@ int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double pr
 	strncpy(drvFr->StringForPrinting, stringForPrinting, 40);
 
 	int res = drvFr->FNOperation();
-	if ((res != 0) && (res != 69) && (res != 70))
+	if ((drvFr->ResultCode != 0) && (drvFr->ResultCode != 69) && (drvFr->ResultCode != 70))
 		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
 	return res;
 }
@@ -74,7 +74,7 @@ int ClosePaymentDocument(DrvFR* drvFr, double Summ1 = 0, double Summ2 = 0, doubl
 	strncpy(drvFr->StringForPrinting, "", 40);
 
 	int res = drvFr->FNCloseCheckEx();
-	if ((res != 0) && (res != 69) && (res != 70))
+	if ((drvFr->ResultCode != 0) && (drvFr->ResultCode != 69) && (drvFr->ResultCode != 70))
 		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
 	return res;
 }
@@ -263,6 +263,8 @@ PI_THREAD(KKMWatch)
 		{
 			sprintf(myNote, "[THREAD] KKM: Connecting to KKM device successfully");
 			db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
+			if (settings->debugFlag.KKMWatch)
+				printf("%s\n", myNote);
 			settings->workFlag.KKMWatch = 0;
 			while (settings->threadFlag.KKMWatch)
 			{
@@ -282,42 +284,41 @@ PI_THREAD(KKMWatch)
 				{
 					sprintf(myNote, "[THREAD] KKM: Connection worked. Device: %s", drv->UDescription);
 					db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
-					printf ("[%s] Connection OK!\nDevice: %s\n", asctime(now), drv->UDescription);
+					if (settings->debugFlag.KKMWatch)
+						printf("%s\n", myNote);
+					drv->Beep();
 				}
 				error = false;
 	
 				CheckDevice(drv);
 				int result = 0;
-				while(queueKkm->QueueGet(&valueKkm) >= 0)
+				if (!( (drv->ECRMode == (int)TECRMode::OpenWorkspace) || (drv->ECRMode == (int)TECRMode::WorkMode) ) )
 				{
-					result = OpenPaymentDocument();
-					sprintf(myNote, "[THREAD] KKM: Opening the payment document");
-					db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
-					result = AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
-					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
-						sprintf(myNote, "[THREAD] KKM: Adding service to payment document");
-					else
-						sprintf(myNote, "[ERROR] KKM: Can't add service to payment document: [%d] %s", drv->ResultCode, drv->ResultCodeDescription);
-//					printf("%s\n", myNote);
-					db->Log(DB_EVENT_TYPE_KKM_ERROR, valueKkm.eventId, 0, myNote);
-					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
-						{ queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
-
-					CheckDevice(drv);
-					result = ClosePaymentDocument(drv, valueKkm.eventId);
-					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
-						sprintf(myNote, "[THREAD] KKM: Close the payment document");
-					else
-						sprintf(myNote, "[ERROR] KKM: Can't close the payment document: [%d] %s", drv->ResultCode, drv->ResultCodeDescription);
-//					printf("%s\n", myNote);
-					db->Log(DB_EVENT_TYPE_KKM_ERROR, valueKkm.eventId, 0, myNote);
-					if (drv->ResultCode == 69)
-						{ drv->CancelCheck(); queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
-					if ((drv->ResultCode != 0) && (drv->ResultCode != 70))
-						{ queueKkm->QueuePut(valueKkm); CheckDevice(drv);delay_ms(settings->kkmParam.QueryTime); continue;}
-
-					delay_ms(settings->kkmParam.QueryTime);
-					CheckDevice(drv);
+					result = 1;
+					if (drv->ECRMode == (int)TECRMode::OpenedDocument)
+					{
+						printf ("[THREAD] KKM: Обнаружен открытый документ. Отменяем его\n");
+						drv->CancelCheck();
+					}
+					printf ("[THREAD] KKM: mode is incorrect ECRMode: %d\n", drv->ECRMode);
+				}
+				
+				if (result == 0)
+				{
+					while(queueKkm->QueueGet(&valueKkm) >= 0)
+					{
+						result = OpenPaymentDocument();
+						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
+						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
+						if (settings->debugFlag.KKMWatch)
+							printf("%s\n", myNote);
+						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
+						CheckDevice(drv);
+//						!!! LOG for payment !!!
+						ClosePaymentDocument(drv, valueKkm.eventId);
+						delay_ms(settings->kkmParam.QueryTime);
+						CheckDevice(drv);
+					}
 				}
 				settings->workFlag.MoneyWatch = 0;
 				delay_ms(settings->kkmParam.QueryTime);
