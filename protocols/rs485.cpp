@@ -1,5 +1,7 @@
 #include "../main.h"
 
+#define DEBUG
+
 void RS485_getCRC(char *buf, int bufLen, char *crc)
 {
 	unsigned long crc_0 = 0xffff;
@@ -102,14 +104,14 @@ int RS485_doCommandS(int fd, char *command, int size)
 
 ///////////////////////////////////////
 ///////////////////////////////////////
-    /*
+#ifdef DEBUG
 	printf("\nCMD: ");
 	for(int mindex=0; mindex < size-2; mindex++)
 		printf("[%02X] ", command[mindex]);
 	printf("[%02X] ", crc_out[1]);
 	printf("[%02X] ", crc_out[0]);
 	printf("\n");
-	*/
+#endif
 ///////////////////////////////////////
 
 	setPinModeMy(RS485_RWPin, 0);	// PIN RS485_RWPin - Управление R/W режимом для RS485
@@ -144,12 +146,12 @@ int RS485_doCommandS(int fd, char *command, int size)
 
 ///////////////////////////////////////
 ///////////////////////////////////////
-	/*
+#ifdef DEBUG
 	printf("\nANS: ");
 	for(int mindex=0; mindex < count; mindex++)
 		printf("[%02X] ", command[mindex]);
 	printf("\n");
-	*/
+#endif
 ///////////////////////////////////////
 
 	result = (count >= 5);
