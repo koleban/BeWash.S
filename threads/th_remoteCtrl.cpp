@@ -2,11 +2,10 @@
 
 //#pragma region Подсистема "Modbus удаленные контроллеры"
 
-modbus_t *ctx;		// Дескриптор линии MODBUS
-
-
 PI_THREAD(RemoteCtrlWatch)
 {
+	int ctx;
+	ModbusCommand command;
 	Settings* 		settings 	= Settings::getInstance();
 	if (!settings->threadFlag.RemoteCtrlThread) return (void*)0;
 
@@ -15,51 +14,74 @@ PI_THREAD(RemoteCtrlWatch)
 	////******************************************************
 	////******************************************************
 
-	if (strlen(settings->modbus.portName) <= 0)
+	if ( (strlen(settings->modbus.portName) <= 0) || (settings->modbus.baudRate == 0))
 	{
 		if (settings->debugFlag.RemoteCtrlThread)
-			printf("[MODBUS] Interface port name not defined. Exit from thread.\n");
+			printf("[MODBUS] Interface port name or other parameters not defined. Exit from thread.\n");
 	}
-
-	try{
-   		ctx = modbus_new_rtu(settings->modbus.portName, settings->modbus.baudRate, settings->modbus.dataParity, settings->modbus.dataBit, settings->modbus.stopBit);
-   	} catch (...)
-   	{ printf("[MODBUS] Unable create MODBUS interface. Creation failed %s [baud: %d parity: %c bits: %d stop: %d].\n", settings->modbus.portName, settings->modbus.baudRate, (char)settings->modbus.dataParity, settings->modbus.dataBit, settings->modbus.stopBit); return (void*)0; }
-
-	modbus_rtu_set_serial_mode(ctx, MODBUS_RTU_RS485);
-   	modbus_flush(ctx);
-   	modbus_set_slave(ctx, 1);
-   	modbus_set_debug(ctx, (settings->debugFlag.RemoteCtrlThread != 0));
-
-	int rc = modbus_connect(ctx);
-	if (rc == -1)
+	
+	try
 	{
-		if (settings->debugFlag.RemoteCtrlThread)
-			printf("[MODBUS] Unable to connect %s\n", modbus_strerror(errno));
-		modbus_free(ctx);
-		return (void*)0;
-	}
+		ctx = serialOpen(settings->modbus.portName, settings->modbus.baudRate);
+   } catch (...)
+   { printf("[MODBUS] Unable create MODBUS interface. Creation failed %s [baud: %d parity: %c bits: %d stop: %d].\n", settings->modbus.portName, settings->modbus.baudRate, (char)settings->modbus.dataParity, settings->modbus.dataBit, settings->modbus.stopBit); return (void*)0; }
+
+	pinMode(RS485_RWPin, OUTPUT);			// PIN RS485_RWPin - Управление R/W режимом для RS485
+	RS485_ClearBuffer(ctx);
 
 	while (settings->threadFlag.RemoteCtrlThread)
 	{
 		for(int index = 0; index < 30; index++)
 			if (remoteCtrl[index].doCmd == 1)
 			{
-				printf("[MODBUS] Salve device %02d do command R:%d W:%d\n", index, remoteCtrl[index].cmdRead, remoteCtrl[index].cmdWrite);
-			   	modbus_flush(ctx);
-			   	modbus_set_slave(ctx, remoteCtrl[index].devId);
+		   		int devId = remoteCtrl[index].devId;
+				RS485_ClearBuffer(ctx);
 				remoteCtrl[index].cmdResult = 0;
 
-			   	if (remoteCtrl[index].cmdRead)
-			   	{
-			   		rc = modbus_read_registers(ctx, 0, remoteCtrl[index].cmdReadPrm, (WORD*)&remoteCtrl[index].cmdResult);
-					if (rc == -1)
-					{
+				///////////////////////////////////////////////////////
+				// Command READ
+				///////////////////////////////////////////////////////
+		   	if (remoteCtrl[index].cmdRead)
+				{
+					printf("[MODBUS] Salve device %02d do command READ\n", index);
+
 						if (settings->debugFlag.RemoteCtrlThread)
-						printf("[MODBUS] Error read register %s\n", modbus_strerror(errno));
+							printf("[MODBUS] Error read register %s\n", modbus_strerror(errno));
 						remoteCtrl[index].cmdResult = 0xFFFFFFFF;
+				}
+
+				///////////////////////////////////////////////////////
+				// Command WRITE
+				///////////////////////////////////////////////////////
+		   	if (remoteCtrl[index].cmdWrite)
+				{
+					printf("[MODBUS] Salve device %02d do command WRITE\n", index);
+					memset(&command, 0, sizeof(command));
+					command.slaveId = devId;
+					command.cmd = MODBUS_CMD_WRITE_HOLDING_REGISTERS;
+					command.regAddr.prmH = 0;
+					command.regAddr.prmL = SLAVE_REG_IMPULSE_COUNT_1;
+					command.regCount.prmH = 0;
+					command.regCount.prmL = 4;
+					command.dataCount = 8;
+					for (int j=0; j<4; j++)
+					{
+						command.prm[j].prmH = (BYTE)((remoteCtrl[index].devImpVal[j] >> 8) & 0xFF);
+						command.prm[j].prmL = (BYTE)(remoteCtrl[index].devImpVal[j] & 0xFF);
+					}
+					if (!RS485_doCommandS(ctx, (char*)&command, 7+command.dataCount+2))
+					{
+						remoteCtrl[index].cmdResult = 0xFFFFFFFF;
+						if (settings->debugFlag.RemoteCtrlThread)
+							printf("[MODBUS] Error write register %s\n", "***");
+					}
+					else
+					{
+						remoteCtrl[index].cmdResult = (command.regCount.prmH << 8) + command.regCount.prmL;
+						printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
 					}
 				}
+
 				remoteCtrl[index].doCmd = 0;
 				remoteCtrl[index].cmdCheck = 0;
 				remoteCtrl[index].cmdRead = 0;
@@ -70,8 +92,8 @@ PI_THREAD(RemoteCtrlWatch)
 		delay_ms(500);
 	}
 
-	modbus_close(ctx);
-	modbus_free(ctx);
+	RS485_ClearBuffer(ctx);
+	close(ctx);
 	printf("[RemoteCtrl]: Thread ended.\n");
 	return (void*)0;
 }
