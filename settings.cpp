@@ -65,7 +65,7 @@ Settings::Settings()
 	//
 	memset(&remoteCtrl, 0x00, sizeof(remoteCtrl));
 	for (int index=0; index < 30; index++)
-		remoteCtrl[index].devId = index + 1;
+		remoteCtrl[index].devId = index;
 	// <<
 }
 

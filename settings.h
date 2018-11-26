@@ -8,7 +8,25 @@
 #define SDWORD			int
 #endif
 
+//***************************************
+// MODBUS SLAVE DEVICE REGISTERS MAP
+//***************************************
+#define SLAVE_REG_DEVICE_ADDR			0x00		// Адрес устройства
+#define SLAVE_REG_PORT_BAUD				0x01		// Скорость порта
+#define SLAVE_REG_IMPULSE_WIDE_1		0x02		// Ширина импульса (2 байта: байтН - Ширина импульса, байтL - Ширина паузы)
+#define SLAVE_REG_IMPULSE_WIDE_2		0x03
+#define SLAVE_REG_IMPULSE_WIDE_3		0x04
+#define SLAVE_REG_IMPULSE_WIDE_4		0x05
+#define SLAVE_REG_IMPULSE_COUNT_1		0x06		// Количество импульсов
+#define SLAVE_REG_IMPULSE_COUNT_2		0x07
+#define SLAVE_REG_IMPULSE_COUNT_3		0x08
+#define SLAVE_REG_IMPULSE_COUNT_4		0x09
+#define SLAVE_REG_IMPULSE_DIRECTION		0x0A		// Настройка направления импульса (на повышение или на просадку)
+
+//***************************************
 // Internal block
+//***************************************
+
 #define DVC_RFID_CARD_READER			 		0		//Считыватель RFID карт
 #define DVC_RFID_CARD_LIGHT_CONTROL_RED			10		//Подсветка картоприемника RFID - Красная
 #define DVC_RFID_CARD_LIGHT_CONTROL_GRN			11  	//Подсветка картоприемника RFID - Зеленая
