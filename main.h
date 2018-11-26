@@ -39,8 +39,6 @@
 #include <linux/usbdevice_fs.h>
 #include <stdint.h>
 
-#include <modbus.h>
-
 #ifdef CRYPTOPP
 #include "rsa.h"
 #include "osrng.h"
