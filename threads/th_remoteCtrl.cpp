@@ -45,9 +45,34 @@ PI_THREAD(RemoteCtrlWatch)
 				{
 					printf("[MODBUS] Salve device %02d do command READ\n", index);
 
-						if (settings->debugFlag.RemoteCtrlThread)
-							printf("[MODBUS] Error read register %s\n", modbus_strerror(errno));
+					memset(&command, 0, sizeof(command));
+					command.slaveId = devId;
+					command.cmd = MODBUS_CMD_READ_HOLDING_REGISTER;
+					// 
+					command.regAddr.prmH = 0;
+					command.regAddr.prmL = 10;
+					command.regCount.prmH = 0;
+					command.regCount.prmL = 1;
+					if (!RS485_doCommandS(ctx, (char*)&command, 8))
+					{
 						remoteCtrl[index].cmdResult = 0xFFFFFFFF;
+						if (settings->debugFlag.RemoteCtrlThread)
+							printf("[MODBUS] Error read (0x03) register %d [%X]\n", command.cmd, command.cmd);
+					}
+					else
+					{
+						if (command.cmd != MODBUS_CMD_READ_HOLDING_REGISTER)
+						{
+							remoteCtrl[index].cmdResult = 0xFFFFFFFF;
+							if (settings->debugFlag.RemoteCtrlThread)
+								printf("[MODBUS] Error read (0x03) register %d [%X]\n", command.cmd, command.cmd);
+						}
+						else
+						{
+							remoteCtrl[index].cmdResult = (command.regAddr.prmL << 8) + command.regCount.prmH;
+							printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
+						}
+					}
 				}
 
 				///////////////////////////////////////////////////////
@@ -71,14 +96,23 @@ PI_THREAD(RemoteCtrlWatch)
 					}
 					if (!RS485_doCommandS(ctx, (char*)&command, 7+command.dataCount+2))
 					{
-						remoteCtrl[index].cmdResult = 0xFFFFFFFF;
+						remoteCtrl[index].cmdResult = 0xFFFFFFFFUL;
 						if (settings->debugFlag.RemoteCtrlThread)
-							printf("[MODBUS] Error write register %s\n", "***");
+							printf("[MODBUS] Error write (0x10) register %d [%X]\n", command.cmd, command.cmd);
 					}
 					else
 					{
-						remoteCtrl[index].cmdResult = (command.regCount.prmH << 8) + command.regCount.prmL;
-						printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
+						if (command.cmd != MODBUS_CMD_WRITE_HOLDING_REGISTERS)
+						{
+							remoteCtrl[index].cmdResult = 0xFFFFFFFFUL;
+							if (settings->debugFlag.RemoteCtrlThread)
+								printf("[MODBUS] Error write (0x10) register %d [%X]\n", command.cmd, command.cmd);
+						}
+						else
+						{
+							remoteCtrl[index].cmdResult = (command.regAddr.prmH << 8) + command.regAddr.prmL;
+							printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
+						}
 					}
 				}
 

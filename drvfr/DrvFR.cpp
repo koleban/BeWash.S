@@ -132,6 +132,9 @@ int DrvFR::Connect(void)
 
 	if (conn->opendev() == -1)
 	{
+		#ifdef DEBUG
+		printf("fn: DrvFR::Connect - can't opendev()\n");
+		#endif
 		Connected = false;
 		return -1;
 	}
@@ -145,11 +148,17 @@ int DrvFR::Connect(void)
 		{
 		case NAK:
 			Connected = true;
+			#ifdef DEBUG
+			printf("fn: DrvFR::Connect - receive NAK\n");
+			#endif
 			if (GetECRStatus() < 0) { tries++; continue; }
 			if (GetDeviceMetrics() < 0) { tries++; continue; }
 			return 1;
 		case ACK:
 			Connected = true;
+			#ifdef DEBUG
+			printf("fn: DrvFR::Connect - receive ACK\n");
+			#endif
 			conn->readanswer(&a);
 			conn->checkstate();
 			if (GetECRStatus() < 0) { tries++; usleep(500000); continue; }
@@ -159,6 +168,9 @@ int DrvFR::Connect(void)
 			tries++;
 		};
 	};
+	#ifdef DEBUG
+	printf("fn: DrvFR::Connect - can't receive answer\n");
+	#endif
 	Connected = false;
 	return -1;
 }

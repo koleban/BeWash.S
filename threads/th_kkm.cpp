@@ -254,11 +254,13 @@ PI_THREAD(KKMWatch)
 	struct tm* now;
 	time_t rawtime;
 	bool error = true;
+	drv = new DrvFR(settings->kkmParam.kkmPass, 0, 0, 1000, 0, TConnectionType::ctSocket, settings->kkmParam.kkmPort, settings->kkmParam.kkmAddr, true);
 	while (settings->threadFlag.KKMWatch)
 	{
-		drv = new DrvFR(settings->kkmParam.kkmPass, 0, 0, 1000, 0, TConnectionType::ctSocket, settings->kkmParam.kkmPort, settings->kkmParam.kkmAddr, true);
 		sprintf(myNote, "[THREAD] KKM: Creating KKM driver instance and trying to connect to the device");
 		db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
+		if (settings->debugFlag.KKMWatch)
+			printf("%s\n", myNote);
 		if (drv->Connect() > 0)
 		{
 			sprintf(myNote, "[THREAD] KKM: Connecting to KKM device successfully");
@@ -299,9 +301,15 @@ PI_THREAD(KKMWatch)
 					{
 						printf ("[THREAD] KKM: Обнаружен открытый документ. Отменяем его\n");
 						drv->CancelCheck();
+						if (drv->ResultCode == 0) 
+							result = 0;
 					}
-					printf ("[THREAD] KKM: mode is incorrect ECRMode: %d\n", drv->ECRMode);
+	
+					if (result != 0)
+						printf ("[THREAD] KKM: mode is incorrect ECRMode: %d\n", drv->ECRMode);
 				}
+				else
+					result = 0;
 				
 				if (result == 0)
 				{
@@ -316,13 +324,20 @@ PI_THREAD(KKMWatch)
 						CheckDevice(drv);
 //						!!! LOG for payment !!!
 						ClosePaymentDocument(drv, valueKkm.eventId);
-						delay_ms(settings->kkmParam.QueryTime);
-						CheckDevice(drv);
+						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))
+							printf("KKM: Close check ERROR %d %s\n", drv->ResultCode, drv->ResultCodeDescription);
+						delay_ms(settings->kkmParam.QueryTime*2);
+						CheckDevice(drv);
 					}
 				}
-				settings->workFlag.MoneyWatch = 0;
+				settings->workFlag.KKMWatch = 0;
 				delay_ms(settings->kkmParam.QueryTime);
 			}
+		}
+		else
+		{
+			drv->Disconnect();
+			printf("KKM: Connection ERROR\n");
 		}
 		delay_ms(settings->kkmParam.QueryTime * 5);
 	}

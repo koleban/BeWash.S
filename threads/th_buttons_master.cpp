@@ -109,16 +109,54 @@ PI_THREAD(ButtonMasterWatch)
 						setGPIOState(currentPin, 1);
 					}
 
-					delay_ms(1000);
 					///
 					// !!!!!!!!!!!!!!!!!!!!
 					// Add to structure remoteCtrl information for send to slave ctrl other modbus protocole
 					//
 					printf ("Add to queue MODBUS command. index: %d devId: %d\n", slaveId, remoteCtrl[slaveId].devId);
+					//
+					// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+					printf ("              READ COMMAND COUNTER\n");
+					remoteCtrl[slaveId].cmdRead = 1;
+					remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
+					remoteCtrl[slaveId].doCmd = 1;
+					int timeout = 1000;
+					while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
+					
+					if (remoteCtrl[slaveId].cmdResult > 0xFFFF) break;
+					unsigned int cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
+					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
+					//
+					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+					printf ("              WRITE COMMAND COUNTER\n");
+					remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 					remoteCtrl[slaveId].cmdWrite = 1;
 					remoteCtrl[slaveId].devImpVal[0] = (status.intDeviceInfo.money_currentBalance / 10);	// 10 rur/imp
 					remoteCtrl[slaveId].devImpVal[1] = (status.intDeviceInfo.money_currentBalance % 10);	// 1  rur/imp
 					remoteCtrl[slaveId].doCmd = 1;
+					timeout = 1000;
+					while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
+					if ((timeout == 0) || (remoteCtrl[slaveId].cmdResult > 0xFFFF))
+						printf ("              WRITE COMMAND ERROR\n");
+					else
+						printf ("              WRITE COMMAND OK\n");
+
+					//
+					// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+					int retryCounter = 3;
+					while ((remoteCtrl[slaveId].cmdResult > 0xFFFF) && (retryCounter-- > 0))
+					{
+						printf ("              READ COMMAND COUNTER LOOP [RETRY: %d]\n", 4 - retryCounter);
+						remoteCtrl[slaveId].cmdRead = 1;
+						remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
+						remoteCtrl[slaveId].doCmd = 1;
+						timeout = 1000;
+						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
+					}
+					
+					if (remoteCtrl[slaveId].cmdResult > 0xFFFF) break;
+					if ((cmdCounter == ((unsigned int)remoteCtrl[slaveId].cmdResult)) && (cmdCounter > 0)) break;
+					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
 
 					// Add information for print KKM documents
 					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
