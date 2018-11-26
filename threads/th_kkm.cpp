@@ -277,7 +277,7 @@ PI_THREAD(KKMWatch)
 				{
 					if (!error)
 						printf ("[%s] Connection error!\n", asctime(now));
-					error = true;
+					error = true;
 					fflush(stdout);
 					drv->Disconnect();
 					break;
