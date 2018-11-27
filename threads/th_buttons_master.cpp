@@ -40,13 +40,63 @@ PI_THREAD(ButtonMasterWatch)
   		pullUpDnControl (currentPin, PUD_DOWN) ;
 	}
 
+	if (settings->getEnabledDevice(DVC_BUTTON_COLLECTION))
+	{
+		setPinModeMy(settings->getPinConfig(DVC_BUTTON_COLLECTION, 1), PIN_INPUT);
+		pullUpDnControl(settings->getPinConfig(DVC_BUTTON_COLLECTION, 1), PUD_DOWN);
+	}
+
 	if (settings->debugFlag.ButtonMasterThread)
 		printf("[DEBUG] ButtonMasterThread: Button subsystem init  [%3d:%02d:%02d]\n", ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
 
+	int last_collectionButton = status.extDeviceInfo.collectionButton;
 	while (settings->threadFlag.ButtonMasterThread)
 	{
 		int delayTime = 100;
 		settings->workFlag.ButtonMasterThread = 0;
+
+		if (settings->getEnabledDevice(DVC_BUTTON_COLLECTION))
+		{
+			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
+			int timeout = 50;
+			while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
+
+			status.extDeviceInfo.collectionButton = (timeout < 1);
+			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
+				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
+			if ((settings->debugFlag.ButtonMasterThread) && (!last_collectionButton) && (status.extDeviceInfo.collectionButton))
+				printf("[DEBUG] ButtonMasterThread: Collection button is TURN ON\n");
+			if ((settings->debugFlag.ButtonMasterThread) && (last_collectionButton) && (!status.extDeviceInfo.collectionButton))
+				printf("[DEBUG] ButtonMasterThread: Collection button is TURN OFF\n");
+		}
+
+		if (status.extDeviceInfo.collectionButton)
+		{
+			for (index = 0; index < 12; index++)
+			{
+				// Turn on light on all buttons for show user "Collection mode"
+				if (!settings->getEnabledDevice(DVC_BUTTON01+index)) continue;
+				setPinModeMy(settings->getPinConfig(DVC_BUTTON01+index, 1), PIN_OUTPUT);
+				setGPIOState(settings->getPinConfig(DVC_BUTTON01+index, 1), 1);
+			}
+
+			last_collectionButton = status.extDeviceInfo.collectionButton;
+			delay_ms(delayTime);
+			settings->busyFlag.ButtonMasterThread--;
+			continue;
+		}
+
+		if (last_collectionButton)
+		{
+			for (index = 0; index < 12; index++)
+			{
+				if (!settings->getEnabledDevice(DVC_BUTTON01+index)) continue;
+				setPinModeMy(settings->getPinConfig(DVC_BUTTON01+index, 1), PIN_OUTPUT);
+				setGPIOState(settings->getPinConfig(DVC_BUTTON01+index, 1), 0);
+				setPinModeMy(settings->getPinConfig(DVC_BUTTON01+index, 1), PIN_INPUT);
+			}
+			last_collectionButton = status.extDeviceInfo.collectionButton;
+		}
 
 		int timeout = 100;
 
@@ -129,10 +179,11 @@ PI_THREAD(ButtonMasterWatch)
 					//
 					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 					printf ("              WRITE COMMAND COUNTER\n");
+					int sendedBal = status.intDeviceInfo.money_currentBalance;
 					remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 					remoteCtrl[slaveId].cmdWrite = 1;
-					remoteCtrl[slaveId].devImpVal[0] = (status.intDeviceInfo.money_currentBalance / 10);	// 10 rur/imp
-					remoteCtrl[slaveId].devImpVal[1] = (status.intDeviceInfo.money_currentBalance % 10);	// 1  rur/imp
+					remoteCtrl[slaveId].devImpVal[0] = (sendedBal / 10);	// 10 rur/imp
+					remoteCtrl[slaveId].devImpVal[1] = (sendedBal % 10);	// 1  rur/imp
 					remoteCtrl[slaveId].doCmd = 1;
 					timeout = 1000;
 					while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
@@ -161,12 +212,12 @@ PI_THREAD(ButtonMasterWatch)
 					// Add information for print KKM documents
 					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
 					//
-					queueKkm->QueuePut(status.intDeviceInfo.money_currentBalance, 0, 0, settings->kkmParam.ServiceName);
+					queueKkm->QueuePut(sendedBal, 0, 0, settings->kkmParam.ServiceName);
 					// !!!!!!!!!!!!!!!!!!!!
 					///
 
-					status.intDeviceInfo.money_currentBalance = 0;
-					status.extDeviceInfo.remote_currentBalance = 0;
+					status.intDeviceInfo.money_currentBalance -= sendedBal;
+					status.extDeviceInfo.remote_currentBalance -= sendedBal;
 					break;
 				}
 				else

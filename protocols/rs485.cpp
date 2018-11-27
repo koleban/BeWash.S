@@ -1,6 +1,6 @@
 #include "../main.h"
 
-#define DEBUG
+//#define DEBUG
 
 void RS485_getCRC(char *buf, int bufLen, char *crc)
 {
