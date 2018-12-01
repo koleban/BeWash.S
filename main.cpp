@@ -282,6 +282,8 @@ int main(int argc, char *argv[])
 	piThreadCreate(ButtonMasterWatch);
 	piThreadCreate(KKMWatch);
 
+	piThreadCreate(VoiceWatch);
+
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;
 	sprintf(iddqd, "%s%d", "", 0);

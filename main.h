@@ -158,6 +158,7 @@ PI_THREAD(TurnLightWatch);
 PI_THREAD(RemoteCtrlWatch);
 PI_THREAD(ButtonMasterWatch);
 PI_THREAD(KKMWatch);
+PI_THREAD(VoiceWatch);
 
 // ����������
 extern Settings* 		settings;
@@ -224,6 +225,7 @@ extern int globalThreadId;
 extern int externalCtrl;
 
 extern volatile bool detectInProgress;
+extern int btnMasterProgress;
 //
 //--------------------------------------------------
 //
@@ -282,6 +284,15 @@ int getIpList( unsigned int* addr_array, int arr_size);
 
 DWORD GetTimeToEeprom(time_t currentTime);
 time_t GetTimeFromEeprom(DWORD date_time_eeprom);
+
+typedef enum
+{
+	Idle = 1,
+	WaitSelectDevice = 2,
+	SendingCommand = 3,
+	PrintCheck = 4,
+	CollectionMode = 5
+} TBtnMasterProgress;
 
 #ifdef CRYPTOPP
 int char2int(char input);

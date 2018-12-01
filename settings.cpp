@@ -173,7 +173,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.RemoteCtrlThread			= iniparser_getuint(ini, "ThreadFlag:RemoteCtrlThread", 	0);
 	threadFlag.ButtonMasterThread		= iniparser_getuint(ini, "ThreadFlag:ButtonMasterThread", 	0) & !threadFlag.ButtonWatch;
 	threadFlag.KKMWatch					= iniparser_getuint(ini, "ThreadFlag:KKMWatch", 	0);
-
+	threadFlag.VoiceWatch				= iniparser_getuint(ini, "ThreadFlag:VoiceWatch", 	0);
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
 	debugFlag.NetServer					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:NetServer", 		0);
@@ -197,6 +197,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.RemoteCtrlThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCtrlThread", 	0);
 	debugFlag.ButtonMasterThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonMasterThread", 	0);
 	debugFlag.KKMWatch					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:KKMWatch", 	0);
+	debugFlag.VoiceWatch					= (debugFlag.DebugThread == 1) && threadFlag.VoiceWatch;
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);

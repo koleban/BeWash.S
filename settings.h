@@ -188,6 +188,7 @@ struct ThreadFlag
 	BYTE RemoteCtrlThread;			// Процесс работы с удалеными MODBUS контроллерами
 	BYTE ButtonMasterThread;		// Процесс работы с кнопками при режиме "БОКС ПОПОЛНЕНИЯ"
 	BYTE KKMWatch;						// Процесс для работы с Online KKM (Штрих-М)
+	BYTE VoiceWatch;					// Процесс голосового оповещения
 };
 
 struct ErrorFlag
