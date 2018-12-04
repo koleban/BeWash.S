@@ -172,17 +172,19 @@ PI_THREAD(ButtonMasterWatch)
 					//
 					// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 					int retryCounter = 3;
+					remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
+					int timeout = 1000;
 					while ((remoteCtrl[slaveId].cmdResult > 0xFFFF) && (retryCounter-- > 0))
 					{
 						printf ("              READ COMMAND COUNTER\n");
 						remoteCtrl[slaveId].cmdRead = 1;
 						remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 						remoteCtrl[slaveId].doCmd = 1;
-						int timeout = 500;
 						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
 					}
 				
-					if (remoteCtrl[slaveId].cmdResult > 0xFFFF) break;
+					printf ("              COMMAND RESULT: %08X (timeout: %d)\n", remoteCtrl[slaveId].cmdResult, timeout);
+					if ((remoteCtrl[slaveId].cmdResult > 0xFFFFUL) || (timeout < 0)) break;
 					unsigned int cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
 					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
 					db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, cmdCounter, "[ButtonMasterThread]: Read counter [id] [counter]");
@@ -197,7 +199,8 @@ PI_THREAD(ButtonMasterWatch)
 					remoteCtrl[slaveId].doCmd = 1;
 					timeout = 1000;
 					while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
-					if ((remoteCtrl[slaveId].doCmd != 0) || (remoteCtrl[slaveId].cmdResult > 0xFFFF))
+					printf ("              COMMAND RESULT: %08X (timeout: %d)\n", remoteCtrl[slaveId].cmdResult, timeout);
+					if ((remoteCtrl[slaveId].doCmd != 0) || (remoteCtrl[slaveId].cmdResult > 0xFFFF) || (timeout < 0))
 					{
 						printf ("              WRITE COMMAND ERROR\n");
 						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, timeout, "[ButtonMasterThread]: Write counter ERROR [id] [timeout]");
@@ -212,49 +215,51 @@ PI_THREAD(ButtonMasterWatch)
 						/// While be slave device processed recived data it is not respond
 						/// Delay size: (ImpulseCount + 3) * SignalWidth
 						//
-						printf ("              WAITING WHILE PROCESSED DATA [%d]\n", (((sendedBal / 10) + (sendedBal % 10) + 3) * 100));
-						delay_ms(
-									(( (sendedBal / 10) + (sendedBal % 10) + 3) * 100) * 100
-									);
+//						printf ("              WAITING WHILE PROCESSED DATA [%d ms]\n", (((sendedBal / 10) + (sendedBal % 10) + 3) * 200));
+//						delay_ms(
+//									(( (sendedBal / 10) + (sendedBal % 10) + 5) * 200)
+//									);
+						int m1 = (int)(sendedBal / 10);
+						int m2 = (int)(sendedBal % 10);
+						while (m1-- > 0)
+						{
+							status.intDeviceInfo.money_currentBalance -= 10;
+							status.extDeviceInfo.remote_currentBalance -= 10;
+							delay_ms(100);
+						}
+
+						while (m2-- > 0)
+						{
+							status.intDeviceInfo.money_currentBalance -= 1;
+							status.extDeviceInfo.remote_currentBalance -= 1;
+							delay_ms(100);
+						}
 					}
 					//
 					// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-					retryCounter = 5;
+/*					retryCounter = 5;
+					remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 					while ((remoteCtrl[slaveId].cmdResult > 0xFFFF) && (retryCounter-- > 0))
 					{
 						printf ("              READ COMMAND COUNTER LOOP [RETRY: %d]\n", 4 - retryCounter);
 						remoteCtrl[slaveId].cmdRead = 1;
 						remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 						remoteCtrl[slaveId].doCmd = 1;
-						timeout = 1000;
+						timeout = 2000;
 						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
 						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, ((unsigned int)remoteCtrl[slaveId].cmdResult), "[ButtonMasterThread]: Read counter [id] [counter]");
 					}
 					
-					if (remoteCtrl[slaveId].cmdResult > 0xFFFF) break;
 					if ((cmdCounter == ((unsigned int)remoteCtrl[slaveId].cmdResult)) && (cmdCounter > 0)) break;
+					cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
 					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
 
 					int errorRate = ((unsigned int)remoteCtrl[slaveId].cmdResult) - cmdCounter;
-					if (errorRate > 30) break;
 					if (errorRate > 1)
 					{
-						errorRate--;
-						printf ("              WRITE COMMAND FOR CORRECT MONEY\n");
-						int sendedBal = status.intDeviceInfo.money_currentBalance;
-						remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
-						remoteCtrl[slaveId].cmdWrite = 1;
-						remoteCtrl[slaveId].devImpVal[0] = (sendedBal / 10) * errorRate;	// 10 rur/imp
-						remoteCtrl[slaveId].devImpVal[1] = (sendedBal % 10) * errorRate;	// 1  rur/imp
-						remoteCtrl[slaveId].doCmd = 1;
-						timeout = 1000;
-						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
-						if ((timeout == 0) || (remoteCtrl[slaveId].cmdResult > 0xFFFF))
-							printf ("              WRITE COMMAND ERROR\n");
-						else
-							printf ("              WRITE COMMAND OK\n");
+							printf ("!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!! WRITE COMMAND DOUBLE\n");
 					}
-
+*/
 					// Add information for print KKM documents
 					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
 					//
@@ -263,8 +268,6 @@ PI_THREAD(ButtonMasterWatch)
 					// !!!!!!!!!!!!!!!!!!!!
 					///
 
-					status.intDeviceInfo.money_currentBalance -= sendedBal;
-					status.extDeviceInfo.remote_currentBalance -= sendedBal;
 					delay_ms(1000);
 					break;
 				}
