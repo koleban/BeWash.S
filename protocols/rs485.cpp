@@ -154,10 +154,12 @@ int RS485_doCommandS(int fd, char *command, int size)
 #endif
 ///////////////////////////////////////
 
-	result = (count >= 5);
-	if (!result) return result;
-
-	RS485_getCRC(&command[0], count, &crc_out[0]);
-	result |= (((out_buff[count-2] ^ out_buff[count-1]) == (crc_out[0] ^ crc_out[1])) && (devID != command[0]));
+	
+	result = 0;
+	if ((count < 5) || (count > 20)) return result;
+	if ((devID != command[0]) || ((command[0] + command[1]) == 0)) return result;
+	result = 1;
+//	RS485_getCRC(&command[0], count, &crc_out[0]);
+//	result = (((out_buff[count-2] ^ out_buff[count-1]) == (crc_out[0] ^ crc_out[1])) && (devID != command[0]));
 	return result;
 }
