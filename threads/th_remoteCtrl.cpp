@@ -34,7 +34,7 @@ PI_THREAD(RemoteCtrlWatch)
 		for(int index = 0; index < 30; index++)
 			if (remoteCtrl[index].doCmd == 1)
 			{
-		   		int devId = remoteCtrl[index].devId;
+		   	int devId = remoteCtrl[index].devId;
 				RS485_ClearBuffer(ctx);
 				remoteCtrl[index].cmdResult = 0;
 
@@ -61,11 +61,11 @@ PI_THREAD(RemoteCtrlWatch)
 					}
 					else
 					{
-						if (command.cmd != MODBUS_CMD_READ_HOLDING_REGISTER)
+						if ((command.cmd != MODBUS_CMD_READ_HOLDING_REGISTER) || (command.slaveId != devId))
 						{
 							remoteCtrl[index].cmdResult = 0xFFFFFFFF;
 							if (settings->debugFlag.RemoteCtrlThread)
-								printf("[MODBUS] Error read (0x03) register %d [%X]\n", command.cmd, command.cmd);
+								printf("[MODBUS] Error read (0x03) register %d [%X] dev: %d [%d]\n", command.cmd, command.cmd, devId, command.slaveId);
 						}
 						else
 						{
@@ -123,7 +123,7 @@ PI_THREAD(RemoteCtrlWatch)
 				remoteCtrl[index].cmdReadPrm = 0;
 				remoteCtrl[index].cmdWritePrm = 0;
 			}
-		delay_ms(500);
+		delay_ms(100);
 	}
 
 	RS485_ClearBuffer(ctx);
