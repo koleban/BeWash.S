@@ -56,72 +56,74 @@ PI_THREAD(DataExchangeThread)
 			}
 
 			///
-			/// Íàæàòà êíîïêà èíêàñàöèè (ÇÀÊÐÎÅÌ ÑÌÅÍÓ)
+			/// Íàæàòà êíîïêà èíêàñàöèè (ÇÀÊÐÎÅÌ ÑÌÅÍÓ) ÈËÈ (ÎÁÐÀÁÎÒÀÅÌ ÎÁÙÈÉ Ñ×ÅÒ×ÈÊ)
 			///
-			if (status.extDeviceInfo.collectionButton && !lastCollectionButton)
+			if (settings->CollectionMode == 0)
 			{
-				lastCollectionButton = status.extDeviceInfo.collectionButton;
-				printf("  ===> Close workspace (%d)\n", status.intDeviceInfo.allMoney);
-				if (settings->useDatabase)
+				if (status.extDeviceInfo.collectionButton && !lastCollectionButton)
 				{
-					IBPP::Timestamp param1[2];
-					IBPP::Timestamp emptyTime;
+					lastCollectionButton = status.extDeviceInfo.collectionButton;
+					printf("  ===> Close workspace (%d)\n", status.intDeviceInfo.allMoney);
+					if (settings->useDatabase)
+					{
+						IBPP::Timestamp param1[2];
+						IBPP::Timestamp emptyTime;
 
-					printf("  ===> Get opened workspace\n");
-					if (db->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
-						printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
-	
-					double moneyStore[2];
-					moneyStore[1] = status.intDeviceInfo.allMoney;
-					if (db->Query(DB_QUERY_TYPE_GET_CASH_STORE, param1, &moneyStore[0]))
-						printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
-					status.intDeviceInfo.allMoney = (DWORD)moneyStore[0];
-	
-					if (db->Query(DB_QUERY_TYPE_WORKSPACE_CLOSE, &moneyStore[0], NULL))
-						printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
+						printf("  ===> Get opened workspace\n");
+						if (db->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
+							printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
+
+						double moneyStore[2];
+						moneyStore[1] = status.intDeviceInfo.allMoney;
+						if (db->Query(DB_QUERY_TYPE_GET_CASH_STORE, param1, &moneyStore[0]))
+							printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
+						status.intDeviceInfo.allMoney = (DWORD)moneyStore[0];
+
+						if (db->Query(DB_QUERY_TYPE_WORKSPACE_CLOSE, &moneyStore[0], NULL))
+							printf("  ===> IB ERROR: %s\n", db->lastErrorMessage);
+						else
+							printf("  ===> done\n");
+					}
+					wrkOpenedFlag = 0;
+				}
+					///
+				/// Îòæàòà êíîïêà èíêàñàöèè (ÎÒÊÐÎÅÌ ÍÎÂÓÞ ÑÌÅÍÓ)
+				///
+				if (!status.extDeviceInfo.collectionButton && !wrkOpenedFlag)
+				{
+					lastCollectionButton = status.extDeviceInfo.collectionButton;
+					printf("  ===> Open new workspace\n");
+					if (settings->useDatabase)
+					{
+						IBPP::Timestamp param1[2];
+						IBPP::Timestamp emptyTime;
+
+						if (commonDb->Query(DB_QUERY_TYPE_WORKSPACE_OPEN, NULL, NULL))
+							printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+
+						if (commonDb->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
+							printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+
+						printf("  ===> Workspace is opened\n");
+						IBPP::Date mydate = param1[0];
+						IBPP::Time mytime = param1[0];
+						int y = 0, m = 0, d = 0;
+						int h = 0, i = 0, s = 0;
+						mydate.GetDate(y, m, d);
+						mytime.GetTime(h, i, s);
+						sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%04d %02d:%02d:%02d", d, m, y, h, i, s);
+					}
 					else
-						printf("  ===> done\n");
+					{
+						time(&wrkOpenedDateTime);
+						struct tm localTime = *localtime(&wrkOpenedDateTime);
+						sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%02d %02d:%02d    ",
+						localTime.tm_mday, localTime.tm_mon+1, localTime.tm_year-100,
+						localTime.tm_hour, localTime.tm_min);
+					}
+					wrkOpenedFlag = 1;
+					status.intDeviceInfo.allMoney = 0;
 				}
-				wrkOpenedFlag = 0;
-			}
-
-			///
-			/// Îòæàòà êíîïêà èíêàñàöèè (ÎÒÊÐÎÅÌ ÍÎÂÓÞ ÑÌÅÍÓ)
-			///
-			if (!status.extDeviceInfo.collectionButton && !wrkOpenedFlag)
-			{
-				lastCollectionButton = status.extDeviceInfo.collectionButton;
-				printf("  ===> Open new workspace\n");
-				if (settings->useDatabase)
-				{
-					IBPP::Timestamp param1[2];
-					IBPP::Timestamp emptyTime;
-
-					if (commonDb->Query(DB_QUERY_TYPE_WORKSPACE_OPEN, NULL, NULL))
-						printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-
-					if (commonDb->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
-						printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-
-					printf("  ===> Workspace is opened\n");
-					IBPP::Date mydate = param1[0];
-					IBPP::Time mytime = param1[0];
-					int y = 0, m = 0, d = 0;
-					int h = 0, i = 0, s = 0;
-					mydate.GetDate(y, m, d);
-					mytime.GetTime(h, i, s);
-					sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%04d %02d:%02d:%02d", d, m, y, h, i, s);
-				}	
-				else
-				{
-					time(&wrkOpenedDateTime);
-					struct tm localTime = *localtime(&wrkOpenedDateTime);
-					sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%02d %02d:%02d    ", 
-					localTime.tm_mday, localTime.tm_mon+1, localTime.tm_year-100,
-					localTime.tm_hour, localTime.tm_min);
-				}
-				wrkOpenedFlag = 1;
-				status.intDeviceInfo.allMoney = 0;
 			}
 
 		}

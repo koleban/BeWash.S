@@ -31,7 +31,7 @@ PI_THREAD(RemoteCtrlWatch)
 
 	while (settings->threadFlag.RemoteCtrlThread)
 	{
-		for(int index = 0; index < 30; index++)
+		for(int index = 1; index <= settings->modbus.slaveCount; index++)
 			if (remoteCtrl[index].doCmd == 1)
 			{
 		   	int devId = remoteCtrl[index].devId;
@@ -73,6 +73,14 @@ PI_THREAD(RemoteCtrlWatch)
 							printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
 						}
 					}
+
+					remoteCtrl[index].doCmd = 0;
+					remoteCtrl[index].cmdCheck = 0;
+					remoteCtrl[index].cmdRead = 0;
+					remoteCtrl[index].cmdWrite = 0;
+					remoteCtrl[index].cmdReadPrm = 0;
+					remoteCtrl[index].cmdWritePrm = 0;
+					continue;
 				}
 
 				///////////////////////////////////////////////////////
@@ -114,14 +122,15 @@ PI_THREAD(RemoteCtrlWatch)
 							printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
 						}
 					}
+
+					remoteCtrl[index].doCmd = 0;
+					remoteCtrl[index].cmdCheck = 0;
+					remoteCtrl[index].cmdRead = 0;
+					remoteCtrl[index].cmdWrite = 0;
+					remoteCtrl[index].cmdReadPrm = 0;
+					remoteCtrl[index].cmdWritePrm = 0;
 				}
 
-				remoteCtrl[index].doCmd = 0;
-				remoteCtrl[index].cmdCheck = 0;
-				remoteCtrl[index].cmdRead = 0;
-				remoteCtrl[index].cmdWrite = 0;
-				remoteCtrl[index].cmdReadPrm = 0;
-				remoteCtrl[index].cmdWritePrm = 0;
 			}
 		delay_ms(100);
 	}

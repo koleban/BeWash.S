@@ -124,6 +124,7 @@ bool Settings::loadConfig (char* fileName)
 	useMCP 								= iniparser_getuint(ini, "Common:UseMCP", 				0);
 	useMCPWatch							= iniparser_getuint(ini, "Common:UseMCPWatch", 			useMCP);
 	useAutoReloadConfig					= iniparser_getuint(ini, "Common:UseAutoLoadCfg", 		0);
+	CollectionMode						= iniparser_getuint(ini, "Common:CollectionMode", 		0);
 	////////////////////
 	// Don't reload config from local file
 	// Paramter values setting in database

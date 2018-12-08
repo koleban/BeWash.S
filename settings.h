@@ -376,6 +376,10 @@ public:
 	KKMParam					kkmParam;
 
 	//
+	// Режим инкасации
+	int 						CollectionMode; // Режим инкасации 0 - стандартный режим 1 - общий счетчик
+
+	//
 	// Обмен по MODBUS
 	Modbus 				modbus;
 

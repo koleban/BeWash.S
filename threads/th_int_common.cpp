@@ -255,7 +255,7 @@ PI_THREAD(IntCommonThread)
 					logMoneyInfo.Count[index] = subVal;
 					status.intDeviceInfo.money_currentBalance += subVal*settings->moneyWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->moneyWeight.Weight[index];
-					printf("[DEBUG] IntThread: Bill [%d] (%d * %d) = %d\n", inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
+					printf("[DEBUG] IntThread: Bill index: %d [%d] (%d * %d) = %d\n", index, inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
 					// Проверим: Если вставлена карта и есть скидка на пополнение
 					if ((status.extDeviceInfo.rfid_cardPresent) && ((settings->discountCardDeposit + settings->cardBonus) > 0))
 					{
