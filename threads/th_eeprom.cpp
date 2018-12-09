@@ -1,21 +1,86 @@
 #include "../main.h"
 
-#define EP_ADDR_DATE_TIME		0x0003
-#define EP_ADDR_DATE_TIME_1		0x0004
-#define EP_ADDR_DATE_TIME_2		0x0005
-#define EP_ADDR_DATE_TIME_3		0x0006
-#define EP_ADDR_MONEY_1			0x0007
-#define EP_ADDR_MONEY_2			0x0008
-#define EP_ADDR_MONEY_3			0x0009
-#define EP_ADDR_MONEY_4			0x000A
-#define EP_ADDR_ENGWRKTIME_1		0x000B
-#define EP_ADDR_ENGWRKTIME_2		0x000C
-#define EP_ADDR_ENGWRKTIME_3		0x000D
-#define EP_ADDR_ENGWRKTIME_4		0x000E
-#define EP_ADDR_WORKSPACE_1		0x000F
-#define EP_ADDR_WORKSPACE_2		0x0010
-#define EP_ADDR_WORKSPACE_3		0x0011
-#define EP_ADDR_WORKSPACE_4		0x0012
+#define EP_ADDR_DATE_TIME		0x0003	// 4
+#define EP_ADDR_MONEY			0x0007	// 4
+#define EP_ADDR_ENGWRKTIME		0x000B	// 4
+#define EP_ADDR_WORKSPACE		0x000F	// 4
+#define EP_ADDR_PRG_PRICE		0x0013	// 12 0x1F
+
+DWORD readFromEEPROM_DWORD(EEPROM* eeprom, WORD addr, BYTE* errorCode = NULL)
+{
+	BYTE errCode = 0;
+	DWORD res = 0;
+	int timeout = 20;
+	int val = -1;
+	while ((timeout--) && (val < 0))
+	{
+		val = eeprom->ReadByte(addr);
+		if (val < 0) delay_ms(EEPROM_DELAY);
+	}
+	if (val >= 0)
+		res |= val << 24;
+	if (timeout <= 0) errCode = 1;
+	//************************************
+	val = -1;
+	timeout = 20;
+	while ((timeout--) && (val < 0))
+	{
+		val = eeprom->ReadByte(addr+1);
+		if (val < 0) delay_ms(EEPROM_DELAY);
+	}
+	if (val >= 0)
+		res |= val << 16;
+	if (timeout <= 0) errCode = 2;
+	//************************************
+	val = -1;
+	timeout = 20;
+	while ((timeout--) && (val < 0))
+	{
+		val = eeprom->ReadByte(addr+2);
+		if (val < 0) delay_ms(EEPROM_DELAY);
+	}
+	if (val >= 0)
+		res |= val << 8;
+	if (timeout <= 0) errCode = 3;
+	//************************************
+	val = -1;
+	timeout = 20;
+	while ((timeout--) && (val < 0))
+	{
+		val = eeprom->ReadByte(addr+3);
+		if (val < 0) delay_ms(EEPROM_DELAY);
+	}
+	if (val >= 0)
+		res |= val;
+	if (timeout <= 0) errCode = 4;
+
+	if (errorCode != NULL) *errorCode = errCode;
+
+//	printf ("EEPROM READ: addr: %02X val: %08X\n", addr, res);
+
+	return res;
+}
+
+BYTE writeToEEPROM_DWORD(EEPROM* eeprom, WORD addr, DWORD val)
+{
+	int timeout = 20;
+	while ((timeout--) && (eeprom->WriteByte(addr, (val >> 24) & 0xFF) < 0))
+		delay_ms(EEPROM_DELAY);
+	if (timeout <= 0) return 1;
+	timeout = 20;
+	while ((timeout--) && (eeprom->WriteByte(addr+1, (val >> 16) & 0xFF) < 0))
+		delay_ms(EEPROM_DELAY);
+	if (timeout <= 0) return 2;
+	timeout = 20;
+	while ((timeout--) && (eeprom->WriteByte(addr+2, (val >> 8) & 0xFF) < 0))
+		delay_ms(EEPROM_DELAY);
+	if (timeout <= 0) return 3;
+	timeout = 20;
+	while ((timeout--) && (eeprom->WriteByte(addr+3, val & 0xFF) < 0))
+		delay_ms(EEPROM_DELAY);
+	if (timeout <= 0) return 4;
+	return 0;
+}
 
 PI_THREAD(EepromThread)
 {
@@ -30,48 +95,7 @@ PI_THREAD(EepromThread)
 		//////////////
 		/// EEPROM DATE TIME
 		//////////////
-		DWORD date_time_eeprom = 0;	// 1111 1111 - year 1111 - month 1111 1 - date 111 11 - hour 11 1111 - minute
-		int val = -1;
-		int timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_DATE_TIME);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0)
-			date_time_eeprom |= val << 24;
-
- 		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_DATE_TIME_1);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0)
-			date_time_eeprom |= val << 16;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_DATE_TIME_2);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0)
-			date_time_eeprom |= val << 8;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_DATE_TIME_3);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0)
-			date_time_eeprom |= val;
-		/////////////
+		DWORD date_time_eeprom = readFromEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME);	// 1111 1111 - year 1111 - month 1111 1 - date 111 11 - hour 11 1111 - minute
 
 		if ((counter > 15) && (date_time_eeprom > 0) && (date_time_eeprom < 0xFFFFFFFF))
 		{
@@ -91,22 +115,11 @@ PI_THREAD(EepromThread)
   			{
 				time(&currentTime);
   				localTime = *localtime(&currentTime);
-				unsigned int ddd = (118 << 24) + (3 << 20) + (10 << 15) + (1 << 10) + (20 << 4);
+//				unsigned int ddd = (118 << 24) + (3 << 20) + (10 << 15) + (1 << 10) + (20 << 4);
 
   				date_time_eeprom = (localTime.tm_year << 24) + ((localTime.tm_mon+1) << 20) +
   					(localTime.tm_mday << 15) + (localTime.tm_hour << 10) + (localTime.tm_min << 4);
-				timeout = 20;
-				while ((timeout--) && (eeprom->WriteByte(EP_ADDR_DATE_TIME, (date_time_eeprom >> 24) & 0xFF) < 0))
-					delay_ms(EEPROM_DELAY);
-				timeout = 20;
-				while ((timeout--) && (eeprom->WriteByte(EP_ADDR_DATE_TIME_1, (date_time_eeprom >> 16) & 0xFF) < 0))
-					delay_ms(EEPROM_DELAY);
-				timeout = 20;
-				while ((timeout--) && (eeprom->WriteByte(EP_ADDR_DATE_TIME_2, (date_time_eeprom >> 8) & 0xFF) < 0))
-					delay_ms(EEPROM_DELAY);
-				timeout = 20;
-				while ((timeout--) && (eeprom->WriteByte(EP_ADDR_DATE_TIME_3, date_time_eeprom & 0xFF) < 0))
-					delay_ms(EEPROM_DELAY);
+				writeToEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME, date_time_eeprom);
   			}
   			else if (df_second < -300)
   			{
@@ -119,43 +132,7 @@ PI_THREAD(EepromThread)
 		//////////////
 		/// EEPROM MONEY
 		//////////////
-		DWORD allMoney = 0;
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_MONEY_1);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0) allMoney |= val << 24;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_MONEY_2);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0) allMoney |= val << 16;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_MONEY_3);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0)	allMoney |= val << 8;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_MONEY_4);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if (val >= 0) allMoney |= val;
-		/////////////
+		DWORD allMoney = readFromEEPROM_DWORD(eeprom, EP_ADDR_MONEY);
 
 		if (firstRun)
 		{
@@ -167,60 +144,13 @@ PI_THREAD(EepromThread)
 		if (allMoney != status.intDeviceInfo.allMoney)
 		{
 			allMoney = status.intDeviceInfo.allMoney;
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_MONEY_1, (allMoney >> 24) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_MONEY_2, (allMoney >> 16) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_MONEY_3, (allMoney >> 8) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_MONEY_4, allMoney & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_MONEY, allMoney);
 		}
 
 		//////////////
 		/// EEPROM ENGINE WORK TIME
 		//////////////
-		DWORD engWrkTime = 0;
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_ENGWRKTIME_1);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) engWrkTime |= val << 24;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_ENGWRKTIME_2);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) engWrkTime |= val << 16;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_ENGWRKTIME_3);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) engWrkTime |= val << 8;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_ENGWRKTIME_4);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) engWrkTime |= val;
-		/////////////
+		DWORD engWrkTime = readFromEEPROM_DWORD(eeprom, EP_ADDR_ENGWRKTIME);
 
 		if (firstRun)
 		{
@@ -230,74 +160,23 @@ PI_THREAD(EepromThread)
 			printf ("[DEBUG] Read engine work time: %d sec\n", gEngineFullWorkTime);
 		}
 
-		//DWORD GetTimeToEeprom(time_t currentTime)
-		//time_t GetTimeFromEeprom(DWORD date_time_eeprom)
-
 		if (gEngineFullWorkTime != engWrkTime)
 		{
 			engWrkTime = gEngineFullWorkTime;
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_ENGWRKTIME_1, (engWrkTime >> 24) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_ENGWRKTIME_2, (engWrkTime >> 16) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_ENGWRKTIME_3, (engWrkTime >> 8) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_ENGWRKTIME_4, engWrkTime & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_ENGWRKTIME, engWrkTime);
 		}
 
 		//////////////
 		/// EEPROM WORKSPACE DATE TIME
 		//////////////
-		int wrkDateTime = 0;
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_WORKSPACE_1);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) wrkDateTime |= val << 24;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_WORKSPACE_2);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) wrkDateTime |= val << 16;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_WORKSPACE_3);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) wrkDateTime |= val << 8;
-		/////////////
-		val = -1;
-		timeout = 20;
-		while ((timeout--) && (val < 0))
-		{
-			val = eeprom->ReadByte(EP_ADDR_WORKSPACE_4);
-			if (val < 0) delay_ms(EEPROM_DELAY);
-		}
-		if ((val >= 0) && (timeout > 0)) wrkDateTime |= val;
-		/////////////
-
+		DWORD wrkDateTime = readFromEEPROM_DWORD(eeprom, EP_ADDR_WORKSPACE);
 		if (firstRun)
 		{
 
 			if ((wrkDateTime == (int)0xFFFFFFFF) || (wrkDateTime == 0))
 			{
 				time(&wrkOpenedDateTime);
-				wrkDateTime = (int)wrkOpenedDateTime;
+				wrkDateTime = (DWORD)wrkOpenedDateTime;
 			}
 			wrkOpenedDateTime = (time_t)wrkDateTime;
 			printf ("[DEBUG] Read workspace date & time: %08X\n", wrkOpenedDateTime);
@@ -310,21 +189,16 @@ PI_THREAD(EepromThread)
 		if ((int)wrkOpenedDateTime != wrkDateTime)
 		{
 			wrkDateTime = (int)wrkOpenedDateTime;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_WORKSPACE_1, (wrkDateTime >> 24) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_WORKSPACE_2, (wrkDateTime >> 16) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_WORKSPACE_3, (wrkDateTime >> 8) & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
-			timeout = 20;
-			while ((timeout--) && (eeprom->WriteByte(EP_ADDR_WORKSPACE_4, wrkDateTime & 0xFF) < 0))
-				delay_ms(EEPROM_DELAY);
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_WORKSPACE, wrkDateTime);
+		}
+
+		if(settings->useEepromParams == 1)
+		{
+
 		}
 
 		firstRun = 0;
-  		delay(5);
+  		delay(10);
 	}
 	return (void*)0;
 }
