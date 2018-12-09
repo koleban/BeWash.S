@@ -340,6 +340,7 @@ public:
 	unsigned int		useDatabaseDateTime;	// Использовать базу данных как источник Даты и времени
 	unsigned int		useEeprom;				// Использовать EEPROM
 	unsigned int		useEepromDateTime;		// Использовать EEPROM как источник Даты и времени
+	unsigned int		useEepromParams;		// Использовать EEPROM как параметров программ
 	unsigned int		LightTimeOff;			// Время в сек. перед выключением света
 	unsigned int		useHWClock;				// Используется RTC и время мы не контролируем
 	// ***********************************************************************************************************

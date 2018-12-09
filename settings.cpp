@@ -143,6 +143,7 @@ bool Settings::loadConfig (char* fileName)
 	useHWClock							= iniparser_getuint(ini, "Common:useHWClock",			0);
 	useDatabaseDateTime					= iniparser_getuint(ini, "Common:useDatabaseDateTime", 	(int)((useDatabase > 0) && !(useHWClock > 0)));
 	useEepromDateTime					= iniparser_getuint(ini, "Common:useEepromDateTime",	(int)(!(useHWClock > 0)));
+	useEepromParams						= iniparser_getuint(ini, "Common:useEepromParams",	0);
 	cardBonus							= iniparser_getuint(ini, "Common:CardBonus",			0);
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
 
