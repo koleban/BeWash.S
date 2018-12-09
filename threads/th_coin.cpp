@@ -10,6 +10,7 @@ PI_THREAD(CoinWatch)
 	if (!settings->threadFlag.CoinWatch) return (void*)0;
 	Settings* settings = Settings::getInstance();
 	unsigned int counter = 0;
+	int errorDisplay = 0;
 
 	Database* db = new Database();
 	db->Init(settings);
@@ -25,9 +26,10 @@ PI_THREAD(CoinWatch)
 	{
 		settings->workFlag.CoinWatch = 0;
 		coinDevice1->OpenDevice();
-		if (coinDevice1->IsOpened())
+		if ((coinDevice1->IsOpened()) && (coinDevice1->cmdReset() == 1))
 		{
 			db->Log(DB_EVENT_TYPE_DVC_COIN_INIT, 0, 0, "Coin acceptor device opened");
+			printf("[DEBUG] Coin acceptor device opened (%d)\n", retryCount);
 			coinDevice1->cmdReset();
 			coinDevice1->cmdSiplePoll();
 			coinDevice1->cmdSetMasterInhibitStatus();
@@ -89,7 +91,7 @@ PI_THREAD(CoinWatch)
 		db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Coin acceptor device closed");
 		coinDevice1->CloseDevice();
 		if (retryCount < 2) { settings->workFlag.CoinWatch = 0; delay(1);}
-		else {retryCount = 0; while (retryCount++ < 60) {delay(1); settings->workFlag.CoinWatch = 0;} }
+		else {retryCount = 0; if (!errorDisplay) {errorDisplay = 1; settings->intErrorCode.MainWatch = 220;} while (retryCount++ < 60) {delay(1); settings->workFlag.CoinWatch = 0;} }
 		printf("[DEBUG] Coin device REDETECT (%d) ... \n", retryCount);
 		coinDevice1->Detect();
 	}

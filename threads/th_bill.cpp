@@ -11,6 +11,7 @@ PI_THREAD(MoneyWatch)
 	bool casseteRemoved = 0;
 	bool billError = 0;
 	int billErrorCounter = 0;
+	int errorDisplay = 0;
 	unsigned int counter = 0;
 	CCBillDevice* 	billDevice 	= CCBillDevice::getInstance();
 
@@ -150,7 +151,10 @@ PI_THREAD(MoneyWatch)
 		int tmp = 0;
 		while (tmp++ < 5) { settings->workFlag.MoneyWatch = 0; delay(1);}
 		if (settings->threadFlag.MoneyWatch)
+		{
+			if (!errorDisplay) {errorDisplay = 1; settings->intErrorCode.MainWatch = 219;}
 			billDevice->Detect();
+		}
 	}
 	if (db->Close())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
