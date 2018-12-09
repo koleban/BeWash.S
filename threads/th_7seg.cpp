@@ -1,3 +1,10 @@
+//
+// Error CODE
+// EE-H - Error EEPROM
+// EE-1 - Error MCP21017
+// EE-2 - Error COIN NOT DETECTED
+// EE-3 - Error BILL NOT DETECTED
+
 #include "../main.h"
 
 PI_THREAD(MonitorWatch)
@@ -31,6 +38,7 @@ PI_THREAD(MonitorWatch)
 	char digit[40];
 	char digit_out[40];
 	char errText[30];
+	bool tmpFlag = 0;
 
 	///
 	/// Пока ПОТОК АКТИВЕН обрабатываем данные
@@ -46,6 +54,96 @@ PI_THREAD(MonitorWatch)
 		/// Обработка скролинга текста
 		if (iter++ > (settings->commonParams.delayScrollingTextMs/display_WaitTimeMs))
 		{ iter = 0; offs++; }
+		///
+		/// ОТОБРАЖЕНИЕ ИНФОРМАЦИИ ОТНОСИТЕЛЬНО СОСТОЯНИЯ И ТИПА БОКСА
+		///
+		/// Отображение временной ошибки по EEPROM
+		///
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if (settings->intErrorCode.MainWatch == 222)
+		{
+			if (errIter++ > 20)
+			{
+				settings->intErrorCode.MainWatch = 0;
+				errIter = 0;
+			}
+			memset(&digit_out, 0, sizeof(digit_out));
+			tmpFlag ^= (iter % 5 == 0);
+			if (tmpFlag)
+				sprintf(&digit_out[0], "EE- ");
+			else
+				sprintf(&digit_out[0], "EE-H");
+
+
+			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
+			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+			monitor->showText(&digit_out[0]);
+			delay_ms(200);
+			continue;
+		}
+		if (settings->intErrorCode.MainWatch == 221)
+		{
+			if (errIter++ > 20)
+			{
+				settings->intErrorCode.MainWatch = 0;
+				errIter = 0;
+			}
+			memset(&digit_out, 0, sizeof(digit_out));
+			tmpFlag ^= (iter % 5 == 0);
+			if (tmpFlag)
+				sprintf(&digit_out[0], "EE- ");
+			else
+				sprintf(&digit_out[0], "EE-1");
+
+
+			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
+			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+			monitor->showText(&digit_out[0]);
+			delay_ms(200);
+			continue;
+		}
+		if (settings->intErrorCode.MainWatch == 220)
+		{
+			if (errIter++ > 20)
+			{
+				settings->intErrorCode.MainWatch = 0;
+				errIter = 0;
+			}
+			memset(&digit_out, 0, sizeof(digit_out));
+			tmpFlag ^= (iter % 5 == 0);
+			if (tmpFlag)
+				sprintf(&digit_out[0], "EE- ");
+			else
+				sprintf(&digit_out[0], "EE-2");
+
+
+			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
+			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+			monitor->showText(&digit_out[0]);
+			delay_ms(200);
+			continue;
+		}
+		if (settings->intErrorCode.MainWatch == 219)
+		{
+			if (errIter++ > 20)
+			{
+				settings->intErrorCode.MainWatch = 0;
+				errIter = 0;
+			}
+			memset(&digit_out, 0, sizeof(digit_out));
+			tmpFlag ^= (iter % 5 == 0);
+			if (tmpFlag)
+				sprintf(&digit_out[0], "EE- ");
+			else
+				sprintf(&digit_out[0], "EE-3");
+
+
+			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
+			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+			monitor->showText(&digit_out[0]);
+			delay_ms(200);
+			continue;
+		}
 		///
 		/// ОТОБРАЖЕНИЕ ИНФОРМАЦИИ ОТНОСИТЕЛЬНО СОСТОЯНИЯ И ТИПА БОКСА
 		///
