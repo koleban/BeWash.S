@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
   		}
 	} catch(...)
 	{
+		settings->intErrorCode.MainWatch = 221;
 		printf ("ERROR\n");
 	}
 
@@ -170,9 +171,17 @@ int main(int argc, char *argv[])
 	  			if (eeprom->Init())
 					printf (" OK \n");
 				else
+				{
+					settings->useEeprom = 0;
+					settings->useEepromDateTime = 0;
+					settings->intErrorCode.MainWatch = 222;
 					printf ("ERROR\n");
+				}
 		} catch(...)
 		{
+			settings->useEeprom = 0;
+			settings->useEepromDateTime = 0;
+			settings->intErrorCode.MainWatch = 222;
 			printf ("ERROR\n");
 		}
 		printf ("done.\n");
