@@ -160,6 +160,9 @@ PI_THREAD(ButtonMasterWatch);
 PI_THREAD(KKMWatch);
 PI_THREAD(VoiceWatch);
 
+PI_THREAD(RemoteCounterCtrlWatch);
+PI_THREAD(AlienDeviceWatch);
+
 // ����������
 extern Settings* 		settings;
 extern NetServer* 		netServer;
@@ -226,6 +229,9 @@ extern int externalCtrl;
 
 extern volatile bool detectInProgress;
 extern int btnMasterProgress;
+
+extern DWORD remoteCounter[30][2];
+extern DWORD remoteCounterSumm[30][3];
 //
 //--------------------------------------------------
 //

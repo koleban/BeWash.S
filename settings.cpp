@@ -32,6 +32,9 @@ Settings::Settings()
 	memset(&intErrorCode, 0, sizeof(intErrorCode));
 	memset(&extErrorCode, 0, sizeof(extErrorCode));
 	memset(&kkmParam, 0, sizeof(kkmParam));
+	memset(&remoteCounter, 0, sizeof(remoteCounter));
+	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
+
 
 	int model, rev, mem, maker, overVolted ;
 	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
@@ -162,11 +165,11 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.MoneyWatch				= iniparser_getuint(ini, "ThreadFlag:MoneyWatch", 		0);
 	threadFlag.MoneyCCTalkWatch			= iniparser_getuint(ini, "ThreadFlag:MoneyCCTalkWatch", 0);
 	threadFlag.ButtonWatch				= iniparser_getuint(ini, "ThreadFlag:ButtonWatch", 		0);
-	threadFlag.ExtCommonThread			= iniparser_getuint(ini, "ThreadFlag:ExtCommonThread", 	0);
+	threadFlag.ExtCommonThread			= iniparser_getuint(ini, "ThreadFlag:ExtCommonThread", 	1);
 	threadFlag.NetClient				= iniparser_getuint(ini, "ThreadFlag:NetClient", 		0);
 	threadFlag.EngineWatch				= iniparser_getuint(ini, "ThreadFlag:EngineWatch", 		1);
-	threadFlag.IntCommonThread			= iniparser_getuint(ini, "ThreadFlag:IntCommonThread", 	0);
-	threadFlag.TimeTickThread			= iniparser_getuint(ini, "ThreadFlag:TimeTickThread", 	0);
+	threadFlag.IntCommonThread			= iniparser_getuint(ini, "ThreadFlag:IntCommonThread", 	1);
+	threadFlag.TimeTickThread			= iniparser_getuint(ini, "ThreadFlag:TimeTickThread", 	1);
 	if (threadFlag.DebugThread == 0)
 		threadFlag.DebugThread				= iniparser_getuint(ini, "ThreadFlag:DebugThread", 		1);
 	threadFlag.ThermalWatch				= iniparser_getuint(ini, "ThreadFlag:ThermalWatch", 	0);
@@ -176,6 +179,9 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.ButtonMasterThread		= iniparser_getuint(ini, "ThreadFlag:ButtonMasterThread", 	0) & !threadFlag.ButtonWatch;
 	threadFlag.KKMWatch					= iniparser_getuint(ini, "ThreadFlag:KKMWatch", 	0);
 	threadFlag.VoiceWatch				= iniparser_getuint(ini, "ThreadFlag:VoiceWatch", 	0);
+	threadFlag.RemoteCounterCtrlThread	= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
+	threadFlag.AlienDeviceThread		= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
+
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
 	debugFlag.NetServer					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:NetServer", 		0);
@@ -199,7 +205,9 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.RemoteCtrlThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCtrlThread", 	0);
 	debugFlag.ButtonMasterThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonMasterThread", 	0);
 	debugFlag.KKMWatch					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:KKMWatch", 	0);
-	debugFlag.VoiceWatch					= (debugFlag.DebugThread == 1) && threadFlag.VoiceWatch;
+	debugFlag.VoiceWatch				= (debugFlag.DebugThread == 1) && threadFlag.VoiceWatch;
+	debugFlag.RemoteCounterCtrlThread	= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
+	debugFlag.AlienDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);

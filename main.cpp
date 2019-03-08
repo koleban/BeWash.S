@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	/////////////////////////
 	///
 	///
-    prgVer = 2.05;
+    prgVer = 2.06;
     ///
     ///
     /////////////////////////
@@ -292,6 +292,9 @@ int main(int argc, char *argv[])
 	piThreadCreate(KKMWatch);
 
 	piThreadCreate(VoiceWatch);
+
+	piThreadCreate(RemoteCounterCtrlWatch);
+	piThreadCreate(AlienDeviceWatch);
 
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;

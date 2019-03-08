@@ -13,7 +13,7 @@ PI_THREAD(ButtonMasterWatch)
 	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (master mode): Button thread init");
 	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (master mode) panel device opened");
 
-	if (settings->debugFlag.ButtonWatch)
+	if (settings->debugFlag.ButtonMasterThread)
 		printf("[DEBUG] ButtonMasterWatch: Debug information is showed\n");
 
 	int index;
@@ -153,7 +153,7 @@ PI_THREAD(ButtonMasterWatch)
 					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonMasterThread]: Send money to the remote controller");
 
 					int slaveId = index;
-					
+
 					for (index = 0; index < 12; index++)
 					{
 						currentDeviceID = DVC_BUTTON01 + index;
@@ -182,7 +182,7 @@ PI_THREAD(ButtonMasterWatch)
 						remoteCtrl[slaveId].doCmd = 1;
 						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
 					}
-				
+
 					printf ("              COMMAND RESULT: %08X (timeout: %d)\n", remoteCtrl[slaveId].cmdResult, timeout);
 					if ((remoteCtrl[slaveId].cmdResult > 0xFFFFUL) || (timeout < 0)) break;
 					unsigned int cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
@@ -249,7 +249,7 @@ PI_THREAD(ButtonMasterWatch)
 						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
 						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, ((unsigned int)remoteCtrl[slaveId].cmdResult), "[ButtonMasterThread]: Read counter [id] [counter]");
 					}
-					
+
 					if ((cmdCounter == ((unsigned int)remoteCtrl[slaveId].cmdResult)) && (cmdCounter > 0)) break;
 					cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
 					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
@@ -261,10 +261,12 @@ PI_THREAD(ButtonMasterWatch)
 					}
 */
 					// Add information for print KKM documents
-					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName); 
+					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName);
 					//
 					btnMasterProgress = (int)TBtnMasterProgress::PrintCheck;
-					queueKkm->QueuePut(sendedBal, 0, 0, settings->kkmParam.ServiceName);
+					char serviceNote[256];
+					sprintf(serviceNote, "%s (Пост N %d)", settings->kkmParam.ServiceName, slaveId+1);
+					queueKkm->QueuePut(sendedBal, 0, 0, serviceNote);
 					// !!!!!!!!!!!!!!!!!!!!
 					///
 

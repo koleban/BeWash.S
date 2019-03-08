@@ -340,13 +340,13 @@ public:
 	char StatusRKDescription[MAX_LEN];
 	char StringForPrinting[MAX_LEN];
 	int StringQuantity;
-	double Summ1;
+	double Summ1;				// Оплата НАЛИЧНЫМИ
 	short Summ1Enabled;
 	double Summ2;
 	short Summ2Enabled;
 	double Summ3;
 	short Summ3Enabled;
-	double Summ4;
+	double Summ4;				// Оплата КАРТОЙ
 	short Summ4Enabled;
 	double Summ5;
 	double Summ6;

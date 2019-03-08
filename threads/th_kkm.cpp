@@ -23,6 +23,7 @@ int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double pr
 	drvFr->Summ1 = drvFr->Price * drvFr->Quantity;
 	drvFr->Summ1Enabled = 0x00;
 	drvFr->CheckType = (int)checkType;
+	drvFr->Tax1 = taxType;
 	drvFr->TaxType = taxType;
 	drvFr->TaxValue = 0;
 	drvFr->TaxValueEnabled = 0x00;
@@ -291,7 +292,7 @@ PI_THREAD(KKMWatch)
 					drv->Beep();
 				}
 				error = false;
-	
+
 				CheckDevice(drv);
 				int result = 0;
 				if (!( (drv->ECRMode == (int)TECRMode::OpenWorkspace) || (drv->ECRMode == (int)TECRMode::WorkMode) ) )
@@ -301,16 +302,16 @@ PI_THREAD(KKMWatch)
 					{
 						printf ("[THREAD] KKM: Обнаружен открытый документ. Отменяем его\n");
 						drv->CancelCheck();
-						if (drv->ResultCode == 0) 
+						if (drv->ResultCode == 0)
 							result = 0;
 					}
-	
+
 					if (result != 0)
 						printf ("[THREAD] KKM: mode is incorrect ECRMode: %d\n", drv->ECRMode);
 				}
 				else
 					result = 0;
-				
+
 				if (result == 0)
 				{
 					while(queueKkm->QueueGet(&valueKkm) >= 0)
@@ -321,9 +322,11 @@ PI_THREAD(KKMWatch)
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
 						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
+						printf("[THREAD] KKM: Продажа : %s - 1 шт\n");
 						CheckDevice(drv);
 //						!!! LOG for payment !!!
-						ClosePaymentDocument(drv, valueKkm.eventId);
+						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
+						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
 						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))
 							printf("KKM: Close check ERROR %d %s\n", drv->ResultCode, drv->ResultCodeDescription);
 						delay_ms(settings->kkmParam.QueryTime*2);

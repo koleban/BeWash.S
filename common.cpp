@@ -33,6 +33,9 @@ int lightThreadActive = 0;
 int winterModeActive;
 int winterModeEngineActive;
 
+DWORD remoteCounter[30][2];
+DWORD remoteCounterSumm[30][3];
+
 
 RemoteCtrl remoteCtrl[30];
 
