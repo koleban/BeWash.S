@@ -43,8 +43,11 @@ PI_THREAD(RemoteCounterCtrlWatch)
 				///////////////////////////////////////////////////////
 		   		if (remoteCtrl[index].cmdRead)
 				{
-					printf("[MODBUS] Salve device %02d do command READ COUNTER 1\n", index);
-
+					if (settings->debugFlag.RemoteCounterCtrlThread)
+					{
+						printf("-------------------------------------------------\n\n");
+						printf("[MODBUS] Salve device %02d do command READ COUNTER 1\n", index);
+					}
 					memset(&command, 0, sizeof(command));
 					command.slaveId = devId;
 					command.cmd = MODBUS_CMD_READ_HOLDING_REGISTER;
@@ -72,13 +75,15 @@ PI_THREAD(RemoteCounterCtrlWatch)
 							remoteCtrl[index].cmdResult = (command.regAddr.prmL << 8) + command.regCount.prmH;
 							if (remoteCtrl[index].cmdResult < 0xFFFFFF)
 								remoteCounter[index][0] = (DWORD)(remoteCtrl[index].cmdResult & 0xFFFF);
-							printf("[MODBUS] [1] Slave device result: %08X Counter: %d\n", remoteCtrl[index].cmdResult, remoteCounter[index][0]);
+							if (settings->debugFlag.RemoteCounterCtrlThread)
+								printf("[MODBUS] [1] Slave device result: %08X Counter: %d\n", remoteCtrl[index].cmdResult, remoteCounter[index][0]);
 						}
 					}
 
-					delay_ms(10);
+					delay_ms(500);
 
-					printf("[MODBUS] Salve device %02d do command READ COUNTER 2\n", index);
+					if (settings->debugFlag.RemoteCounterCtrlThread)
+						printf("[MODBUS] Salve device %02d do command READ COUNTER 2\n", index);
 
 					memset(&command, 0, sizeof(command));
 					command.slaveId = devId;
@@ -107,7 +112,8 @@ PI_THREAD(RemoteCounterCtrlWatch)
 							remoteCtrl[index].cmdResult = (command.regAddr.prmL << 8) + command.regCount.prmH;
 							if (remoteCtrl[index].cmdResult < 0xFFFFFF)
 								remoteCounter[index][1] = (DWORD)(remoteCtrl[index].cmdResult & 0xFFFF);
-							printf("[MODBUS] [2] Slave device result: %08X Counter: %d\n", remoteCtrl[index].cmdResult, remoteCounter[index][1]);
+							if (settings->debugFlag.RemoteCounterCtrlThread)
+								printf("[MODBUS] [2] Slave device result: %08X Counter: %d\n", remoteCtrl[index].cmdResult, remoteCounter[index][1]);
 						}
 					}
 
@@ -125,7 +131,8 @@ PI_THREAD(RemoteCounterCtrlWatch)
 				///////////////////////////////////////////////////////
 		   		if (remoteCtrl[index].cmdWrite)
 				{
-					printf("[MODBUS] Salve device %02d do command WRITE COUNTER 1\n", index);
+					if (settings->debugFlag.RemoteCounterCtrlThread)
+						printf("[MODBUS] Salve device %02d do command WRITE COUNTER 1\n", index);
 					memset(&command, 0, sizeof(command));
 					command.slaveId = devId;
 					command.cmd = MODBUS_CMD_WRITE_HOLDING_REGISTERS;
@@ -156,7 +163,8 @@ PI_THREAD(RemoteCounterCtrlWatch)
 						else
 						{
 							remoteCtrl[index].cmdResult = (command.regAddr.prmH << 8) + command.regAddr.prmL;
-							printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
+							if (settings->debugFlag.RemoteCounterCtrlThread)
+								printf("[MODBUS] Slave device result: %08X\n", remoteCtrl[index].cmdResult);
 						}
 					}
 
