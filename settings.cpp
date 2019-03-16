@@ -32,6 +32,7 @@ Settings::Settings()
 	memset(&intErrorCode, 0, sizeof(intErrorCode));
 	memset(&extErrorCode, 0, sizeof(extErrorCode));
 	memset(&kkmParam, 0, sizeof(kkmParam));
+	memset(&remoteCounterParam, 0, sizeof(remoteCounterParam));
 	memset(&remoteCounter, 0, sizeof(remoteCounter));
 	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
 
@@ -220,7 +221,12 @@ bool Settings::loadConfig (char* fileName)
 	sprintf(kkmParam.ServiceName, "%s", iniparser_getstring(ini,	"KKM:ServiceName", "Аренда автомоечного оборудования"));
 	kkmParam.kkmPort 						= iniparser_getuint(ini, 	"KKM:PORT",			7778);
 	kkmParam.kkmPass 						= (BYTE)iniparser_getuint(ini, 	"KKM:PASS",			30);
-	kkmParam.QueryTime					= iniparser_getuint(ini, 	"KKM:QueryTime",			7778);
+	kkmParam.QueryTime						= iniparser_getuint(ini, 	"KKM:QueryTime",			10000);
+	kkmParam.TaxType						= iniparser_getuint(ini, 	"KKM:TaxType",			8); // ENVD
+
+	remoteCounterParam.DocumentCreationTime	= iniparser_getuint(ini, 	"RemoteCounterParam:DocumentCreationTime",			45);
+	remoteCounterParam.PriceIN1				= iniparser_getuint(ini, 	"RemoteCounterParam:PriceIN1",						1);
+	remoteCounterParam.PriceIN2				= iniparser_getuint(ini, 	"RemoteCounterParam:PriceIN2",						10);
 
 	winterMode.winterMode				= iniparser_getuint(ini, "WinterMode:WinterMode", 		0);
 	winterMode.winterDelay				= iniparser_getuint(ini, "WinterMode:WinterDelay", 		0);

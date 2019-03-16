@@ -13,6 +13,27 @@ PI_THREAD(AlienDeviceWatch)
 	if (settings->debugFlag.AlienDeviceThread)
 		printf("[DEBUG] AlienDeviceThread: Debug information is showed\n");
 
+	if (!settings->debugFlag.AlienDeviceThread)
+	{
+		delay_ms(2000);
+		term_clear();
+		printf("******************************************************\n");
+		printf("*       ");
+		term_setattr(32);
+		printf("beWash: Online-KKM service system v1.0");
+		term_setattr(37);
+		printf("       *\n");
+		printf("*----------------------------------------------------*\n");
+		printf("*   Serg V Kolebanov 2007-2019 All rights reserved   *\n");
+		printf("*----------------------------------------------------*\n");
+		printf("*       ");
+		term_setattr(32);
+		printf("   www.bewash.ru mail:dev@bewash.ru   ");
+		term_setattr(37);
+		printf("       *\n");
+		printf("******************************************************\n\n\n");
+	}
+
 	while (settings->threadFlag.AlienDeviceThread)
 	{
 		int delayTime = 100;
@@ -28,19 +49,24 @@ PI_THREAD(AlienDeviceWatch)
 				time_t rcv_timer_out;
 				time(&rcv_timer_out);
 
-				if ((((DWORD)rcv_timer_out) - remoteCounterSumm[index][2]) > 30)
+				if ((((DWORD)rcv_timer_out) - remoteCounterSumm[index][2]) > settings->remoteCounterParam.DocumentCreationTime)
 				{
 					// Add information for print KKM documents
 					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName);
 					//
-					DWORD sendedBal = remoteCounterSumm[index][0] + remoteCounterSumm[index][1]*10;
-					char serviceNote[256];
-					sprintf(serviceNote, "%s (Пост N %d)", settings->kkmParam.ServiceName, slaveId);
-					if (settings->debugFlag.AlienDeviceThread)
-						printf("[DEBUG] AlienDeviceThread: Add KKM check in queue [%s on %d rur]\n", serviceNote, sendedBal);
-					queueKkm->QueuePut(sendedBal, 0, 0, serviceNote);
+					DWORD sendedBal = remoteCounterSumm[index][0]*settings->remoteCounterParam.PriceIN1 + remoteCounterSumm[index][1]*settings->remoteCounterParam.PriceIN2;
 					remoteCounterSumm[index][0] = 0;
 					remoteCounterSumm[index][1] = 0;
+					char serviceNote[256];
+					sprintf(serviceNote, "%s (П:%d)", settings->kkmParam.ServiceName, slaveId);
+					term_setattr(32);
+					printf ("[ ++ ] ");
+					term_setattr(37);
+					printf("Создан фискальный документ. ");
+					term_setattr(32);
+					printf("Пост №: %2d на %3d руб.\n", slaveId, sendedBal);
+					term_setattr(37);
+					queueKkm->QueuePut(sendedBal, 0, 0, serviceNote);
 				}
 			}
 
@@ -66,6 +92,19 @@ PI_THREAD(AlienDeviceWatch)
 			// If we received ZERO in answer. Continue.
 			if ((remoteCounter[index][0] + remoteCounter[index][1]) == 0) { delay_ms(100); continue;}
 
+
+			DWORD incomeMoney = remoteCounter[index][0]*settings->remoteCounterParam.PriceIN1 + remoteCounter[index][1]*settings->remoteCounterParam.PriceIN2;
+			term_setattr(36);
+			printf ("[ => ] ");
+			term_setattr(37);
+			printf ("Зафиксированы поступление данных: ");
+			term_setattr(36);
+			printf("Пост N:%d ", slaveId);
+			term_setattr(37);
+			printf("Счетчики [%d rur, %d rur]: [%d, %d] = ", settings->remoteCounterParam.PriceIN1, settings->remoteCounterParam.PriceIN2, remoteCounter[index][0], remoteCounter[index][1]);
+			term_setattr(36);
+			printf("%d руб.\n", incomeMoney);
+			term_setattr(37);
 			delay_ms(500);
 
 			//

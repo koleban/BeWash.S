@@ -288,6 +288,13 @@ struct ThermalParam
 	int tempOff;				// Температура отключения
 };
 
+struct RemoteCounterParam
+{
+	int DocumentCreationTime;	// Количество секунд, через которое сформируется чек в ККМ
+	int PriceIN1;				// Номинал импульса с входа №1
+	int PriceIN2;				// Номинал импульса с входа №2
+};
+
 struct RejectedCoinInfo
 {
 	bool coinRejected;
@@ -305,6 +312,7 @@ struct KKMParam
 	int QueryTime;
 	// Наименование услуги которая печатается в чеке ККМ
 	char ServiceName[250];
+	int TaxType;
 };
 
 class Settings
@@ -379,6 +387,10 @@ public:
 	//
 	// Работа с ККМ
 	KKMParam					kkmParam;
+
+	//
+	// Параметры счетчика чужих устройств
+	RemoteCounterParam			remoteCounterParam;
 
 	//
 	// Режим инкасации

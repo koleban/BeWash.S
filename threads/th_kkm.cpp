@@ -45,6 +45,8 @@ int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double pr
 //---------------------------------------------------------------------
 int ClosePaymentDocument(DrvFR* drvFr, double Summ1 = 0, double Summ2 = 0, double Summ3 = 0, double Summ4 = 0, double Summ5 = 0, double Summ6 = 0, double Summ7 = 0, double Summ8 = 0, double Summ9 = 0, double Summ10 = 0, double Summ11 = 0, double Summ12 = 0, double Summ13 = 0, double Summ14 = 0, double Summ15 = 0, double Summ16 = 0)
 {
+	Settings* settings = Settings::getInstance();
+
 	drvFr->Summ1 = Summ1;
 	drvFr->Summ2 = Summ2;
 	drvFr->Summ3 = Summ3;
@@ -70,7 +72,7 @@ int ClosePaymentDocument(DrvFR* drvFr, double Summ1 = 0, double Summ2 = 0, doubl
 	drvFr->TaxValue6 = 0;
 
 	drvFr->RoundingSumm = 0;
-	drvFr->TaxType = (int)TDocumentTaxType::Tax6;
+	drvFr->TaxType = settings->kkmParam.TaxType;
 
 	strncpy(drvFr->StringForPrinting, "", 40);
 
@@ -249,7 +251,14 @@ PI_THREAD(KKMWatch)
 	sprintf(myNote, "[THREAD] KKM: Online KMM thread init");
 	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
-	printf("Thread KKM is now working\n");
+	printf("Thread KKM is now working TaxType: %d\n", settings->kkmParam.TaxType);
+	printf("    TaxType  1 : НДС\n");
+	printf("    TaxType  2 : 6%\n");
+	printf("    TaxType  4 : 15%\n");
+	printf("    TaxType  8 : ЕНВД\n");
+	printf("    TaxType 16 : ЕСХН\n");
+	printf("    TaxType 32 : Патент\n");
+
 	QueueType valueKkm;
 
 	struct tm* now;
@@ -276,12 +285,12 @@ PI_THREAD(KKMWatch)
 				fflush(stdout);
 				if (drv->CheckConnection() != 1)
 				{
-					if (!error)
-						printf ("[%s] Connection error!\n", asctime(now));
-					error = true;
-					fflush(stdout);
-					drv->Disconnect();
-					break;
+							if (!error)
+								printf ("[  CHK  ] Проверка связи с ККМ %s", asctime(now));
+							error = true;
+							fflush(stdout);
+							drv->Disconnect();
+							break;
 				}
 				if (error)
 				{
@@ -289,7 +298,6 @@ PI_THREAD(KKMWatch)
 					db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 					if (settings->debugFlag.KKMWatch)
 						printf("%s\n", myNote);
-					drv->Beep();
 				}
 				error = false;
 
@@ -316,15 +324,22 @@ PI_THREAD(KKMWatch)
 				{
 					while(queueKkm->QueueGet(&valueKkm) >= 0)
 					{
+						if (valueKkm.eventId > 1001)
+						{
+							printf("[THREAD] KKM: Обнаружена ОШИБКА. Сумма оплаты больше допустимой (1001 руб) : %d руб\n", valueKkm.eventId);
+							continue;
+						}
 						result = OpenPaymentDocument();
 						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
 						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
-						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
-						printf("[THREAD] KKM: Продажа : %s - 1 шт\n");
+						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
+						printf("[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);
 						CheckDevice(drv);
 //						!!! LOG for payment !!!
+						drv->CheckSubTotal();
+						printf ("Подытог чека: %f руб\n", drv->Summ1);
 						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
 						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))

@@ -1818,8 +1818,6 @@ int DrvFR::FNCloseCheckEx(void)
 	strncpy((char*)p.buff + 86, (char*)StringForPrinting, 20);
 	p.buff[117] = TaxType;
 
-	printf("fn: FNCloseCheckExt >>>\n");
-
 	if (conn->sendcommand(FN_CLOSE_CHECK_EX, Password, &p) < 0) return -1;
 	if (conn->readanswer(&a) < 0) return -1;
 	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_CLOSE_CHECK_EX & 0xFF))) return -1;
@@ -1864,8 +1862,6 @@ int DrvFR::FNOperation(void)
 	//for (int i=0; i<p.len; i++)
 	//	printf("%02X|", p.buff[i]);
 	//printf("\n");
-
-	printf("fn: FNOperation >>>\n");
 
 	if (conn->sendcommand(FN_OPERATION, Password, &p) < 0) return -1;
 	if (conn->readanswer(&a) < 0) return -1;
