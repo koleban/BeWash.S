@@ -107,6 +107,7 @@ namespace DriverFR
 #define FN_OPEN_SESSION				0xE0
 #define GET_DEVICE_METRICS			0xFC
 #define CTRL_ADD_DEVICE				0xFD
+#define FN_CANCEL_CHECK				0xFF08
 #define FN_GET_STATUS				0xFF01
 #define FN_CLOSE_CHECK_EX			0xFF45
 #define FN_OPERATION				0xFF46
@@ -123,10 +124,10 @@ class DrvFR_Conn;
 
 enum TCheckType
 {
-	Sale = 0,
-	Purchase = 1,
+	Sale = 1,
 	ReturnSale = 2,
-	RerurnPurchase = 3
+	Purchase = 3,
+	RerurnPurchase = 4
 };
 
 enum TTaxType
@@ -494,6 +495,7 @@ public:
 	int FNCloseCheckEx(void);
 	int FNOpenSession(void);
 	int FNCloseSession(void);
+	int FNCancelCheck(void);
 
 	int PrintErrorDescription(void);
 	int CheckConnection(void);

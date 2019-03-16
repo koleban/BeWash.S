@@ -278,12 +278,16 @@ PI_THREAD(KKMWatch)
 			if (settings->debugFlag.KKMWatch)
 				printf("%s\n", myNote);
 			settings->workFlag.KKMWatch = 0;
+			drv->Beep();
 			while (settings->threadFlag.KKMWatch)
 			{
 				time(&rawtime);
 				now = localtime(&rawtime);
 				fflush(stdout);
-				if (drv->CheckConnection() != 1)
+				int errCounter = 0;
+				while ((errCounter++ < 5) && (drv->CheckConnection() != 1))
+					delay_ms(100);
+				if ((errCounter >= 5) && (drv->CheckConnection() != 1))
 				{
 							if (!error)
 								printf ("[  CHK  ] Проверка связи с ККМ %s", asctime(now));
@@ -318,7 +322,9 @@ PI_THREAD(KKMWatch)
 						printf ("[THREAD] KKM: mode is incorrect ECRMode: %d\n", drv->ECRMode);
 				}
 				else
+				{
 					result = 0;
+				}
 
 				if (result == 0)
 				{
@@ -334,18 +340,29 @@ PI_THREAD(KKMWatch)
 						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
-						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Payment);
+						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
 						printf("[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);
-						CheckDevice(drv);
+//
 //						!!! LOG for payment !!!
+//
+						fflush(stdout);
+						delay_ms(100);
 						drv->CheckSubTotal();
 						printf ("Подытог чека: %f руб\n", drv->Summ1);
+						fflush(stdout);
+						delay_ms(100);
 						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
+						term_setattr(32);
 						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
+						term_setattr(37);
 						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))
 							printf("KKM: Close check ERROR %d %s\n", drv->ResultCode, drv->ResultCodeDescription);
-						delay_ms(settings->kkmParam.QueryTime*2);
+						fflush(stdout);
+						delay_ms(1000);
 						CheckDevice(drv);
+						fflush(stdout);
+
+						delay_ms(3000);
 					}
 				}
 				settings->workFlag.KKMWatch = 0;

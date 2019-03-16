@@ -32,8 +32,25 @@ PI_THREAD(ConsoleThread)
 		WORD valTemp1 = 0x0000;
 		WORD valTemp2 = 0x0000;
 		char strTemp[20];
+		char strTmp256[256];
 		switch(*((DWORD*)(command)))
 		{
+			case 0x316B6863:
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				break;
+			case 0x356B6863:
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 1);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 2);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 3);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 5);
+				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				break;
 			case 0x706C6568:
 				printf("Console command list\n");
 				printf("  mbus [read/write] [dev] [reg] [val]        - Read/write modbus device register\n");
@@ -42,6 +59,7 @@ PI_THREAD(ConsoleThread)
 				printf("  prg [val]                                  - Turn on program number [val]\n");
 				printf("  engw [val]                                 - Add [val] to full engine work time\n");
 				printf("  engz                                       - Clear engne full work time. Set time to 0\n");
+				printf("  chk1                                       - Add to queue KKM fiscal document on 1 rur\n");
 				break;
 			// mbus &
 			case 0x7375626D:
