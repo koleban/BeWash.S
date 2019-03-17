@@ -34,7 +34,8 @@ int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double pr
 
 	int res = drvFr->FNOperation();
 	if ((drvFr->ResultCode != 0) && (drvFr->ResultCode != 69) && (drvFr->ResultCode != 70))
-		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+		printf("KKM: Error [1] %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+	fflush(stdout);
 	return res;
 }
 //---------------------------------------------------------------------
@@ -74,11 +75,12 @@ int ClosePaymentDocument(DrvFR* drvFr, double Summ1 = 0, double Summ2 = 0, doubl
 	drvFr->RoundingSumm = 0;
 	drvFr->TaxType = settings->kkmParam.TaxType;
 
-	strncpy(drvFr->StringForPrinting, "", 40);
+    memset(drvFr->StringForPrinting, 0, sizeof(drvFr->StringForPrinting));
 
 	int res = drvFr->FNCloseCheckEx();
 	if ((drvFr->ResultCode != 0) && (drvFr->ResultCode != 69) && (drvFr->ResultCode != 70))
-		printf("KKM: Error %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+		printf("KKM: Error [2] %d %s\n", drvFr->ResultCode, drvFr->ResultCodeDescription);
+	fflush(stdout);
 	return res;
 }
 //---------------------------------------------------------------------
@@ -284,10 +286,7 @@ PI_THREAD(KKMWatch)
 				time(&rawtime);
 				now = localtime(&rawtime);
 				fflush(stdout);
-				int errCounter = 0;
-				while ((errCounter++ < 5) && (drv->CheckConnection() != 1))
-					delay_ms(100);
-				if ((errCounter >= 5) && (drv->CheckConnection() != 1))
+				if (drv->CheckConnection() != 1)
 				{
 							if (!error)
 								printf ("[  CHK  ] Проверка связи с ККМ %s", asctime(now));
@@ -335,6 +334,8 @@ PI_THREAD(KKMWatch)
 							printf("[THREAD] KKM: Обнаружена ОШИБКА. Сумма оплаты больше допустимой (1001 руб) : %d руб\n", valueKkm.eventId);
 							continue;
 						}
+						CheckDevice(drv);
+						delay_ms(1000);
 						result = OpenPaymentDocument();
 						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
 						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
@@ -342,15 +343,15 @@ PI_THREAD(KKMWatch)
 							printf("%s\n", myNote);
 						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
 						printf("[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);
+						fflush(stdout);
 //
 //						!!! LOG for payment !!!
 //
-						fflush(stdout);
-						delay_ms(100);
+						delay_ms(50);
 						drv->CheckSubTotal();
-						printf ("Подытог чека: %f руб\n", drv->Summ1);
-						fflush(stdout);
-						delay_ms(100);
+						delay_ms(50);
+						if (valueKkm.data1 == 0)
+							valueKkm.eventId++;
 						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						term_setattr(32);
 						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
@@ -374,7 +375,7 @@ PI_THREAD(KKMWatch)
 			drv->Disconnect();
 			printf("KKM: Connection ERROR\n");
 		}
-		delay_ms(settings->kkmParam.QueryTime * 5);
+		delay_ms(settings->kkmParam.QueryTime);
 	}
 	if (db->Close())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);

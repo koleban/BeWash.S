@@ -157,23 +157,19 @@ int DrvFR::Connect(void)
 		{
 		case NAK:
 			Connected = true;
-			#ifdef DEBUG
 			printf("fn: DrvFR::Connect - receive NAK\n");
-			#endif
 			if (GetECRStatus() < 0) { tries++; continue; }
 			if (GetDeviceMetrics() < 0) { tries++; continue; }
 			return 1;
 		case ACK:
 			Connected = true;
-			#ifdef DEBUG
 			printf("fn: DrvFR::Connect - receive ACK\n");
-			#endif
 			conn->readanswer(&a);
 			conn->checkstate();
 			if (GetECRStatus() < 0) { tries++; usleep(500000); continue; }
 			if (GetDeviceMetrics() < 0) { tries++; usleep(500000); continue; }
 			return 1;
-		case -1:
+		case 0xFF:
 			tries++;
 		};
 	};
@@ -397,13 +393,9 @@ int DrvFR::GetECRStatus(void)
 	memset(&a, 0, sizeof(a));
 
 	if (!Connected) return -1;
-	fflush(stdout);
 	if (conn->sendcommand(GET_ECR_STATUS, Password, &p) < 0) return -1;
-	fflush(stdout);
 	if (conn->readanswer(&a) < 0) { return -1; }
-	fflush(stdout);
 	if (a.buff[0] != GET_ECR_STATUS) { return -1; }
-	fflush(stdout);
 	if (errhand(&a))	return  ResultCode;
 
 	OperatorNumber = a.buff[2];
@@ -2010,6 +2002,7 @@ int DrvFR::FNCloseCheckEx(void)
 	p.buff[117] = TaxType;
 
 	if (conn->sendcommand(FN_CLOSE_CHECK_EX, Password, &p) < 0) return -1;
+	delay_ms(50);
 	if (conn->readanswer(&a) < 0) return -1;
 	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_CLOSE_CHECK_EX & 0xFF))) return -1;
 
@@ -2127,20 +2120,23 @@ int DrvFR::CheckConnection(void)
 			Connected = true;
 			conn->readanswer(&a);
 			while ((tmout++ < 5) && (conn->checkstate() == ACK))
+			{
+				delay_ms(50);
 				conn->readanswer(&a);
+			}
 			return 1;
-		case -1:
+		case 0xFF:
 		#ifdef DEBUG
 			printf("fn: CheckConnection [ERR]\n");
 		#endif
 			tries++;
-		fflush(stdout);
-		};
-	};
+			fflush(stdout);
+		}
+	}
 	#ifdef DEBUG
 	printf("fn: CheckConnection FAILED[%d]\n", tries);
 	#endif
-	Connected = false;
+	Disconnect();
 	return -1;
 }
 //-----------------------------------------------------------------------------

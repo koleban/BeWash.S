@@ -27,26 +27,6 @@ using namespace DriverFR;
  **********************************************************/
 void DrvFR_Conn::PrintComm(command* cmd)
 {
-#ifdef DEBUG_CMD
-	char *s;
-	char *t;
-
-	int cmdLen = cmd->len;
-
-	if (cmd->len > 255) cmdLen = 255;
-	if (cmd->buff[0] == 0x11) return;
-	s = (char*)malloc(cmdLen * 3 * 3);
-	t = (char*)malloc(5);
-	memset(s, 0, cmd->len * 3 * 3);
-	for (int i = 0; i < cmd->len; i++)
-	{
-		sprintf(t, "%02X|", (int)cmd->buff[i]);
-		s = strcat(s, t);
-	}
-	s = strcat(s, "\n");
-	printf("%s", s);
-	fflush(stdout);
-#endif
 };
 //--------------------------------------------------------------------------------------
 void DrvFR_Conn::settimeout(int msec)
@@ -77,17 +57,17 @@ int DrvFR_Conn::opendev()
 	}
 	else if (drvFR->ConnectionType == TConnectionType::ctSocket)
 	{
-		#ifdef DEBUG
+//		#ifdef DEBUG
 		printf("DrvFR_Conn::opendev:\n  Password: %d\n  Timeout: %d\n  IP: %s\n", drvFR->Password, drvFR->Timeout, drvFR->IPAddress);
-		#endif
+//		#endif
 		struct sockaddr_in addr;
 		devfile = socket(AF_INET, SOCK_STREAM, 0);
 		signal(SIGPIPE, SIG_IGN);
 		if (devfile < 0) return -1;
 
 		struct timeval timeout;
-		timeout.tv_sec = (int)(drvFR->Timeout / 1000);
-		timeout.tv_usec = (int)(drvFR->Timeout % 1000)*1000;
+		timeout.tv_sec = 3;
+		timeout.tv_usec = 0;
 
 		int trueVal = 1;
 		if (setsockopt (devfile, SOL_SOCKET, SO_REUSEADDR, (const char*)&trueVal,
@@ -130,6 +110,7 @@ int DrvFR_Conn::opendev()
 		int res = connect(devfile, (struct sockaddr *)&addr, sizeof(addr));
 
 		if ( res < 0) { return -1; }
+		connected = 1;
 	}
 	else
 	{
@@ -200,6 +181,10 @@ int DrvFR_Conn::sendNAK(void)
 	else if (drvFR->ConnectionType == TConnectionType::ctSocket)
 	{
 		usleep(100);
+		#ifdef DEBUG_CMD
+		printf(">> (1) %02X NAK\n", NAK);
+		fflush(stdout);
+		#endif
 		return send(devfile, buff, 1, 0);
 	}
 }
@@ -213,6 +198,10 @@ int DrvFR_Conn::sendACK(void)
 	else if (drvFR->ConnectionType == TConnectionType::ctSocket)
 	{
 		usleep(100);
+		#ifdef DEBUG_CMD
+		printf(">> (1) %02X ACK\n", ACK);
+		fflush(stdout);
+		#endif
 		return send(devfile, buff, 1, 0);
 	}
 }
@@ -226,6 +215,10 @@ int DrvFR_Conn::sendENQ(void)
 	else if (drvFR->ConnectionType == TConnectionType::ctSocket)
 	{
 		usleep(100);
+		#ifdef DEBUG_CMD
+		printf(">> (1) %02X ENQ\n", ENQ);
+		fflush(stdout);
+		#endif
 		return send(devfile, buff, 1, 0);
 	}
 }
@@ -285,8 +278,17 @@ unsigned char DrvFR_Conn::readbyte(int msec)
 		while (netTimeout++ < (msec / 1000))
 		{
 			int recv_bytes = recv(devfile, readbuff, 1, 0);
-			//int recv_bytes = recv(devfile, readbuff, 1, MSG_WAITALL);
-			if (recv_bytes > 0)  return readbuff[0];
+			if (recv_bytes > 0)
+			{
+				#ifdef DEBUG_CMD
+				printf("<< (%d) ", recv_bytes);
+				for (int index=0; index < recv_bytes; index++)
+					printf("%02X ", readbuff[index]);
+				printf("  [readbyte]\n");
+				fflush(stdout);
+				#endif
+				return readbuff[0];
+			}
 		}
 		if ((netTimeout >= msec / 1000))
 		{
@@ -294,7 +296,7 @@ unsigned char DrvFR_Conn::readbyte(int msec)
 			return 0xFF;
 		}
 	}
-	return 0;
+	return 0xFF;
 }
 //--------------------------------------------------------------------------------------
 int DrvFR_Conn::readbytes(unsigned char *buff, int len)
@@ -319,7 +321,17 @@ int DrvFR_Conn::readbytes(unsigned char *buff, int len)
 			bytes = recv(devfile, (buff + index), len - index, MSG_DONTWAIT);
 			if (bytes > 0) { index += bytes; netTimeout = 0; if (bytes >= len) break; }
 		}
-		return bytes;
+		#ifdef DEBUG_CMD
+		if (index > 0)
+		{
+			printf("<< (%d) ", index);
+			for (int i=0; i < index; i++)
+				printf("%02X ", buff[i]);
+			printf("  [readbytes]\n");
+			fflush(stdout);
+		}
+		#endif
+		return index;
 	}
 	return 0;
 }
@@ -329,32 +341,10 @@ int DrvFR_Conn::checkstate(void)
 	unsigned char readbuff[255];
 	unsigned char repl;
 
-	connected = sendENQ();
-	repl = readbyte(drvFR->Timeout);
 	if (connected == 0) return -1;
-	switch (repl)
-	{
-	case NAK:
-	#ifdef DEBUG
-		printf ("fr_conn: recv NAK\n");
-	#endif
-		return NAK;
-	case ACK:
-	#ifdef DEBUG
-		printf ("fr_conn: recv ACK\n");
-	#endif
-		return ACK;
-	case 0xFF:
-	#ifdef DEBUG
-		printf ("fr_conn: recv EMPTY [%02X]\n", repl);
-	#endif
-		return 0xFF;
-	default:
-	#ifdef DEBUG
-		printf ("fr_conn: recv TRASH [%d bytes]\n", clearanswer());
-	#endif
-		return -1;
-	};
+	connected = sendENQ();
+	usleep(100);
+	return readbyte(drvFR->Timeout);
 };
 //--------------------------------------------------------------------------------------
 int DrvFR_Conn::sendcommand(int comm, int pass, parameter *param)
@@ -363,37 +353,8 @@ int DrvFR_Conn::sendcommand(int comm, int pass, parameter *param)
 	command cmd;
 	memset(&cmd, 0, sizeof(cmd));
 	composecomm(&cmd, comm, pass, param);
-#ifdef DEBUG_CMD
-	PrintComm(&cmd);
-#endif
-
 	int state = 0;
 	answer      a;
-
-	tries = 1;
-	bool flag = false;
-	while (tries < MAX_TRIES && !flag)
-	{
-		state = checkstate();
-		switch (state)
-		{
-		case NAK:
-			flag = true;
-			break;
-		case ACK:
-			memset(&a, 0, sizeof(a));
-			readanswer(&a);
-			//clearanswer();
-			flag = true;
-			break;
-		case -1:
-			tries++;
-			usleep(10000);
-		};
-	};
-
-	if (!flag)
-		return -1;
 
 	for (tries = 1; tries <= MAX_TRIES; tries++)
 	{
@@ -401,15 +362,25 @@ int DrvFR_Conn::sendcommand(int comm, int pass, parameter *param)
 		if (drvFR->ConnectionType == TConnectionType::ctLocal)
 			send_status = write(devfile, cmd.buff, cmd.len);
 		else if (drvFR->ConnectionType == TConnectionType::ctSocket)
+		{
+			#ifdef DEBUG_CMD
+			if (cmd.len > 0)
+			{
+				printf(">> (%d) ", cmd.len);
+				for (int index=0; index < cmd.len; index++)
+					printf("%02X ", cmd.buff[index]);
+				printf("  [sendcommand]\n");
+				fflush(stdout);
+			}
+			#endif
 			send_status = send(devfile, cmd.buff, cmd.len, 0);
+		}
 		if (send_status != -1)
 		{
+			repl = readbyte(drvFR->Timeout*2);
+			if (repl == ACK) return 1;
 			repl = readbyte(drvFR->Timeout);
-			if (connected != 0)
-			{
-				if (repl == ACK)
-					return 1;
-			};
+			if (repl == ACK) return 1;
 		};
 	};
 	return -1;
@@ -419,57 +390,46 @@ int DrvFR_Conn::readanswer(answer *ans)
 {
 	answer tmp11;
 	short int  len, crc, tries, repl;
-	for (tries = 0; tries < MAX_TRIES; tries++)
+
+	if (connected == 1)
 	{
 		memset(ans, 0, sizeof(tmp11));
 		repl = readbyte(drvFR->Timeout);
-		if (connected == 1)
+		if (repl == STX)
 		{
-			if (repl == STX)
+			len = readbyte(drvFR->Timeout);
+			int recv_bytes = readbytes(ans->buff, len) ;
+			ans->len = recv_bytes;
+			if ( recv_bytes == len)
 			{
-				len = readbyte(drvFR->Timeout);
-				if (connected == 1)
+				crc = readbyte(drvFR->Timeout);
+				if (connected != 0)
 				{
-					int recv_bytes = readbytes(ans->buff, len) ;
-					ans->len = recv_bytes;
-					#ifdef DEBUG_CMD
-					if (ans->buff[0] != 0x11)
-						printf ("readanswer: rcv bytes %d - %d\n", recv_bytes, len);
-					#endif
-					if ( recv_bytes == len)
+					if (crc == (LRC(ans->buff, len, 0) ^ len))
 					{
-						crc = readbyte(drvFR->Timeout);
-						if (connected != 0)
-						{
-							if (crc == (LRC(ans->buff, len, 0) ^ len))
-							{
-								#ifdef DEBUG_CMD
-								if (ans->buff[0] != 0x11)
-									printf("CMD READ: Send ACK (CRC OK)\n");
-								PrintComm((command*)ans);
-								#endif
-								sendACK();
-								ans->len = len;
-								return len;
-							}
-							else
-							{
-								sendNAK();
-								#ifdef DEBUG_CMD
-								if (ans->buff[0] != 0x11)
-									printf("CMD READ: Send NAK\n");
-								PrintComm((command*)ans);
-								#endif
-							}
-						}
+						sendACK();
+						ans->len = len;
+						return len;
+					}
+					else
+					{
+						sendNAK();
 					}
 				}
 			}
+			else
+			{
+				sendNAK();
+			}
 		}
-		sendENQ();
-		repl = readbyte(drvFR->Timeout);
-		if (connected != 1 || repl != ACK) tries++;
-	};
+		else
+		{
+			sendNAK();
+		}
+
+//		repl = readbyte(drvFR->Timeout);
+//		if (connected != 1 || repl != ACK) tries++;
+	}
 	return -1;
 }
 //--------------------------------------------------------------------------------------

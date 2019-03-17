@@ -5,6 +5,15 @@
 
 #include <time.h>
 
+#define DWORD			unsigned int
+#define WORD			unsigned short
+#define BYTE			unsigned char
+#define SDWORD			int
+
+void delay(DWORD delay);
+void delay_ms(DWORD delay);
+void delay_us(DWORD delay);
+
 namespace DriverFR
 {
 
