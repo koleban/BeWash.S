@@ -5,9 +5,9 @@
 //#define CRYPTOPP
 //#define __SECURITY_DEBUG_
 
-//#ifndef _RFID_DEVICE_CRT288K_
-//#define _RFID_DEVICE_CRT288K_
-//#endif
+#ifndef _RFID_DEVICE_CRT288K_
+#define _RFID_DEVICE_CRT288K_
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
