@@ -350,8 +350,6 @@ PI_THREAD(KKMWatch)
 						delay_ms(50);
 						drv->CheckSubTotal();
 						delay_ms(50);
-						if (valueKkm.data1 == 0)
-							valueKkm.eventId++;
 						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						term_setattr(32);
 						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);

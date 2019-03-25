@@ -11,7 +11,7 @@ PI_THREAD(ButtonWatch)
 	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button: Button thread init");
 	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button panel device opened");
 
-	if (settings->debugFlag.ButtonWatch) 
+	if (settings->debugFlag.ButtonWatch)
 		printf("[DEBUG] ButtonWatch: Debug information is showed\n");
 
 	int index;
@@ -22,6 +22,28 @@ PI_THREAD(ButtonWatch)
 	status.extDeviceInfo.button_lastEvent = 255;
 	status.extDeviceInfo.button_newEvent = 100;
 
+	if (settings->debugFlag.ButtonWatch)
+		printf("[DEBUG] ButtonWatch: Check pin communication\n");
+	BYTE wtMcp = 10;
+	while (wtMcp > 3)
+	{
+		wtMcp = 0;
+		for (index = 0; index < 13; index++)
+		{
+			currentDeviceID = DVC_BUTTON01 + index;
+			if (!settings->getEnabledDevice(currentDeviceID))
+				continue;
+			currentPin = settings->getPinConfig(currentDeviceID, 1);
+			if (currentPin == 0xFF) continue;
+			setGPIOState(currentPin, 0);
+			setPinModeMy(currentPin, PIN_INPUT);
+
+  			if (getGPIOState(currentPin)) wtMcp++;
+		}
+		delay_ms(1000);
+	}
+	if (settings->debugFlag.ButtonWatch)
+		printf("[DEBUG] ButtonWatch: Check pin communication ... OK\n");
 	///
 	/// Установим первоначальные параметры кнопок
 	/// (0 - 12 кнопку + Кнопка инкасации 13)
