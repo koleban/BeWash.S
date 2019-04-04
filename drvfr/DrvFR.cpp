@@ -2161,3 +2161,29 @@ int DrvFR::FNCancelCheck(void)
 	return 0;
 }
 //-----------------------------------------------------------------------------
+int FNGetInfoExchangeStatus(void)
+{
+	parameter  p;
+	answer     a;
+	memset(&p, 0, sizeof(p));
+	memset(&a, 0, sizeof(a));
+
+
+	if (!Connected) return -1;
+
+	p.len = 5;
+
+	if (conn->sendcommand(FN_FNGETINFOEXCHANGESTATUS, Password, &p) < 0) return -1;
+	if (conn->readanswer(&a) < 0) return -1;
+	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_FNGETINFOEXCHANGESTATUS & 0xFF))) return -1;
+
+	/*
+	OperatorNumber = a.buff[2];
+	SessionNumber = evalint((unsigned char*)&a.buff + 3, 2);
+	*/
+
+	if (errhand(&a) != 0) return ResultCode;
+
+	return 0;
+}
+//-----------------------------------------------------------------------------

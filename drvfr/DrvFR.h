@@ -120,6 +120,7 @@ namespace DriverFR
 #define FN_GET_STATUS				0xFF01
 #define FN_CLOSE_CHECK_EX			0xFF45
 #define FN_OPERATION				0xFF46
+#define FN_FNGETINFOEXCHANGESTATUS	0xFF39
 
 #define false			0
 #define true			1
@@ -505,6 +506,7 @@ public:
 	int FNOpenSession(void);
 	int FNCloseSession(void);
 	int FNCancelCheck(void);
+	int FNGetInfoExchangeStatus(void);
 
 	int PrintErrorDescription(void);
 	int CheckConnection(void);

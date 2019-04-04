@@ -281,6 +281,8 @@ PI_THREAD(KKMWatch)
 				printf("%s\n", myNote);
 			settings->workFlag.KKMWatch = 0;
 			drv->Beep();
+			delay_ms(200);
+			drv->FNGetInfoExchangeStatus();
 			while (settings->threadFlag.KKMWatch)
 			{
 				time(&rawtime);
