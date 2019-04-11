@@ -134,7 +134,7 @@ int thServiceSetupCashEngWork(Settings* settings)
 
 		printf("  ===> Get opened workspace\n");
 		if (commonDb->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
-			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+			{ printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage); return 0; }
 
 		if (emptyTime != param1[1])
 		{
@@ -160,9 +160,9 @@ int thServiceSetupCashEngWork(Settings* settings)
 		{
 			printf("  ===> Open new workspace\n");
 			if (commonDb->Query(DB_QUERY_TYPE_WORKSPACE_OPEN, NULL, NULL))
-				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+				{ printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage); return 0; }
 			else if (commonDb->Query(DB_QUERY_TYPE_GET_OPENED_WORKSPACE, NULL, param1))
-				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+				{ printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage); return 0; }
 			else
 			{
 				wrkOpenedFlag = 1;
