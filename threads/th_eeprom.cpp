@@ -4,7 +4,9 @@
 #define EP_ADDR_MONEY			0x0007	// 4
 #define EP_ADDR_ENGWRKTIME		0x000B	// 4
 #define EP_ADDR_WORKSPACE		0x000F	// 4
-#define EP_ADDR_PRG_PRICE		0x0013	// 12 0x1F
+#define EP_ADDR_PRG_PRICE		0x0013	// 12x4 byte (48) 0x30 byte
+#define EP_ADDR_PRG_BP_PRICE	0x0043	// 12x4 byte (48) 0x30 byte
+#define EP_ADDR_LAST_PRG_OSMOS	0x0073	// 2
 
 DWORD readFromEEPROM_DWORD(EEPROM* eeprom, WORD addr, BYTE* errorCode = NULL)
 {
@@ -88,6 +90,7 @@ PI_THREAD(EepromThread)
 	Settings* 		settings 	= Settings::getInstance();
 	int firstRun = 1;
 	int counter = 0;
+	int osmosLastPrg = 0;
 	while (settings->useEeprom)
 	{
 		if (!settings->useEeprom) {delay_ms(1000); continue;}
@@ -184,6 +187,38 @@ PI_THREAD(EepromThread)
 			sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%02d %02d:%02d    ",
 				localTime.tm_mday, localTime.tm_mon+1, localTime.tm_year - 100,
 				localTime.tm_hour, localTime.tm_min);
+		}
+
+		if ((int)wrkOpenedDateTime != wrkDateTime)
+		{
+			wrkDateTime = (int)wrkOpenedDateTime;
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_WORKSPACE, wrkDateTime);
+		}
+
+		//////////////
+		/// EEPROM LAST PRG OSMOS
+		//////////////
+
+		BYTE errorCodeRead = 0;
+		if (firstRun)
+		{
+			osmosLastPrg = readFromEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, &errorCodeRead);
+//			printf("[EEPROM]: Read OSMOS last prg %d (err: %02X)\n", osmosLastPrg, errorCodeRead);
+			if (osmosLastPrg > 6) osmosLastPrg = 2;
+			status.extDeviceInfo.button_newEvent = osmosLastPrg;
+			status.extDeviceInfo.button_lastEvent = osmosLastPrg;
+			status.extDeviceInfo.button_currentLight = osmosLastPrg+1;
+			status.intDeviceInfo.program_currentProgram = osmosLastPrg;
+			status.intDeviceInfo.extPrgNeedUpdate = 1;
+		}
+
+		if ((readFromEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, &errorCodeRead) != status.intDeviceInfo.program_currentProgram)
+			&& (status.intDeviceInfo.program_currentProgram < 5))
+		{
+//			osmosLastPrg = status.intDeviceInfo.program_currentProgram;
+			printf ("EEPROM: Write osmosLastPrg %d !!!\n", osmosLastPrg);
+			if (writeToEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, osmosLastPrg) > 0)
+				printf ("EEPROM: Write ERROR !!!\n");
 		}
 
 		if ((int)wrkOpenedDateTime != wrkDateTime)

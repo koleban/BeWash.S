@@ -1,3 +1,4 @@
+//#pragma message "Compiling ..."
 //#include <iostream>
 //#include <queue>
 //using namespace std;
@@ -162,6 +163,8 @@ PI_THREAD(VoiceWatch);
 
 PI_THREAD(RemoteCounterCtrlWatch);
 PI_THREAD(AlienDeviceWatch);
+
+PI_THREAD(OsmosWatch);
 
 // ����������
 extern Settings* 		settings;

@@ -32,6 +32,7 @@ Settings::Settings()
 	memset(&intErrorCode, 0, sizeof(intErrorCode));
 	memset(&extErrorCode, 0, sizeof(extErrorCode));
 	memset(&kkmParam, 0, sizeof(kkmParam));
+	memset(&osmosParam, 0, sizeof(osmosParam));
 	memset(&remoteCounterParam, 0, sizeof(remoteCounterParam));
 	memset(&remoteCounter, 0, sizeof(remoteCounter));
 	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
@@ -182,6 +183,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.VoiceWatch				= iniparser_getuint(ini, "ThreadFlag:VoiceWatch", 	0);
 	threadFlag.RemoteCounterCtrlThread	= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
 	threadFlag.AlienDeviceThread		= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
+	threadFlag.OsmosThread				= iniparser_getuint(ini, "ThreadFlag:OsmosThread", 	0);
 
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
@@ -209,6 +211,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.VoiceWatch				= (debugFlag.DebugThread == 1) && threadFlag.VoiceWatch;
 	debugFlag.RemoteCounterCtrlThread	= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
 	debugFlag.AlienDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
+	debugFlag.OsmosThread				= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:OsmosThread", 	0);
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
@@ -223,6 +226,12 @@ bool Settings::loadConfig (char* fileName)
 	kkmParam.kkmPass 						= (BYTE)iniparser_getuint(ini, 	"KKM:PASS",			30);
 	kkmParam.QueryTime						= iniparser_getuint(ini, 	"KKM:QueryTime",			10000);
 	kkmParam.TaxType						= iniparser_getuint(ini, 	"KKM:TaxType",			8); // ENVD
+
+	osmosParam.gidrodynWaitTime				= iniparser_getuint(ini, 	"OSMOS:gidrodynWaitTime",			600);
+	osmosParam.gidrodynTurnOnTime			= iniparser_getuint(ini, 	"OSMOS:gidrodynTurnOnTime",			60);
+	osmosParam.waitOnFull					= iniparser_getuint(ini, 	"OSMOS:waitOnFull",					600);
+	osmosParam.permiatLoadTime				= iniparser_getuint(ini, 	"OSMOS:permiatLoadTime",			300);
+	osmosParam.waitOnEmpty					= iniparser_getuint(ini, 	"OSMOS:waitOnEmpty",				600);
 
 	remoteCounterParam.DocumentCreationTime	= iniparser_getuint(ini, 	"RemoteCounterParam:DocumentCreationTime",			45);
 	remoteCounterParam.PriceIN1				= iniparser_getuint(ini, 	"RemoteCounterParam:PriceIN1",						1);

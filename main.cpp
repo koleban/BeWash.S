@@ -296,6 +296,8 @@ int main(int argc, char *argv[])
 	piThreadCreate(RemoteCounterCtrlWatch);
 	piThreadCreate(AlienDeviceWatch);
 
+	piThreadCreate(OsmosWatch);
+
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;
 	sprintf(iddqd, "%s%d", "", 0);

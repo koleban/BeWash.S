@@ -2161,7 +2161,7 @@ int DrvFR::FNCancelCheck(void)
 	return 0;
 }
 //-----------------------------------------------------------------------------
-int FNGetInfoExchangeStatus(void)
+int DrvFR::FNGetInfoExchangeStatus(void)
 {
 	parameter  p;
 	answer     a;

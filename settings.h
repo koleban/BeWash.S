@@ -86,6 +86,9 @@
 #define DVC_ERROR_LED_3							86
 #define DVC_ERROR_LED_4							87
 
+#define DVC_OSMOS_BANK_FULL						88
+#define DVC_OSMOS_LOW_PRESSURE					89
+
 #define DVC_GPIO_EXTENDER_RESET					90
 #define DVC_GPIO_EXTENDER_SENSOR1				91
 #define DVC_GPIO_EXTENDER_SENSOR2				92
@@ -193,6 +196,7 @@ struct ThreadFlag
 	BYTE VoiceWatch;				// БОКС ПОПОЛНЕНИЯ: Процесс голосового оповещения
 	BYTE RemoteCounterCtrlThread;	// СЧЕТЧИК НА УДАЛЕННЫХ АППАРАТАХ: Процесс для обработки данных с контроллеров на стороннем оборудовании
 	BYTE AlienDeviceThread;			// СЧЕТЧИК НА УДАЛЕННЫХ АППАРАТАХ: Процесс для формирования чеков и сбора данных со стороннего оборудования
+	BYTE OsmosThread;				// ПОТОК ОСМОСА: Управление установкой ОСМОСа
 };
 
 struct ErrorFlag
@@ -259,6 +263,15 @@ struct Modbus
 	int dataBit;				// Количество битов данных
 	int stopBit;				// Стоповые биты
 	int slaveCount;				// Количество управляемых устройств [0..12]
+};
+
+struct Osmos
+{
+	int gidrodynWaitTime;		// Промежуток в сек. между которыми включается ГИДРОДИНАМИЧЕСКАЯ ПРОМЫВКА на программе РАБОТА
+	int gidrodynTurnOnTime;		// Время в сек. на которыми включается ГИДРОДИНАМИЧЕСКАЯ ПРОМЫВКА на программе РАБОТА
+	int waitOnFull;				// Время в сек. долива емкости
+	int permiatLoadTime;		// Время в сек. заполнения колон ПЕРМИАТОМ
+	int waitOnEmpty;			// Время в сек. расхода из емкости до старта набора
 };
 
 struct NetServerConfig
@@ -387,6 +400,10 @@ public:
 	//
 	// Работа с ККМ
 	KKMParam					kkmParam;
+
+	//
+	// Параметры ОСМОСа
+	Osmos						osmosParam;
 
 	//
 	// Параметры счетчика чужих устройств
