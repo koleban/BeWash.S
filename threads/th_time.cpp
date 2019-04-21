@@ -10,6 +10,7 @@ PI_THREAD(TimeTickThread)
 	Settings* 		settings 	= Settings::getInstance();
 	if (!settings->threadFlag.TimeTickThread) return (void*)0;
 	int prgPrice = settings->progPrice[status.intDeviceInfo.program_currentProgram];
+	int progStopBP = settings->progStopBP[status.intDeviceInfo.program_currentProgram];
 	int prgDelay = 0;
 	if (prgPrice > 0)
 		prgDelay = (int)(60000/prgPrice);
@@ -22,6 +23,11 @@ PI_THREAD(TimeTickThread)
 		settings->workFlag.TimeTickThread = 0;
 		settings->busyFlag.TimeTickThread++;
 		prgPrice = settings->progPrice[status.intDeviceInfo.program_currentProgram];
+		if ((prgPrice > 0) && (settings->discountSize != 0))
+			prgPrice = ((long)(settings->progPrice[status.intDeviceInfo.program_currentProgram]
+					- (settings->progPrice[status.intDeviceInfo.program_currentProgram] * (((double)settings->discountSize)/100))));
+		if (prgPrice < 1) prgPrice = 1;
+		progStopBP = settings->progStopBP[status.intDeviceInfo.program_currentProgram];
 		prgDelay = 0;
 		if (prgPrice > 0)
 			prgDelay = (int)(60000/prgPrice);
@@ -29,16 +35,17 @@ PI_THREAD(TimeTickThread)
 		/// ************************************************************
 		//  ÎÁÐÀÁÎÒÊÀ ÇÀÄÅÐÆÊÈ ÄËß ÂÊËÞ×ÅÍÈÉ ÏÐÎÃÐÀÌÌÛ ÐÓÁËÈ => ÑÅÊÓÍÄÛ
 		/// ************************************************************
+		int currPrg_Tmp = status.intDeviceInfo.program_currentProgram;
 		int dCounter = 100;
 		while (dCounter-- > 1)
 		{
 			if (prgPrice > 0)
 			{
 				settings->workFlag.TimeTickThread = 0;
-				if (settings->progPrice[status.intDeviceInfo.program_currentProgram] > 0)
-					prgDelay = (int)(60000/settings->progPrice[status.intDeviceInfo.program_currentProgram]);
+				//if (settings->progPrice[status.intDeviceInfo.program_currentProgram] > 0)
+				//	prgDelay = (int)(60000/settings->progPrice[status.intDeviceInfo.program_currentProgram]);
 				prgDelay = (int)(60000/prgPrice);
-				if (settings->progPrice[status.intDeviceInfo.program_currentProgram] != prgPrice) break;
+				if (status.intDeviceInfo.program_currentProgram != currPrg_Tmp) break;
 				usleep(prgDelay*10);
 			}
 		}
@@ -58,7 +65,15 @@ PI_THREAD(TimeTickThread)
 				    (settings->progWinterDelay[status.intDeviceInfo.program_currentProgram] > 0)
 				   )
 					printf("[DEBUG] TIMER: Done winter time for engine work [%d]\n", winterDelay-1);
-				status.intDeviceInfo.money_currentBalance--;
+				if (progStopBP == 0)
+				{
+					status.intDeviceInfo.money_currentBalance--;
+				}
+				else
+				{
+					if (!engine->bypassMode)
+						status.intDeviceInfo.money_currentBalance--;
+				}
 			}
 			else
 			{
