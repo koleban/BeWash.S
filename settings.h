@@ -46,7 +46,17 @@
 #define DVC_BUTTON_COLLECTION					33		//Кнопка "инкасация"
 
 #define DVC_ENGINE								35		//Двигатель
+
+#define DVC_BUTTON_OUT_COIN						41		//Кнопка выдачи жетонов
+#define DVC_SENSOR_EMPTY_COIN					42		//Датчик отсутсвия жетонов в хоппере
+#define DVC_RELAY_OUT_COIN						43		//Сигнал на выдачу жетонов
+
 #define DVC_SENSOR_BYPASS						45		//Датчик потока
+
+#define DVC_BUTTON_OUT_RFID_CARD				46		//Кнопка выдачи карты лояльности
+#define DVC_SENSOR_EMPTY_RFID_CARD				47		//Датчик отсутсвия карт в диспенсере
+#define DVC_RELAY_OUT_RFID_CARD					48		//Сигнал на выдачу карты лояльности
+
 
 #define DVC_RELAY01								51		//Реле 1
 #define DVC_RELAY02								52
@@ -197,6 +207,7 @@ struct ThreadFlag
 	BYTE RemoteCounterCtrlThread;	// СЧЕТЧИК НА УДАЛЕННЫХ АППАРАТАХ: Процесс для обработки данных с контроллеров на стороннем оборудовании
 	BYTE AlienDeviceThread;			// СЧЕТЧИК НА УДАЛЕННЫХ АППАРАТАХ: Процесс для формирования чеков и сбора данных со стороннего оборудования
 	BYTE OsmosThread;				// ПОТОК ОСМОСА: Управление установкой ОСМОСа
+	BYTE ButtonTerminalThread;		// ПОТОК терминала пополнения, выдачи карт и жетонов
 };
 
 struct ErrorFlag
@@ -377,6 +388,9 @@ public:
 	// Управление программами мойки
 	BYTE		 		progEnabled[16];		// Разрешение использования программ
 	BYTE		 		progPrice[16];			// Стоимость минуты для каждой программы
+												// prgPrice[14] Стоимость КАРТЫ для диспенсера карт
+												// prgPrice[15] Стоимость Жетона для хоппера
+	BYTE		 		progStopBP[16];			// Останавливать отсчет времени при Байпассе
 	char				progName[16][30];		// Имена программ
 	DWORD		 		progRelay[16];			//
 	DWORD		 		progRelayBp[16];		//

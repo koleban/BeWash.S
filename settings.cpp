@@ -13,6 +13,7 @@ Settings::Settings()
 	memset(&enabledDevice, 	0x00, sizeof(enabledDevice));
 	memset(&pinDevice, 		0xFF, sizeof(pinDevice));
 	memset(&progPrice, 		0x00, sizeof(progPrice));
+	memset(&progStopBP, 	0x00, sizeof(progStopBP));
 	memset(&progEnabled, 	0x01, sizeof(progEnabled));
 	memset(&progName,		0x00, sizeof(progName));
 	memset(&progRelay,		0xFF, sizeof(progRelay));
@@ -184,7 +185,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.RemoteCounterCtrlThread	= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
 	threadFlag.AlienDeviceThread		= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
 	threadFlag.OsmosThread				= iniparser_getuint(ini, "ThreadFlag:OsmosThread", 	0);
-
+	threadFlag.ButtonTerminalThread		= iniparser_getuint(ini, "ThreadFlag:ButtonTerminalThread", 	0);
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
 	debugFlag.NetServer					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:NetServer", 		0);
@@ -212,6 +213,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.RemoteCounterCtrlThread	= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
 	debugFlag.AlienDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
 	debugFlag.OsmosThread				= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:OsmosThread", 	0);
+	debugFlag.ButtonTerminalThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonTerminalThread", 	0);
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
@@ -274,6 +276,9 @@ bool Settings::loadConfig (char* fileName)
 	{
 		sprintf(paramName, 	"PrgConfig:PRG%02d_PRICE", index);
 		progPrice[index]						= iniparser_getuint(ini, paramName, 0);
+
+		sprintf(paramName, 	"PrgConfig:PRG%02d_STOP_BP", index);
+		progStopBP[index]						= iniparser_getuint(ini, paramName, 0);
 
 		sprintf(paramName, 	"PrgConfig:PRG%02d_ENABLED", index);
 		progEnabled[index]						= iniparser_getuint(ini, paramName, 0);

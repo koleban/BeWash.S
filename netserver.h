@@ -5,13 +5,14 @@
 #define CMD_CLEAR_MONEY_COIN_INFO	0x11
 #define CMD_SET_EXT_PRG				0x12
 
-#define CMD_SRV_GET_DEVICE_INFO			0x20
+#define CMD_SRV_GET_DEVICE_INFO		0x20
 #define CMD_SRV_ADD_MONEY			0x21
 #define CMD_SRV_SET_EXT_PRG			0x22
 #define CMD_SRV_RELOAD_APP			0x23
 #define CMD_SRV_GET_APP_VER			0x24
-#define CMD_SRV_GET_DEV_TYPE			0x25
-#define CMD_SRV_GET_SERIAL_NUMBER		0x26	// Вернуть идентификатор
+#define CMD_SRV_GET_DEV_TYPE		0x25
+#define CMD_SRV_GET_SERIAL_NUMBER	0x26	// Вернуть идентификатор
+#define CMD_ADD_MONEY				0x27
 		// 0xFF	-	Error
 		// 0x01 -	threadFlag.ExtCommonThread
 		// 0x02 -	threadFlag.IntCommonThread

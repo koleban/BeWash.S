@@ -203,7 +203,7 @@ PI_THREAD(EepromThread)
 		if (firstRun)
 		{
 			osmosLastPrg = readFromEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, &errorCodeRead);
-//			printf("[EEPROM]: Read OSMOS last prg %d (err: %02X)\n", osmosLastPrg, errorCodeRead);
+			printf("[EEPROM]: Read OSMOS last prg %d (err: %02X)\n", osmosLastPrg, errorCodeRead);
 			if (osmosLastPrg > 6) osmosLastPrg = 2;
 			status.extDeviceInfo.button_newEvent = osmosLastPrg;
 			status.extDeviceInfo.button_lastEvent = osmosLastPrg;
@@ -215,7 +215,7 @@ PI_THREAD(EepromThread)
 		if ((readFromEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, &errorCodeRead) != status.intDeviceInfo.program_currentProgram)
 			&& (status.intDeviceInfo.program_currentProgram < 5))
 		{
-//			osmosLastPrg = status.intDeviceInfo.program_currentProgram;
+			osmosLastPrg = status.intDeviceInfo.program_currentProgram;
 			printf ("EEPROM: Write osmosLastPrg %d !!!\n", osmosLastPrg);
 			if (writeToEEPROM_DWORD(eeprom, EP_ADDR_LAST_PRG_OSMOS, osmosLastPrg) > 0)
 				printf ("EEPROM: Write ERROR !!!\n");

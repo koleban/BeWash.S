@@ -399,13 +399,13 @@ PI_THREAD(IntCommonThread)
 			lightTurnedOn = (status.intDeviceInfo.money_currentBalance>0);
 			turnedLight |= lightTurnedOn;
 			if (lightTurnedOn)
-				commonDevice_TurnLight(lightTurnedOn);
+				commonDevice_TurnLight(1);
 			else
 			{
 				if (turnedLight)
 				{
 					turnedLight = 0;
-					commonDevice_TurnLight(lightTurnedOn);
+					commonDevice_TurnLight(0);
 				}
 			}
 		}

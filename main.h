@@ -101,7 +101,7 @@
 #endif
 
 #ifndef MAX_PARAM_ARRAY_ITEM
-#define MAX_PARAM_ARRAY_ITEM	20
+#define MAX_PARAM_ARRAY_ITEM	999
 #endif
 
 #define DWORD			unsigned int
@@ -165,6 +165,7 @@ PI_THREAD(RemoteCounterCtrlWatch);
 PI_THREAD(AlienDeviceWatch);
 
 PI_THREAD(OsmosWatch);
+PI_THREAD(ButtonTerminalWatch);
 
 // ����������
 extern Settings* 		settings;

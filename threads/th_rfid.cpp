@@ -26,6 +26,7 @@ PI_THREAD(RFIDWatch)
 	delay(2);
 	DWORD prevCard = 0;
 	int prevCardPresent = 0;
+	int connErrorCouter = 0;
 	while (settings->threadFlag.RFIDWatch)
 	{
 		rfidDevice->OpenDevice();
@@ -34,6 +35,7 @@ PI_THREAD(RFIDWatch)
 			rfidDevice->Lock(0);
 			while (settings->threadFlag.RFIDWatch)
 			{
+				connErrorCouter = 0;
 				settings->workFlag.RFIDWatch = 0;
 				int timeout_id = 0;
 				while ((timeout_id++ < 1000) && (settings->busyFlag.RFIDWatch)) {settings->workFlag.RFIDWatch = 0; delay_ms(1); continue;}
@@ -85,13 +87,17 @@ PI_THREAD(RFIDWatch)
 						#endif
 					}
 				}
-				// TODO!!! Delay ??? 
+				// TODO!!! Delay ???
 			}
 		}
+		else
+			connErrorCouter++;
 		rfidDevice->LockError();
 		delay(1);
 		rfidDevice->CloseDevice();
 		rfidDevice->Detect();
+		if (connErrorCouter > 5)
+			{ delay(60); connErrorCouter = 0; }
 	}
 	rfidDevice->LockError();
 	printf("[RFID]: Thread ended.\n");

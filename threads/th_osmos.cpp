@@ -50,6 +50,12 @@ PI_THREAD(OsmosWatch)
 	status.intDeviceInfo.extPrgNeedUpdate = 1;
 */
 
+	int currentLight = status.intDeviceInfo.program_currentProgram;
+	if ((settings->getEnabledDevice(DVC_BUTTON01 + currentLight)) && (settings->getPinConfig(DVC_BUTTON01 + currentLight, 1) != 0xFF)) continue;
+	currentPin = settings->getPinConfig(currentDeviceID, 1);
+	setPinModeMy(DVC_BUTTON01 + currentLight, PIN_OUTPUT);
+	setGPIOState(currentPin, 1);
+
 	while (settings->threadFlag.OsmosThread)
 	{
 		int delayTime = 100;
@@ -60,11 +66,13 @@ PI_THREAD(OsmosWatch)
 		/// Проверяем все кнопки на нажатие
 		///
 
+
 		for (index = 0; index < 12; index++)
 		{
 			currentDeviceID = DVC_BUTTON01 + index;
 
-			if (status.intDeviceInfo.program_currentProgram == index) continue;
+			if (currentLight == index) continue;
+			if ((status.intDeviceInfo.program_currentProgram == 5) && (index == 2)) continue;
 			if (!settings->getEnabledDevice(currentDeviceID)) continue;
 			currentPin = settings->getPinConfig(currentDeviceID, 1);
 			if (currentPin == 0xFF) continue;
@@ -78,10 +86,13 @@ PI_THREAD(OsmosWatch)
 				while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
 				if (timeout <= 0)
 				{
+
 					///
 					/// BUTON PRESSED OK
 					///
-
+					currentLight = index;
+					setPinModeMy(currentPin, PIN_OUTPUT);
+					setGPIOState(currentPin, 1);
 					if ((status.intDeviceInfo.program_currentProgram == 5) && (index == 2)) break;
 					if ((index == 2) && (bankFull)) break;
 
@@ -137,7 +148,6 @@ PI_THREAD(OsmosWatch)
 						time(&prg_timer);
 						break;
 					}
-					printf("[OsmosThread]: (prg:STOP0) BANK EMPTY wait ... (%d sec)\n", ((DWORD)rcv_timer_out - (DWORD)prg_timer));
 				}
 				if (prevPrg == status.intDeviceInfo.program_currentProgram) break;
 				prevPrg = status.intDeviceInfo.program_currentProgram;

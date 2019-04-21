@@ -118,7 +118,8 @@ PI_THREAD(NetServerClientThread)
 		BYTE* packetData = &ask[5];
 		unsigned long serial = 0xfFFFFFFF;
 
-		DeviceInfo* inDeviceInfo = (DeviceInfo*)packetData;
+		DeviceInfo* inDeviceInfo 	= (DeviceInfo*)packetData;
+		DWORD* addMoneyParam 		= (DWORD*)packetData;
 
 		memset(&answer[0], 0, sizeof(answer));
 		if (externalCtrl++ > 10) externalCtrl = 10;
@@ -162,6 +163,19 @@ PI_THREAD(NetServerClientThread)
 				*((WORD*)&answer[2]) = DataLen;
 				answer[4] = CMD;
 				memcpy(&answer[5], &status, sizeof(status));
+				send(myClient, answer, DataLen, 0);
+				break;
+			case CMD_ADD_MONEY:
+				if (settings->debugFlag.NetServer)
+					printf("[NETCTRL] Add money: %5d\n", *addMoneyParam);
+				status.intDeviceInfo.money_currentBalance += *addMoneyParam;
+				status.intDeviceInfo.allMoney += *addMoneyParam;
+				DataLen = sizeof(DWORD) + 5;
+				answer[0] = 0x02;
+				answer[1] = 0xFF;
+				*((WORD*)&answer[2]) = DataLen;
+				answer[4] = CMD;
+				memcpy(&answer[5], addMoneyParam, sizeof(DWORD));
 				send(myClient, answer, DataLen, 0);
 				break;
 			case CMD_SRV_GET_DEVICE_INFO:
