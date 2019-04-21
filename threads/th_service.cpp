@@ -12,18 +12,19 @@ PI_THREAD(DiscountWatch)
 	while (settings->threadFlag.TimeTickThread)
 	{
 		int indext = 0;
-		int newDiscount = 0;
+		int dateDiscount = 0;
+		int timeDiscount = 0;
 		time_t currTime = time(NULL);
   		struct tm* timeInfo;
   		timeInfo = localtime(&currTime);
-  		for (indext=1; indext <= DiscountDates[0].DiscountSize; indext++)
+  		for (indext=1; indext <= MAX_PARAM_ARRAY_ITEM; indext++)
   		{
 			if ((timeInfo->tm_mday == DiscountDates[indext].DiscountDay) && (timeInfo->tm_mon+1 == DiscountDates[indext].DiscountMonth))
-				if (newDiscount < DiscountDates[indext].DiscountSize)
-					newDiscount = DiscountDates[indext].DiscountSize;
+				if (dateDiscount < DiscountDates[indext].DiscountSize)
+					dateDiscount = DiscountDates[indext].DiscountSize;
   		}
 
-  		for (indext=1; indext <= DiscountParams[0].DiscountSize; indext++)
+  		for (indext=1; indext <= MAX_PARAM_ARRAY_ITEM; indext++)
   		{
 			if (
 				((DiscountParams[indext].DiscountDayOfWeek >> timeInfo->tm_wday) & 1)
@@ -35,12 +36,15 @@ PI_THREAD(DiscountWatch)
 				 	)
 				)
 				{
-					if (newDiscount < DiscountParams[indext].DiscountSize)
-						newDiscount = DiscountParams[indext].DiscountSize;
+					if (timeDiscount < DiscountParams[indext].DiscountSize)
+						timeDiscount = DiscountParams[indext].DiscountSize;
 				}
   		}
 
-  		settings->discountSize = newDiscount;
+  		if (timeDiscount > dateDiscount)
+  			settings->discountSize = timeDiscount;
+		else
+  			settings->discountSize = dateDiscount;
   		delay(5);
 	}
 	return (void*)0;
@@ -374,6 +378,7 @@ PI_THREAD(load_params_from_db)
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 		else
 		{
+			memset(&DiscountDates[0], 0x00, sizeof(DiscountDates));
 			printf ("[DEBUG] Loading discount days: Items count: %f\n", qArray[0]);
 			DiscountDates[0].DiscountSize = (unsigned char)qArray[0];
 			indexd = 1;
@@ -398,12 +403,13 @@ PI_THREAD(load_params_from_db)
 		else
 		{
 			printf ("[DEBUG] Loading discount params: Items count: %f\n", qArray[0]);
+			memset(&DiscountParams[0], 0x00, sizeof(DiscountParams));
 			DiscountParams[0].DiscountSize = (unsigned char)qArray[0];
 			indexd = 1;
 			for(int indext = 1; (indext < qArray[0]*2) && (indext <= MAX_PARAM_ARRAY_ITEM); indext+=2)
 			{
-				DiscountParams[indexd].DiscountSize = ((long)qArray[indext] & 0xFF00) >> 8;
-				DiscountParams[indexd].DiscountDayOfWeek = ((long)qArray[indext] & 0xFF);
+				DiscountParams[indexd].DiscountDayOfWeek = ((long)qArray[indext] & 0xFF00) >> 8;
+				DiscountParams[indexd].DiscountSize = ((long)qArray[indext] & 0xFF);
 
 				DiscountParams[indexd].DiscountStartHour = ((long)qArray[indext+1] & 0xFF000000) >> 24;
 				DiscountParams[indexd].DiscountStartMin = ((long)qArray[indext+1] & 0xFF0000) >> 16;
