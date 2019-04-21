@@ -51,10 +51,12 @@ PI_THREAD(OsmosWatch)
 */
 
 	int currentLight = status.intDeviceInfo.program_currentProgram;
-	if ((settings->getEnabledDevice(DVC_BUTTON01 + currentLight)) && (settings->getPinConfig(DVC_BUTTON01 + currentLight, 1) != 0xFF)) continue;
-	currentPin = settings->getPinConfig(currentDeviceID, 1);
-	setPinModeMy(DVC_BUTTON01 + currentLight, PIN_OUTPUT);
-	setGPIOState(currentPin, 1);
+	if ((settings->getEnabledDevice(DVC_BUTTON01 + currentLight)) && (settings->getPinConfig(DVC_BUTTON01 + currentLight, 1) != 0xFF))
+	{
+		currentPin = settings->getPinConfig(currentDeviceID, 1);
+		setPinModeMy(DVC_BUTTON01 + currentLight, PIN_OUTPUT);
+		setGPIOState(currentPin, 1);
+	}
 
 	while (settings->threadFlag.OsmosThread)
 	{
