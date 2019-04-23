@@ -1,6 +1,6 @@
 #include "main.h"
 
-char prgNote[] = "beWash: Self carwash system. Hardware and software solution. Software developer: Serg V Kolebanov, hardware developer: Dmitry N Kondratev. http://www.bewash.ru mail:sale@bewash.ru support:koleban@gmail.com";
+char prgNote[] = "beWash: Self carwash system. Hardware and software solution. Software developer: Serg V Kolebanov, hardware developer: Dmitry N Kondratev. http://www.bewash.ru mail:sale@bewash.ru support:dev@bewash.ru, koleban@gmail.com";
 char prgProtect[] = "This application copy and clone protected. Hardware code key. Part of application business logic translate in hardware key. Guardant Net.Code";
 
 extern char comports[30][60];
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	/////////////////////////
 	///
 	///
-    prgVer = 2.06;
+    prgVer = 2.07;
     ///
     ///
     /////////////////////////

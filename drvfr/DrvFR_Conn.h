@@ -40,12 +40,15 @@ const unsigned commlen[0x100] =
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,255,  0,  0  // 0xf0 - 0xff
 };
 
+/// STX, LEN [ CMD1 CMD2 XX1 XX2 XX3 XX4 ...] CRC
+/// LEN ALL CMD and XXx
+/// LEN = 6 + param->len
 const unsigned fncommlen[0x100] =
 {//0   1   2   3   4   5   6   7   8   9   a   b   c   d   e   f
    0,  6,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0, // 0x00 - 0x0f
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,// 0x10 - 0x1f
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, // 0x20 - 0x2f
-   0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0,  0,  0,  0, // 0x30 - 0x3f
+   0,  0,  0,  0,  0,  0,  0,  0,  0,  6, 10,  6,  0,  0,  0,  0, // 0x30 - 0x3f
    0,  0,  0,  0,  0,  119,  160,  0,  0,  0,  0,  0,  0,  0,  0,  0, // 0x40 - 0x4f
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, // 0x50 - 0x5f
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, // 0x60 - 0x6f
@@ -78,7 +81,7 @@ typedef struct
 typedef struct
 {
 	int len;
-	unsigned char buff[260];
+	unsigned char buff[2096];
 } answer;
 
 typedef struct

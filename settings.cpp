@@ -7,6 +7,7 @@ Settings* Settings::p_instance = 0;
 
 Settings::Settings()
 {
+	memset(&coinDiscount, 	0x00, sizeof(coinDiscount));
 	memset(&moneyWeight, 	0x00, sizeof(moneyWeight));
 	memset(&coinWeight, 	0x00, sizeof(coinWeight));
 
@@ -234,6 +235,9 @@ bool Settings::loadConfig (char* fileName)
 	osmosParam.waitOnFull					= iniparser_getuint(ini, 	"OSMOS:waitOnFull",					600);
 	osmosParam.permiatLoadTime				= iniparser_getuint(ini, 	"OSMOS:permiatLoadTime",			300);
 	osmosParam.waitOnEmpty					= iniparser_getuint(ini, 	"OSMOS:waitOnEmpty",				600);
+
+	coinDiscount.coinAfterSumm				= iniparser_getuint(ini, 	"CoinDiscount:CoinAfterSumm",		0);
+	coinDiscount.coinDiscountSize			= iniparser_getuint(ini, 	"CoinDiscount:CoinDiscountSize",	0);
 
 	remoteCounterParam.DocumentCreationTime	= iniparser_getuint(ini, 	"RemoteCounterParam:DocumentCreationTime",			45);
 	remoteCounterParam.PriceIN1				= iniparser_getuint(ini, 	"RemoteCounterParam:PriceIN1",						1);

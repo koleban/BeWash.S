@@ -398,7 +398,7 @@ int DrvFR_Conn::readanswer(answer *ans)
 		if (repl == STX)
 		{
 			len = readbyte(drvFR->Timeout);
-			int recv_bytes = readbytes(ans->buff, len) ;
+			int recv_bytes = readbytes(&ans->buff[0], len) ;
 			ans->len = recv_bytes;
 			if ( recv_bytes == len)
 			{

@@ -5,9 +5,12 @@ using namespace DriverFR;
 int errorCode = 0;
 static DrvFR* drv;
 
+void cp866_cp1251( unsigned char* s , int length);
 //---------------------------------------------------------------------
-int OpenPaymentDocument()
+int OpenPaymentDocument(DrvFR* drvFr)
 {
+	drvFr->CutType = 0;
+	drvFr->CutCheck();
 	return 0;
 }
 //---------------------------------------------------------------------
@@ -117,6 +120,10 @@ void CheckDevice(DrvFR* drv)
 				printf("Îòêðûòàÿ ñìåíà, 24 ÷àñà êîí÷èëèñü. Çàêðîåì ñìåíó.\n");
 			errorCode = 0x11;
 			drv->FNCloseSession();
+			delay_ms(10000);
+			drv->CutType = 0;
+			drv->CutCheck();
+			delay_ms(500);
 			break;
 		}
 		else if (drv->ECRMode == (int)TECRMode::Blocked_WrongPasswordTaxInspector)
@@ -179,6 +186,10 @@ void CheckDevice(DrvFR* drv)
 				printf("Ñìåíà çàêðûòà. Îòêðîåì ñìåíó.\n");
 			errorCode = 0x18;
 			drv->FNOpenSession();
+			delay_ms(3000);
+			drv->CutType = 0;
+			drv->CutCheck();
+			delay_ms(500);
 		}
 		else if (drv->ECRMode == (int)TECRMode::PrintFNDocument)
 		{
@@ -235,6 +246,90 @@ void CheckDevice(DrvFR* drv)
 	}
 }
 //---------------------------------------------------------------------
+void showTLVStruct(DrvFR* drv)
+{
+	struct tm* now;
+	time_t rawtime;
+	tlv_box_t* parsedBoxes = tlv_box_parse(drv->TLVData, drv->DataLength);
+	char value[128];
+	int length = 128;
+	int l_index = 0;
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_FN, value, &length);
+	printf("TLV_DATA_FN:			 	 %s \n", value);
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_RNKKT, value, &length);
+	printf("TLV_DATA_RNKKT:			 	 %s \n", value);
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_INN, value, &length);
+	printf("TLV_DATA_INN:			 	 %s \n", value);
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_FD, value, &length);
+	printf("TLV_DATA_FD:			 	 %d\n", *((DWORD*)&value[0]));
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_DATE_TIME, value, &length);
+	printf("TLV_DATA_DATE_TIME:			 ");
+	if (length == 4)
+	{
+		rawtime = (time_t)*((DWORD*)&value[0]);
+		now = localtime(&rawtime);
+		printf("%s", asctime(now));
+	}
+	else
+	{
+		l_index = 0;
+		while (l_index < length)
+	    	printf(" %02X", value[l_index++]);
+		printf("\n");
+	}
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_FP, value, &length);
+	printf("TLV_DATA_FP:			 	 ");
+	l_index = 0;
+	while (l_index < length)
+	   	printf("%02X", value[l_index++]);
+	printf("\n");
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_SESSION, value, &length);
+	printf("TLV_DATA_SESSION:			 %d \n", *((DWORD*)&value[0]));
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_DOCNUM, value, &length);
+	printf("TLV_DATA_DOCNUM:			 %d \n", *((DWORD*)&value[0]));
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM, value, &length);
+	printf("TLV_DATA_SUMM:			 	 %d \n", *((DWORD*)&value[0]));
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_DEVNUMBER, value, &length);
+	printf("TLV_DATA_DEVNUMBER:			 %s \n", value);
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CASH, value, &length);
+	printf("TLV_DATA_SUMM_CASH:			 %d \n", *((DWORD*)&value[0]));
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CARD, value, &length);
+	printf("TLV_DATA_SUMM_CARD:			 %d \n", *((DWORD*)&value[0]));
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_FNS_LINK, value, &length);
+	printf("TLV_DATA_FNS_LINK:			 %s \n", value);
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_ADDR_DOC, value, &length);
+	cp866_cp1251((unsigned char*)value, length);
+	printf("TLV_DATA_ADDR_DOC:			 %s \n", value);
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_USERNAME, value, &length);
+	cp866_cp1251((unsigned char*)value, length);
+	printf("TLV_DATA_USERNAME:			 %s \n", value);
+
+	length = 128;
+	tlv_box_get_string(parsedBoxes, TLV_DATA_USERADDR, value, &length);
+	cp866_cp1251((unsigned char*)value, length);
+	printf("TLV_DATA_USERADDR:			 %s \n", value);
+}
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -283,6 +378,12 @@ PI_THREAD(KKMWatch)
 			drv->Beep();
 			delay_ms(200);
 			drv->FNGetInfoExchangeStatus();
+			if (drv->MessageCount > 0)
+			{
+				term_setattr(32);
+				printf("[THREAD] ÊÊÌ: ÂÍÈÌÀÍÈÅ : ÅÑÒÜ ÍÅ ÎÒÏÐÀÂËÅÍÈÅ ×ÅÊÈ Â ÎÔÄ. ÏÐÎÂÅÐÜÒÅ ÁÀËÀÍÑ, ÏÎÄÏÈÑÊÓ, ÏÀÐÀÌÅÒÐÛ ÎÔÄ È ÑÂßÇÜ Ñ ÈÍÒÅÐÍÅÒÎÌ!!!\n");
+				term_setattr(37);
+			}
 			while (settings->threadFlag.KKMWatch)
 			{
 				time(&rawtime);
@@ -327,6 +428,8 @@ PI_THREAD(KKMWatch)
 					result = 0;
 				}
 
+				drv->FNGetStatus();
+				delay(4);
 				if (result == 0)
 				{
 					while(queueKkm->QueueGet(&valueKkm) >= 0)
@@ -338,12 +441,12 @@ PI_THREAD(KKMWatch)
 						}
 						CheckDevice(drv);
 						delay_ms(1000);
-						result = OpenPaymentDocument();
+						result = OpenPaymentDocument(drv);
 						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
 						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
-						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
+						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId+valueKkm.data1, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
 						printf("[THREAD] KKM: Ïðîäàæà : %s - 1 øò\n", valueKkm.note);
 						fflush(stdout);
 //
@@ -352,17 +455,29 @@ PI_THREAD(KKMWatch)
 						delay_ms(50);
 						drv->CheckSubTotal();
 						delay_ms(50);
-						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						term_setattr(32);
 						printf("[THREAD] KKM: Çàêðûâàåì ÷åê : Ñóììà: Íàë. %d  Êàðòîé: %d\n", valueKkm.eventId, valueKkm.data1);
 						term_setattr(37);
+
+						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))
 							printf("KKM: Close check ERROR %d %s\n", drv->ResultCode, drv->ResultCodeDescription);
 						fflush(stdout);
 						delay_ms(1000);
 						CheckDevice(drv);
+						delay_ms(500);
+						drv->FNGetStatus();
 						fflush(stdout);
+/*
+					printf("FNRequestFiscalDocumentTLV\n");
+					drv->Password = 30;
+					drv->DocumentNumber = 8;
+					drv->FNRequestFiscalDocumentTLV();
+					if (drv->FNReadFiscalDocumentTLV() == 1)
+						showTLVStruct(drv);
+					delay(3);
 
+*/
 						delay_ms(3000);
 					}
 				}
@@ -381,4 +496,17 @@ PI_THREAD(KKMWatch)
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	printf("[KKM]: Thread ended.\n");
 	return (void*)0;
+}
+
+//***************************************************************
+
+void cp866_cp1251( unsigned char* s , int length)
+{
+    for( int index = 0; index < length; index++ )
+    {
+        if( s[index] >= 0x80 && s[index] <= 0xAF )
+            s[index] += 64;
+        else if( s[index] >= 0xE0 && s[index] <= 0xEF )
+            s[index] += 16;
+    }
 }

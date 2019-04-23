@@ -121,6 +121,29 @@ namespace DriverFR
 #define FN_CLOSE_CHECK_EX			0xFF45
 #define FN_OPERATION				0xFF46
 #define FN_FNGETINFOEXCHANGESTATUS	0xFF39
+#define FN_FNREQUESTFISCALDOCUMENTTLV	0xFF3A
+#define FN_FNREADFISCALDOCUMENTTLV	0xFF3B
+
+#define	TLV_DATA_FN				1041	// ФН
+#define	TLV_DATA_RNKKT			1037	// РН ККТ
+#define	TLV_DATA_INN			1018	// ИНН
+#define	TLV_DATA_FD				1040	// ФД
+#define	TLV_DATA_DATE_TIME		1012	// ДАТА И ВРЕМЯ
+#define	TLV_DATA_FP				1077	// ФП
+#define	TLV_DATA_SESSION		1038	// СМЕНА
+#define	TLV_DATA_DOCNUM			1042	// НОМЕР ЧЕКА ЗА СМЕНУ
+#define	TLV_DATA_DOCTYPE		1054	// ПРИЗНАК РАСЧЕТА (Покупка и т.д.)
+#define	TLV_DATA_SUMM			1020	// ИТОГ
+#define	TLV_DATA_DEVNUMBER		1036	// НОМЕР АВТОМАТА
+#define	TLV_DATA_SUMM_CASH		1031	// СУММА НАЛИЧНЫЕ
+#define	TLV_DATA_SUMM_CARD		1081	// СУММА КАРТА
+#define	TLV_DATA_FNS_LINK		1060	// САЙТ ФНС
+#define	TLV_DATA_ADDR_DOC		1187	// МЕСТО РАСЧЕТА
+#define	TLV_DATA_FFD_VER		1209	// ВЕРСИЯ ФФД (2 = 1.05)
+#define	TLV_DATA_SUMM_WO_NDS	1105	// СУММА БЕЗ НДС
+#define	TLV_DATA_USERNAME		1048	// НАИМЕНОВАНИЕ ПОЛЬЗОВАТЕЛЯ
+#define	TLV_DATA_USERADDR		1009	// АДРЕС РАСЧЕТОВ
+#define	TLV_DATA_TAX_TYPE		1055	// СИСТЕМА НАЛОГООБЛАЖЕНИЯ (2 = УСН Доходы)
 
 #define false			0
 #define true			1
@@ -138,6 +161,21 @@ enum TCheckType
 	ReturnSale = 2,
 	Purchase = 3,
 	RerurnPurchase = 4
+};
+
+enum TFNDocType
+{
+	RegistrationReport 			= 1,	// Отчёт о регистрации
+	OpenSessionReport 			= 2,	// Отчёт об открытии смены
+	PaymentCheck				= 3,	// Кассовый чек
+	DocBSO						= 4,	// БСО
+	CloseSessionReport			= 5,	// Отчёт о закрытии смены
+	CloseFNReport				= 6,	// Отчёт о закрытии фискального накопителя
+	OperatorConfirm				= 7,	// Подтверждение оператора
+	RegistrationPrmChangeReport = 11, 	// Отчет об изменении параметров регистрации
+	MoneyStateReport			= 21,	// Отчет о состоянии расчетов
+	CorrectionPaymentCheck 		= 31,	// Кассовый чек коррекции
+	DocBSOCorrection			= 41    // Бланк строгой отчетности коррекции
 };
 
 enum TTaxType
@@ -263,6 +301,7 @@ public:
 	char DocumentName[32];
 	int DocumentNumber;
 	int DocumentType;
+	int DataLength;
 	int OpenDocumentNumber;
 	int DozeInMilliliters;
 	double DozeInMoney;
@@ -389,6 +428,7 @@ public:
 	int TCPPort;
 	struct tm Time;
 	int Timeout;
+	BYTE TLVData[4096];
 	int TRKNumber;
 	int TypeOfSumOfEntriesFM;
 	bool UseIPAddress;
@@ -404,6 +444,7 @@ public:
 	char UDescription[MAX_LEN];
 	int ValueOfFieldInteger;
 	char ValueOfFieldString[MAX_LEN];
+	int InfoExchangeStatus;
 
 	/****************************************************
 	 * Shtrih-M interface functions                     *
@@ -507,6 +548,8 @@ public:
 	int FNCloseSession(void);
 	int FNCancelCheck(void);
 	int FNGetInfoExchangeStatus(void);
+	int FNRequestFiscalDocumentTLV(void);
+	int FNReadFiscalDocumentTLV(void);
 
 	int PrintErrorDescription(void);
 	int CheckConnection(void);

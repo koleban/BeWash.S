@@ -149,7 +149,7 @@ PI_THREAD(ButtonTerminalWatch)
 						thread_timeout -= 50;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Out RFID card\n");
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
+						db->Log(DB_EVENT_TYPE_CARD_OUT, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
 						payRFIDCardCounter = 200;
 					}
 					else
@@ -211,8 +211,31 @@ PI_THREAD(ButtonTerminalWatch)
 					thread_timeout -= 50;
 					currentPin = settings->getPinConfig(DVC_RELAY_OUT_COIN, 1);
 					setPinModeMy(currentPin, PIN_OUTPUT);
+					int discPrice = settings->progPrice[15];
+					if (status.intDeviceInfo.money_currentBalance >= settings->coinDiscount.coinAfterSumm)
+					{
+						discPrice = settings->progPrice[15] - (int)(((double)settings->progPrice[15]) * (((double)settings->coinDiscount.coinDiscountSize)/100));
+					}
+					int bonusCoinCount = (int)(((double)status.intDeviceInfo.money_currentBalance/(double)discPrice) - ((double)status.intDeviceInfo.money_currentBalance/(double)settings->progPrice[15]));
+					if ((bonusCoinCount > 0) && (settings->debugFlag.ButtonTerminalThread))
+						printf("[DEBUG] ButtonTerminalThread: BONUS COIN %d\n", bonusCoinCount);
 					// «апускаем двигатель на выдачу жетонов
 					setGPIOState(currentPin, 1);
+					while (bonusCoinCount > 0)
+					{
+						//
+						// !!!  онтроль выдачи жетонов !!!
+						//
+
+						//	Ёћ”Ћя÷»я
+							delay(1);
+						//
+
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Out BONUS COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
+						db->Log(DB_EVENT_TYPE_COIN_OUT, bonusCoinCount, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out BONUS COIN [price, balance]");
+						bonusCoinCount--;
+					}
 					while (status.intDeviceInfo.money_currentBalance >= settings->progPrice[15])
 					{
 						//
@@ -222,10 +245,10 @@ PI_THREAD(ButtonTerminalWatch)
 						//	Ёћ”Ћя÷»я
 							delay(1);
 						//
+						status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Out COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN");
-						status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
+						db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
 					}
 					// ќстанавливаем двигатель на выдачу жетонов
 					setGPIOState(currentPin, 0);

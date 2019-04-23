@@ -43,9 +43,9 @@ PI_THREAD(ConsoleThread)
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 1);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 2);
-				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				queueKkm->QueuePut(0, 2, 0, strTmp256);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 3);
-				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				queueKkm->QueuePut(0, 2, 0, strTmp256);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 5);

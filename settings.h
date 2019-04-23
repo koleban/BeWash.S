@@ -238,6 +238,12 @@ struct DeviceInfo
 	IntDeviceInfo 	intDeviceInfo;					//
 };
 
+struct CoinDiscount
+{
+	int				coinAfterSumm;					//	После какой	суммы скидка на жетоны
+	int 			coinDiscountSize;				//  Скидка на стоимость жетона после определенной суммый
+};
+
 struct CommonParams
 {
 	int delayScrollingTextMs;		// Задержка прокрутки текста если его длина более 4 символов (мСек)
@@ -397,6 +403,9 @@ public:
 	DWORD		 		progRPM[16];			//
 	DWORD		 		progDepends[16];		//
 	DWORD		 		progWinterDelay[16];	// В зимнем режиме есть пауза на прокачку
+	//
+	// Скидки на жетоны
+	CoinDiscount		coinDiscount;
 	//
 	// Устройство "КУПЮРОПРИЕМНИК"
 	MoneyCoinWeight		moneyWeight;

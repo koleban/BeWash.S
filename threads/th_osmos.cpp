@@ -183,9 +183,8 @@ PI_THREAD(OsmosWatch)
 						time(&prg_timer);
 						break;
 					}
-					printf("[OsmosThread]: BANK FULL LOAD ... (%d sec)\n", ((DWORD)rcv_timer_out - (DWORD)prg_timer));
 				}
-				if (((DWORD)rcv_timer_out - (DWORD)prg_timer) > settings->osmosParam.gidrodynWaitTime)
+				if ((!bankFull) && ((DWORD)rcv_timer_out - (DWORD)prg_timer) > settings->osmosParam.gidrodynWaitTime)
 				{
 					status.extDeviceInfo.button_newEvent = 5;
 					status.extDeviceInfo.button_lastEvent = 5;

@@ -82,6 +82,7 @@
 #include "protocols/rs485.h"
 #include "other/queue.h"
 #include "other/md5.h"
+#include "tlv/tlv_box.h"
 
 #include "drvfr/DrvFR_Conn.h"
 

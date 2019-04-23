@@ -50,7 +50,10 @@ DrvFR::DrvFR(int password,
 //-----------------------------------------------------------------------------
 int DrvFR::errhand(void *a)
 {
-	ResultCode = ((answer*)a)->buff[1];
+	if (((answer*)a)->buff[0] != 0xFF)
+		ResultCode = ((answer*)a)->buff[1];
+	else
+		ResultCode = ((answer*)a)->buff[2];
 	strcpy(ResultCodeDescription, errmsg[ResultCode]);
 	if (ResultCode != 0)
 	{
@@ -157,13 +160,17 @@ int DrvFR::Connect(void)
 		{
 		case NAK:
 			Connected = true;
+			#ifdef DEBUG
 			printf("fn: DrvFR::Connect - receive NAK\n");
+			#endif
 			if (GetECRStatus() < 0) { tries++; continue; }
 			if (GetDeviceMetrics() < 0) { tries++; continue; }
 			return 1;
 		case ACK:
 			Connected = true;
+			#ifdef DEBUG
 			printf("fn: DrvFR::Connect - receive ACK\n");
+			#endif
 			conn->readanswer(&a);
 			conn->checkstate();
 			if (GetECRStatus() < 0) { tries++; usleep(500000); continue; }
@@ -1938,6 +1945,19 @@ int DrvFR::FNGetStatus(void)
 	if (conn->readanswer(&a) < 0) return -1;
 	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_GET_STATUS & 0xFF))) return -1;
 
+	evaldate(&a.buff[9], &Date);
+	evaldate(&a.buff[12], &Time);
+	memset(SerialNumber, 0, sizeof(SerialNumber));
+	memcpy(SerialNumber, &a.buff[14], 16);
+	DocumentNumber		= evalint(&a.buff[29], 3);
+
+		printf("Buff [%d]:\n", a.len);
+		int i = 0;
+		while (i < a.len)
+			{ printf (" %02X", a.buff[i]); i++; }
+		printf("\n");
+		fflush(stdout);
+
 	if (errhand(&a) != 0) return ResultCode;
 
 	return 0;
@@ -2010,7 +2030,7 @@ int DrvFR::FNCloseCheckEx(void)
 	Change = evalint64((unsigned char*)&a.buff + 3, 5);
 	Change /= 100;
 
-	printf("Oper: %d Change: %f\n", OperatorNumber, Change);
+//	printf("Oper: %d Change: %f\n", OperatorNumber, Change);
 
 	if (errhand(&a) != 0) return ResultCode;
 
@@ -2177,10 +2197,98 @@ int DrvFR::FNGetInfoExchangeStatus(void)
 	if (conn->readanswer(&a) < 0) return -1;
 	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_FNGETINFOEXCHANGESTATUS & 0xFF))) return -1;
 
-	/*
-	OperatorNumber = a.buff[2];
-	SessionNumber = evalint((unsigned char*)&a.buff + 3, 2);
-	*/
+	if (a.len > 15)
+	{
+		InfoExchangeStatus = a.buff[2];
+		MessageState 		= evalint(&a.buff[3], 2);
+		MessageCount 		= evalint(&a.buff[5], 2);
+		DocumentNumber		= evalint(&a.buff[7], 4);
+		evaldate(&a.buff[9], &Date);
+	#ifdef DEBUG
+		printf("[FNGetInfoExchangeStatus]: InfoExchangeStatus:%0X  MessageState: %d MessageCount: %d DocumentNumber: %d Date: %0X Time: %0X\n", InfoExchangeStatus, MessageState, MessageCount, DocumentNumber, Date, Time);
+		fflush(stdout);
+	#endif
+	}
+
+	if (errhand(&a) != 0) return ResultCode;
+
+	return 0;
+}
+//-----------------------------------------------------------------------------
+int DrvFR::FNRequestFiscalDocumentTLV(void)
+{
+	parameter  p;
+	answer     a;
+	memset(&p, 0, sizeof(p));
+	memset(&a, 0, sizeof(a));
+
+	if (!Connected) return -1;
+
+	p.len = 4;
+	memcpy(p.buff, &DocumentNumber, sizeof(DocumentNumber));
+
+	if (conn->sendcommand(FN_FNREQUESTFISCALDOCUMENTTLV, Password, &p) < 0) return -1;
+	delay_ms(500);
+	if (conn->readanswer(&a) < 0) return -1;
+	if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_FNREQUESTFISCALDOCUMENTTLV & 0xFF))) return -1;
+
+	if ((a.len > 6) && (a.buff[2] == 0x00))
+	{
+		DocumentType 	= evalint(&a.buff[3], 2);
+		DataLength 		= evalint(&a.buff[5], 2);
+	#ifdef DEBUG
+		printf("[FNRequestFiscalDocumentTLV]: DocumentType:%d  DataLength: %d\n", DocumentType, DataLength);
+		fflush(stdout);
+	#endif
+	}
+
+	if (errhand(&a) != 0) return ResultCode;
+
+	return 0;
+}
+//-----------------------------------------------------------------------------
+int DrvFR::FNReadFiscalDocumentTLV(void)
+{
+	int dataLength = DataLength;
+	parameter  p;
+	answer     a;
+	memset(&p, 0, sizeof(p));
+	memset(&a, 0, sizeof(a));
+
+	if (!Connected) return -1;
+
+	if (dataLength < 5) return -1;
+
+	int index = 0;
+	memset(TLVData, 0, sizeof(TLVData));
+	#ifdef DEBUG
+		printf("[FNReadFiscalDocumentTLV]: DataLength: %d\n", DataLength);
+		fflush(stdout);
+	#endif
+	while (dataLength >= 0)
+	{
+		p.len = 0;
+
+		if (conn->sendcommand(FN_FNREADFISCALDOCUMENTTLV, Password, &p) < 0) return -1;
+		if (conn->readanswer(&a) < 0) return -1;
+
+		if ((a.buff[0] != 0xFF) || (a.buff[1] != (FN_FNREADFISCALDOCUMENTTLV & 0xFF))) return -1;
+
+		if (a.len == 3) return 1;
+
+		memcpy((TLVData+index), &a.buff[3], (a.len - 3));
+		index += (a.len - 3);
+		dataLength -= (a.len - 3);
+		int i = 3;
+	#ifdef DEBUG
+		printf("Buff [%d]:\n", a.len);
+		while (i < a.len)
+			{ printf (" %02X", a.buff[i]); i++; }
+		printf("\n");
+		fflush(stdout);
+	#endif
+		delay_ms(20);
+	}
 
 	if (errhand(&a) != 0) return ResultCode;
 
