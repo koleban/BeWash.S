@@ -1951,12 +1951,14 @@ int DrvFR::FNGetStatus(void)
 	memcpy(SerialNumber, &a.buff[14], 16);
 	DocumentNumber		= evalint(&a.buff[29], 3);
 
+	#ifdef DEBUG
 		printf("Buff [%d]:\n", a.len);
 		int i = 0;
 		while (i < a.len)
 			{ printf (" %02X", a.buff[i]); i++; }
 		printf("\n");
 		fflush(stdout);
+	#endif
 
 	if (errhand(&a) != 0) return ResultCode;
 
