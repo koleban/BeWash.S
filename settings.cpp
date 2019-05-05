@@ -21,6 +21,8 @@ Settings::Settings()
 	memset(&progRelayBp,	0xFF, sizeof(progRelay));
 	memset(&progRPM,		0x00, sizeof(progRPM));
 	memset(&progDepends,	0x00, sizeof(progDepends));
+	memset(&progLimitSumm,	0x00, sizeof(progLimitSumm));
+	memset(&progLimitRelay,	0x00, sizeof(progLimitRelay));
 	memset(&databaseSettings, 0x00, sizeof(databaseSettings));
 	memset(&gdatabaseSettings, 0x00, sizeof(gdatabaseSettings));
 
@@ -229,6 +231,7 @@ bool Settings::loadConfig (char* fileName)
 	kkmParam.kkmPass 						= (BYTE)iniparser_getuint(ini, 	"KKM:PASS",			30);
 	kkmParam.QueryTime						= iniparser_getuint(ini, 	"KKM:QueryTime",			10000);
 	kkmParam.TaxType						= iniparser_getuint(ini, 	"KKM:TaxType",			8); // ENVD
+	kkmParam.LocalTime						= iniparser_getuint(ini, 	"KKM:LocalTime",			1); // ENVD
 
 	osmosParam.gidrodynWaitTime				= iniparser_getuint(ini, 	"OSMOS:gidrodynWaitTime",			600);
 	osmosParam.gidrodynTurnOnTime			= iniparser_getuint(ini, 	"OSMOS:gidrodynTurnOnTime",			60);
@@ -304,6 +307,13 @@ bool Settings::loadConfig (char* fileName)
 
 		sprintf(paramName, 	"PrgConfig:PRG%02d_WINTER_DELAY", index);
 		progWinterDelay[index]						= (DWORD)iniparser_getuint(ini, paramName, 0);
+
+		sprintf(paramName, 	"PrgConfig:PRG%02d_LIMIT_SUMM", index);
+		progLimitSumm[index]						= (DWORD)iniparser_getuint(ini, paramName, 0);
+
+		sprintf(paramName, 	"PrgConfig:PRG%02d_LIMIT_RELAY", index);
+		progLimitRelay[index]						= (DWORD)iniparser_getuint(ini, paramName, 0xFFFFFFFF);
+
 
 	}
 

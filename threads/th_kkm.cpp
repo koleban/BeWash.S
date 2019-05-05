@@ -175,8 +175,8 @@ void CheckDevice(DrvFR* drv)
 			drv->Date.tm_year = year - 1900;
 			mktime(&drv->Date);
 			time_t rawtime;
-			struct tm * loctime = localtime(&rawtime);
 			time(&rawtime);
+			struct tm * loctime = localtime(&rawtime);
 			memcpy(&drv->Date, loctime, sizeof(drv->Date));
 			drv->ConfirmDate();
 		}
@@ -248,6 +248,8 @@ void CheckDevice(DrvFR* drv)
 //---------------------------------------------------------------------
 void showTLVStruct(DrvFR* drv)
 {
+	if (!settings->debugFlag.KKMWatch) return;
+
 	struct tm* now;
 	time_t rawtime;
 	tlv_box_t* parsedBoxes = tlv_box_parse(drv->TLVData, drv->DataLength);
@@ -256,26 +258,28 @@ void showTLVStruct(DrvFR* drv)
 	int l_index = 0;
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FN, value, &length);
-	printf("TLV_DATA_FN:			 	 %s \n", value);
+	printf("ÔÍ: %s", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_RNKKT, value, &length);
-	printf("TLV_DATA_RNKKT:			 	 %s \n", value);
+	printf(" ÐÍ ÊÊÒ: %s", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_INN, value, &length);
-	printf("TLV_DATA_INN:			 	 %s \n", value);
+	printf(" ÈÍÍ: %s", value);
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FD, value, &length);
-	printf("TLV_DATA_FD:			 	 %d\n", *((DWORD*)&value[0]));
+	printf(" ÔÄ: %d", *((DWORD*)&value[0]));
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_DATE_TIME, value, &length);
-	printf("TLV_DATA_DATE_TIME:			 ");
 	if (length == 4)
 	{
 		rawtime = (time_t)*((DWORD*)&value[0]);
-		now = localtime(&rawtime);
-		printf("%s", asctime(now));
+		if (settings->kkmParam.LocalTime)
+			now = localtime(&rawtime);
+		else
+			now = gmtime(&rawtime);
+		printf(" %02d.%02d.%04d %02d:%02d:%02d", now->tm_mday, now->tm_mon, now->tm_year, now->tm_hour, now->tm_min, now->tm_sec);
 	}
 	else
 	{
@@ -287,48 +291,46 @@ void showTLVStruct(DrvFR* drv)
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FP, value, &length);
-	printf("TLV_DATA_FP:			 	 ");
-	l_index = 0;
-	while (l_index < length)
-	   	printf("%02X", value[l_index++]);
-	printf("\n");
+	printf(" ÔÏ:");
+	printf(" %lu", (value[2] << 24)+(value[3] << 16)+(value[4] << 8)+(value[5]));
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SESSION, value, &length);
-	printf("TLV_DATA_SESSION:			 %d \n", *((DWORD*)&value[0]));
+	printf(" ÑÌÅÍÀ: %d", *((DWORD*)&value[0]));
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_DOCNUM, value, &length);
-	printf("TLV_DATA_DOCNUM:			 %d \n", *((DWORD*)&value[0]));
+	printf(" ÍÎÌ. ×ÅÊÀ: %d", *((DWORD*)&value[0]));
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM, value, &length);
-	printf("TLV_DATA_SUMM:			 	 %d \n", *((DWORD*)&value[0]));
+	printf(" ÑÓÌÌÀ: %g", ((float)*((DWORD*)&value[0]))/100);
 	length = 128;
-	tlv_box_get_string(parsedBoxes, TLV_DATA_DEVNUMBER, value, &length);
-	printf("TLV_DATA_DEVNUMBER:			 %s \n", value);
+//	tlv_box_get_string(parsedBoxes, TLV_DATA_DEVNUMBER, value, &length);
+//	printf("TLV_DATA_DEVNUMBER:			 %s \n", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CASH, value, &length);
-	printf("TLV_DATA_SUMM_CASH:			 %d \n", *((DWORD*)&value[0]));
+	printf(" ÍÀË.: %g", ((float)*((DWORD*)&value[0]))/100);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CARD, value, &length);
-	printf("TLV_DATA_SUMM_CARD:			 %d \n", *((DWORD*)&value[0]));
+	printf(" VISA: %g", ((float)*((DWORD*)&value[0]))/100);
 	length = 128;
-	tlv_box_get_string(parsedBoxes, TLV_DATA_FNS_LINK, value, &length);
-	printf("TLV_DATA_FNS_LINK:			 %s \n", value);
+//	tlv_box_get_string(parsedBoxes, TLV_DATA_FNS_LINK, value, &length);
+//	printf("TLV_DATA_FNS_LINK:			 %s \n", value);
 
 	length = 128;
-	tlv_box_get_string(parsedBoxes, TLV_DATA_ADDR_DOC, value, &length);
-	cp866_cp1251((unsigned char*)value, length);
-	printf("TLV_DATA_ADDR_DOC:			 %s \n", value);
+//	tlv_box_get_string(parsedBoxes, TLV_DATA_ADDR_DOC, value, &length);
+//	cp866_cp1251((unsigned char*)value, length);
+//	printf("TLV_DATA_ADDR_DOC:			 %s \n", value);
 
 	length = 128;
-	tlv_box_get_string(parsedBoxes, TLV_DATA_USERNAME, value, &length);
-	cp866_cp1251((unsigned char*)value, length);
-	printf("TLV_DATA_USERNAME:			 %s \n", value);
+//	tlv_box_get_string(parsedBoxes, TLV_DATA_USERNAME, value, &length);
+//	cp866_cp1251((unsigned char*)value, length);
+//	printf("TLV_DATA_USERNAME:			 %s \n", value);
 
 	length = 128;
-	tlv_box_get_string(parsedBoxes, TLV_DATA_USERADDR, value, &length);
-	cp866_cp1251((unsigned char*)value, length);
-	printf("TLV_DATA_USERADDR:			 %s \n", value);
+//	tlv_box_get_string(parsedBoxes, TLV_DATA_USERADDR, value, &length);
+//	cp866_cp1251((unsigned char*)value, length);
+//	printf("TLV_DATA_USERADDR:			 %s \n", value);
+	printf("\n");
 }
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -467,17 +469,12 @@ PI_THREAD(KKMWatch)
 						CheckDevice(drv);
 						delay_ms(500);
 						drv->FNGetStatus();
-						fflush(stdout);
-/*
-					printf("FNRequestFiscalDocumentTLV\n");
-					drv->Password = 30;
-					drv->DocumentNumber = 8;
-					drv->FNRequestFiscalDocumentTLV();
-					if (drv->FNReadFiscalDocumentTLV() == 1)
-						showTLVStruct(drv);
-					delay(3);
-
-*/
+						CheckDevice(drv);
+						printf("FNRequestFiscalDocumentTLV\n");
+						drv->Password = 30;
+						drv->FNRequestFiscalDocumentTLV();
+						if (drv->FNReadFiscalDocumentTLV() == 1)
+							showTLVStruct(drv);
 						delay_ms(3000);
 					}
 				}

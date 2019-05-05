@@ -343,6 +343,7 @@ struct KKMParam
 	// Наименование услуги которая печатается в чеке ККМ
 	char ServiceName[250];
 	int TaxType;
+	int LocalTime;			//	1 - Использовать локальное время ККМ (МОСКВА +4 часа)
 };
 
 class Settings
@@ -403,6 +404,8 @@ public:
 	DWORD		 		progRPM[16];			//
 	DWORD		 		progDepends[16];		//
 	DWORD		 		progWinterDelay[16];	// В зимнем режиме есть пауза на прокачку
+	DWORD		 		progLimitSumm[16];			//
+	DWORD		 		progLimitRelay[16];			//
 	//
 	// Скидки на жетоны
 	CoinDiscount		coinDiscount;

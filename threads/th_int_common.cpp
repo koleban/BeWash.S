@@ -33,8 +33,13 @@ void helper_TurnRelaysOffProgramm(unsigned int program)
 		for (int index=0; index<4; index++)
 		{
 			int relNum = ((settings->progRelay[newPrgNumber] >> (index*8)) & 0xFF);
+
 			if (relNum < 16)
+			{
 				status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
+				if (((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF) < 16)
+					status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
+			}
 		}
 	}
 	else if ((program >= 50) && (program < 66))
@@ -77,8 +82,27 @@ void helper_TurnRelaysOnProgramm(int program)
 		for (int index=0; index<4; index++)
 		{
 			int relNum = ((settings->progRelay[newPrgNumber] >> (index*8)) & 0xFF);
-			if (relNum < 16)
-				status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+			if ((settings->progLimitSumm[newPrgNumber] > 0) && (status.extDeviceInfo.rfid_cardPresent != 1))
+			{
+				if (settings->progLimitSumm[newPrgNumber] >= status.intDeviceInfo.money_currentBalance)
+				{
+					if ((relNum < 16) && (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
+					{
+						status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
+					}
+					relNum = ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF);
+					if (relNum < 16)
+						status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+				}
+			}
+			else
+			{
+				if (relNum < 16)
+					status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16)
+					&& (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
+						status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
+			}
 		}
 	}
 
@@ -332,7 +356,20 @@ PI_THREAD(IntCommonThread)
 				status.intDeviceInfo.engine_currentRpm = 500;
 				engine->needFreq = status.intDeviceInfo.engine_currentRpm;
 				helper_TurnRelaysOnProgramm(51);
-				delay_ms(settings->valveTimeOff*1000);
+/* TEST */
+				for (int index=1; index <= 14; index++)
+					if (status.intDeviceInfo.relay_currentVal[index-1])
+						relay->relayOn(index);
+					else
+						relay->relayOff(index);
+				if (!settings->threadFlag.IntCommonThread)
+				{
+					delay(1);
+					break;
+				}
+				else
+/* TEST */
+					delay_ms(settings->valveTimeOff*1000);
 				// <<<
 				helper_TurnRelaysOnProgramm(status.intDeviceInfo.program_currentProgram);
 				status.intDeviceInfo.engine_currentRpm = 0;
@@ -443,6 +480,9 @@ PI_THREAD(IntCommonThread)
 		if (delayTime > 0) delay_ms(delayTime);
 		else delay_ms(100);
 	}
+
+	for (int index=1; index <= 14; index++)
+		relay->relayOff(index);
 	db->Close();
 	printf("[INT_TH]: Thread ended.\n");
 	return (void*)0;

@@ -16,6 +16,7 @@ RFIDDevice::RFIDDevice()
 	comPortBaundRate = 9600;
 	cardPresent = 0;
 	errorCount = 0;
+	digCardNumber = 0;
 }
 
 void RFIDDevice::Init(Settings* settings)
