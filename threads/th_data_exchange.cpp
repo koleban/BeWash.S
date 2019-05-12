@@ -112,6 +112,12 @@ PI_THREAD(DataExchangeThread)
 						mydate.GetDate(y, m, d);
 						mytime.GetTime(h, i, s);
 						sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%04d %02d:%02d:%02d", d, m, y, h, i, s);
+
+						time(&wrkOpenedDateTime);
+						struct tm localTime = *localtime(&wrkOpenedDateTime);
+						sprintf(status.intDeviceInfo.wrkOpened, "%02d.%02d.%02d %02d:%02d    ",
+						localTime.tm_mday, localTime.tm_mon+1, localTime.tm_year-100,
+						localTime.tm_hour, localTime.tm_min);
 					}
 					else
 					{

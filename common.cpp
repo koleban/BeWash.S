@@ -36,6 +36,7 @@ int winterModeEngineActive;
 DWORD remoteCounter[30][2];
 DWORD remoteCounterSumm[30][3];
 
+int externalCmd_collectionButton;
 
 RemoteCtrl remoteCtrl[30];
 

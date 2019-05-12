@@ -248,6 +248,14 @@ PI_THREAD(NetServerClientThread)
 					if (settings->debugFlag.NetServer)
 						printf("[NETCTRL] External command: Reload application ...\n");
 				break;
+			case CMD_SRV_EXT_INKASS:
+				printf ("Collect mode: [External command]\n");
+				externalCmd_collectionButton = 1;
+				status.extDeviceInfo.collectionButton = 1;
+				delay(5);
+				externalCmd_collectionButton = 0;
+				status.extDeviceInfo.collectionButton = 0;
+				break;
 
 			case CMD_SRV_DONWLOAD_CONFIG:
 				DataLen = 5;

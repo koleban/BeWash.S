@@ -112,7 +112,7 @@ PI_THREAD(ButtonWatch)
 
 		settings->busyFlag.ButtonWatch++;
 
-		if (settings->getEnabledDevice(DVC_BUTTON_COLLECTION))
+		if ((settings->getEnabledDevice(DVC_BUTTON_COLLECTION)) && (externalCmd_collectionButton == 0))
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
 			int timeout = 50;

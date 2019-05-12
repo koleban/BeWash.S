@@ -20,7 +20,7 @@
 
 #define CMD_SRV_DONWLOAD_CONFIG		0xA0
 #define CMD_SRV_UPLOAD_CONFIG		0xA1
-
+#define CMD_SRV_EXT_INKASS		0xC0	// External inkass (collection) command
 class Settings;
 
 class NetServer

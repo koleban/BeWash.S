@@ -137,17 +137,12 @@ PI_THREAD(ConsoleThread)
 			break;
 			// coll &
 			case 0x6C6C6F63:
-				if (atoi((char*)(command+4)))
-				{
-					printf ("Collect mode: [%d]\n", atoi((char*)(command+4)));
-					valTemp1 = 2000;
-					while (valTemp1-- > 0)
-					{
-						status.extDeviceInfo.collectionButton = 1;
-						delay_ms(1);
-					}
-					status.extDeviceInfo.collectionButton = 0;
-				}
+				printf ("Collect mode: [External command]\n");
+				externalCmd_collectionButton = 1;
+				status.extDeviceInfo.collectionButton = 1;
+				delay(5);
+				externalCmd_collectionButton = 0;
+				status.extDeviceInfo.collectionButton = 0;
 			break;
 			// prg
 			case 0x20677270:

@@ -26,7 +26,6 @@ PI_THREAD(TimeTickThread)
 		if ((prgPrice > 0) && (settings->discountSize != 0))
 			prgPrice = ((long)(settings->progPrice[status.intDeviceInfo.program_currentProgram]
 					- (settings->progPrice[status.intDeviceInfo.program_currentProgram] * (((double)settings->discountSize)/100))));
-		if (prgPrice < 1) prgPrice = 1;
 		progStopBP = settings->progStopBP[status.intDeviceInfo.program_currentProgram];
 		prgDelay = 0;
 		if (prgPrice > 0)

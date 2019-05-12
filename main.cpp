@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 
 	winterModeActive = 0;
 	winterModeEngineActive = 0;
+	externalCmd_collectionButton = 0;
 	status.extDeviceInfo.collectionButton = 0;
 
     prgStartTimer = time(NULL);
@@ -411,7 +412,7 @@ void signal_handler(int s)
 	memset(&settings->threadFlag, 0, sizeof(settings->threadFlag));
 	settings->threadFlag.DebugThread++;
 
-	delay(5);
+	delay(8);
 	printf("[OK]\n");
 	printf("=============================\n\nGoodbay. See you later!\n\n");
 

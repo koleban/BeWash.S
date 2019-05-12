@@ -1,4 +1,4 @@
-#include "../main.h"
+#include "../main.h"                                                  
 
 //#pragma region œÓ‰ÒËÒÚÂÏ‡ "Œ¡Ÿ»≈ Œ¡–¿¡Œ“ » ¬Õ”“–≈ÕÕ≈√Œ ¡Œ —¿"
 
@@ -82,26 +82,23 @@ void helper_TurnRelaysOnProgramm(int program)
 		for (int index=0; index<4; index++)
 		{
 			int relNum = ((settings->progRelay[newPrgNumber] >> (index*8)) & 0xFF);
-			if ((settings->progLimitSumm[newPrgNumber] > 0) && (status.extDeviceInfo.rfid_cardPresent != 1))
+			if ((settings->progLimitSumm[newPrgNumber] > 0) && (status.extDeviceInfo.rfid_cardPresent == 0) && (status.intDeviceInfo.money_currentBalance >= settings->progLimitSumm[newPrgNumber]))
 			{
-				if (settings->progLimitSumm[newPrgNumber] >= status.intDeviceInfo.money_currentBalance)
+				if ((relNum < 16) && (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
 				{
-					if ((relNum < 16) && (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
-					{
-						status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
-					}
-					relNum = ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF);
-					if (relNum < 16)
-						status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+					status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
 				}
+				relNum = ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF);
+				if (relNum < 16)
+					status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
 			}
 			else
 			{
 				if (relNum < 16)
 					status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
-				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16)
+				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16) 
 					&& (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
-						status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
+					status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
 			}
 		}
 	}

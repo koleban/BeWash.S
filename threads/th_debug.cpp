@@ -279,7 +279,7 @@ PI_THREAD(DebugThread)
 		else attr1 = 40;
 		printf("bypassMode: \x1b[%dm%04d\x1b[%dm|", attr1, engine->bypassMode, attr2);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("bypass_V:[%2d] %2d|", bypassPinNum, (getGPIOState(bypassPinNum) == 0));	// 17 chars
+		printf("in BP mod:[%2d]%2d|", bypassPinNum, (getGPIOState(bypassPinNum) == 0));	// 17 chars
 		//
 		// Device status
 		CCBillDevice* 	billDevice 	= CCBillDevice::getInstance();

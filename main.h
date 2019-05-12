@@ -237,6 +237,10 @@ extern int btnMasterProgress;
 
 extern DWORD remoteCounter[30][2];
 extern DWORD remoteCounterSumm[30][3];
+
+// ФЛАГИ: ВЫПОЛНЯЕТСЯ ВНЕШНЯЯ КОМАНДА //
+// Нажатие кнопки инкасации
+extern int externalCmd_collectionButton;
 //
 //--------------------------------------------------
 //

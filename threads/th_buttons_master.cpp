@@ -57,7 +57,7 @@ PI_THREAD(ButtonMasterWatch)
 		int delayTime = 100;
 		settings->workFlag.ButtonMasterThread = 0;
 
-		if (settings->getEnabledDevice(DVC_BUTTON_COLLECTION))
+		if ((settings->getEnabledDevice(DVC_BUTTON_COLLECTION)) && (externalCmd_collectionButton == 0))
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
 			int timeout = 50;
