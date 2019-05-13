@@ -14,6 +14,7 @@ MoneyCoinInfo logMoneyInfo;
 char iddqd_etalon[20];
 
 double dsSize = 0;
+extern int dayLightWork;
 
 ///////////////////////////////////////////////////////////////////////////////////
 /// Выключаем реле

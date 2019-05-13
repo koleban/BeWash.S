@@ -460,6 +460,10 @@ public:
 	int					countAutoStop;
 	int					valveTimeOff;
 
+	int 				dayLightSaving;
+	int 				dayLightSavingOnHour;
+	int 				dayLightSavingOffHour;
+
   	bool 				loadConfig			(char* fileName);
   	bool 				saveConfig			(char* fileName);
 

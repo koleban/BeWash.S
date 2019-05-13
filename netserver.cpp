@@ -120,6 +120,7 @@ PI_THREAD(NetServerClientThread)
 
 		DeviceInfo* inDeviceInfo 	= (DeviceInfo*)packetData;
 		DWORD* addMoneyParam 		= (DWORD*)packetData;
+		short tmp22 = 0;
 
 		memset(&answer[0], 0, sizeof(answer));
 		if (externalCtrl++ > 10) externalCtrl = 10;
@@ -227,8 +228,9 @@ PI_THREAD(NetServerClientThread)
 					printf("[NETCTRL] >> External command: Get app ver: ERROR\n");
 				break;
 			case CMD_SRV_ADD_MONEY:
-				status.intDeviceInfo.money_currentBalance += *((short*)packetData);
-				status.extDeviceInfo.remote_currentBalance += *((short*)packetData);
+				memcpy(&tmp22, packetData, 2);
+				status.intDeviceInfo.money_currentBalance += tmp22;
+				status.extDeviceInfo.remote_currentBalance += tmp22;
 				DataLen = 6;
 				answer[0] = 0x02;
 				answer[1] = 0xFF;
@@ -239,8 +241,8 @@ PI_THREAD(NetServerClientThread)
 					printf("[NETCTRL] >> External command: Add money: ERROR\n");
 
 				if (settings->debugFlag.NetServer)
-					printf("[NETCTRL] External command: Add money: %2d\n", *((short*)packetData));
-				if (db->Log(DB_EVENT_TYPE_EXT_SRV_ADD_MONEY, *((short*)packetData), 0, "External command: Add money"))
+					printf("[NETCTRL] External command: Add money: %2d\n", tmp22);
+				if (db->Log(DB_EVENT_TYPE_EXT_SRV_ADD_MONEY, tmp22, 0, "External command: Add money"))
 					printf("[NETCTRL {CMD_SRV_ADD_MONEY} ] IB ERROR: %s\n", db->lastErrorMessage);
 				break;
 			case CMD_SRV_RELOAD_APP:

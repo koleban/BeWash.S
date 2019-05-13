@@ -37,6 +37,7 @@ DWORD remoteCounter[30][2];
 DWORD remoteCounterSumm[30][3];
 
 int externalCmd_collectionButton;
+int dayLightWork = 1;
 
 RemoteCtrl remoteCtrl[30];
 
@@ -108,7 +109,8 @@ void setGPIOState(BYTE pinNum, BYTE state)
 	if ((settings->commonParams.raspRev == 4) && (pinNum>20) && (pinNum<100)) return;
 	if (pinNum != 0xFF)
 	{
-		digitalWrite(pinNum, state);
+		if (digitalRead(pinNum) != state)
+			digitalWrite(pinNum, state);
 	}
 }
 
@@ -413,9 +415,31 @@ void commonDevice_TurnLight(bool flag)
 	Settings* 		settings 	= Settings::getInstance();
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((pinNum == 0xFF) || (pinNum == 0x00)) return;
+	if (settings->dayLightSaving)
+	{
+		time_t currentTime;
+		struct tm localTime;
+		time(&currentTime);
+		localTime = *localtime(&currentTime);
+		if ((localTime.tm_hour >= settings->dayLightSavingOffHour) && (localTime.tm_hour <= settings->dayLightSavingOnHour))
+		{
+			if (dayLightWork == 1) printf("[LIGHT] Day light saving [h_curr: %d h_off: %d h_on: %d]\n", localTime.tm_hour, settings->dayLightSavingOffHour, settings->dayLightSavingOnHour);
+			dayLightWork = 0;
+		}
+		else
+		{
+			if (dayLightWork == 0) printf("[LIGHT] Day light saving OFF [h_curr: %d h_off: %d h_on: %d]\n", localTime.tm_hour, settings->dayLightSavingOffHour, settings->dayLightSavingOnHour);
+			dayLightWork = 1;
+		}
+	}
+	else
+		dayLightWork = 1;
+
+
 	if (flag)
 	{
-		setGPIOState(pinNum, (BYTE)flag);
+		if (dayLightWork) 
+			setGPIOState(pinNum, (BYTE)flag);
 	}
 	else
 	{

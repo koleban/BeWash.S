@@ -275,6 +275,9 @@ bool Settings::loadConfig (char* fileName)
 	thermalParam.tempOn			= iniparser_getint(ini, 	"Thermal:tempOn", 			99);
 	thermalParam.tempOff		= iniparser_getint(ini, 	"Thermal:tempOff", 			99);
 
+	dayLightSaving				= iniparser_getint(ini, 	"Light:dayLightSaving", 	0);
+	dayLightSavingOnHour		= iniparser_getint(ini, 	"Light:OnHour", 			0);
+	dayLightSavingOffHour		= iniparser_getint(ini, 	"Light:OffHour", 			0);
 
 	//
 	// ��������� ������ ��� ������ ���������

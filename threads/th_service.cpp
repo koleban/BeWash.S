@@ -4,6 +4,7 @@ DBParam_DiscountDate	DiscountDates[MAX_PARAM_ARRAY_ITEM + 1];
 DBParam_DiscountParam	DiscountParams[MAX_PARAM_ARRAY_ITEM + 1];
 int dateTimeNeedSync = 0;
 int loadCashAndEngWorkTimeNeed = 0;
+extern int dayLightWork;
 
 PI_THREAD(DiscountWatch)
 {
@@ -61,10 +62,12 @@ PI_THREAD(TurnLightWatch)
 
 	int delaySize = settings->LightTimeOff*10;
 	printf("[DEBUG] Turn light thread. Wait %d sec\n", (int)(delaySize/10));
+
 	while (delaySize-- > 0)
 	{
 		if (status.intDeviceInfo.money_currentBalance > 0) { lightThreadActive = 0; return (void*)0;}
-		setGPIOState(pinNum, 1);
+		if (dayLightWork)
+			setGPIOState(pinNum, 1);
 		delay_ms(100);
 	}
 	printf("[DEBUG] Turn light thread. Turn off light\n");
