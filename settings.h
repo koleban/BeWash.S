@@ -48,7 +48,7 @@
 #define DVC_ENGINE								35		//Двигатель
 
 #define DVC_BUTTON_OUT_COIN						41		//Кнопка выдачи жетонов
-#define DVC_SENSOR_EMPTY_COIN					42		//Датчик отсутсвия жетонов в хоппере
+#define DVC_SENSOR_COIN_OUT						42		//Датчик отсутсвия жетонов в хоппере
 #define DVC_RELAY_OUT_COIN						43		//Сигнал на выдачу жетонов
 
 #define DVC_SENSOR_BYPASS						45		//Датчик потока
