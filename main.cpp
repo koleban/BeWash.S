@@ -7,12 +7,16 @@ extern char comports[30][60];
 int licenseError = 0;
 void signal_handler(int s);
 float prgVer;
+int prgBuild;
 int exitStatus;
 unsigned long gEngineFullWorkTime = 0;
 int	wrkOpenedFlag = 1;
 time_t wrkOpenedDateTime = (time_t)0;
-QueueArray* queueLog = new QueueArray(1000);
+QueueArray* queueLog = new QueueArray(10000);
 QueueArray* queueKkm = new QueueArray(1000);
+int stopWork = 0;
+bool thButton = 0;
+bool thDisplay = 0;
 
 volatile bool detectInProgress = false;
 
@@ -23,6 +27,7 @@ int main(int argc, char *argv[])
 	///
 	///
     prgVer = 2.07;
+    prgBuild = 911;
     ///
     ///
     /////////////////////////
@@ -32,6 +37,7 @@ int main(int argc, char *argv[])
 	char			fileList[10][25];
 	long			fileModTime[10];
 
+	/*
 	struct sigaction sigIntHandler;
 	sigIntHandler.sa_handler = signal_handler;
 	sigemptyset(&sigIntHandler.sa_mask);
@@ -39,6 +45,25 @@ int main(int argc, char *argv[])
 	sigaction(SIGINT, &sigIntHandler, NULL);
 	sigaction(SIGKILL, &sigIntHandler, NULL);
 	sigaction(SIGTERM, &sigIntHandler, NULL);
+	*/
+
+	struct sigaction sigIntHandler;
+	struct sigaction old_action;
+	sigIntHandler.sa_handler = signal_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	
+	sigaction (SIGINT, NULL, &old_action);
+	if (old_action.sa_handler != SIG_IGN)
+		sigaction(SIGINT, &sigIntHandler, NULL);
+	
+	sigaction (SIGKILL, NULL, &old_action);
+	if (old_action.sa_handler != SIG_IGN)
+		sigaction(SIGKILL, &sigIntHandler, NULL);
+
+	sigaction (SIGTERM, NULL, &old_action);
+	if (old_action.sa_handler != SIG_IGN)
+		sigaction(SIGTERM, &sigIntHandler, NULL);
 
 
 	unsigned long md5Hash[4];
@@ -310,9 +335,22 @@ int main(int argc, char *argv[])
 	int detect_timeout = 0;
 	while (settings->threadFlag.MainWatch)
 	{
-		sigaction(SIGINT, &sigIntHandler, NULL);
-		sigaction(SIGKILL, &sigIntHandler, NULL);
-		sigaction(SIGTERM, &sigIntHandler, NULL);
+		sigIntHandler.sa_handler = signal_handler;
+		sigemptyset(&sigIntHandler.sa_mask);
+		sigIntHandler.sa_flags = 0;
+		
+		sigaction (SIGINT, NULL, &old_action);
+		if (old_action.sa_handler != SIG_IGN)
+			sigaction(SIGINT, &sigIntHandler, NULL);
+		
+		sigaction (SIGKILL, NULL, &old_action);
+		if (old_action.sa_handler != SIG_IGN)
+			sigaction(SIGKILL, &sigIntHandler, NULL);
+
+		sigaction (SIGTERM, NULL, &old_action);
+		if (old_action.sa_handler != SIG_IGN)
+			sigaction(SIGTERM, &sigIntHandler, NULL);
+
 		detect_timeout = 3000;
 		while ((detect_timeout--) && (settings->busyFlag.DebugThread)) delay_ms(1);
 		settings->workFlag.RFIDWatch++;
@@ -332,6 +370,38 @@ int main(int argc, char *argv[])
 		settings->workFlag.DebugThread++;
 		settings->workFlag.ThermalWatch++;
 		delay_ms(1000);
+
+		if (settings->workTimeDevice.UseWorkTime)
+		{
+			time_t currTime = time(NULL);
+  			struct tm* timeInfo;
+  			timeInfo = localtime(&currTime);
+  			if 	(  ((timeInfo->tm_hour*60+timeInfo->tm_min)	>= (settings->workTimeDevice.StartTimeHour*60+settings->workTimeDevice.StartTimeMinute)) 
+  				&& ((timeInfo->tm_hour*60+timeInfo->tm_min) <= (settings->workTimeDevice.StopTimeHour*60+settings->workTimeDevice.StopTimeMinute)))
+  			{
+  				if (stopWork != 0)
+  				{
+	  				printf ("Use WORK TIME!!!\n");
+	  				printf ("Starting thread ...\n");
+					stopWork = 0;
+					settings->threadFlag.ButtonWatch = thButton;
+					settings->threadFlag.MonitorWatch = thDisplay;
+					piThreadCreate(MonitorWatch);
+					piThreadCreate(ButtonWatch);
+				}
+			}
+			else if (stopWork == 0)
+			{
+				stopWork = 1;
+  				printf ("Use WORK TIME!!!\n");
+  				printf ("Stoping thread ...\n");
+				thButton = settings->threadFlag.ButtonWatch;
+				thDisplay = settings->threadFlag.MonitorWatch;
+				settings->threadFlag.ButtonWatch = 0;
+				settings->threadFlag.MonitorWatch = 0;
+			}
+		}
+
 		///
 		/// Auto reload configuration after changing ...
 		/// >>>>>>>>>>>>>>>

@@ -41,11 +41,11 @@ void RS485_ClearBuffer(int fd)
 
 int RS485_doCommand(int fd, char *command)
 {
-	int count;
-	int result;
-	char devID;
-	char crc_out[2];
-	char out_buff[2048];
+	int count = 0;
+	int result = 0;
+	char devID = 0x01;
+	char crc_out[2] = {0};
+	char out_buff[2048] = {0};
 	RS485_getCRC(&command[0], 6, &crc_out[0]);
 	devID = command[0];
 

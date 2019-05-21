@@ -42,7 +42,7 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(0,0);
 		term_setattr(1);
 		term_setattr(37);
-		printf("beWash: System v%2.2f | http://www.bewash.ru | +7 (861) 372-52-76", prgVer);
+		printf("beWash: System v%2.2f [build: %d] | http://www.bewash.ru | +7 (861) 372-52-76", prgVer, prgBuild);
 		term_eraseendline();
 
 		//
@@ -76,24 +76,31 @@ PI_THREAD(DebugThread)
 		bool dbOpen = commonDb->IsOpened();
 		if (dbOpen)	term_setattr(32);
 		else term_setattr(31);
-		printf("SQL Database      : %1d|", dbOpen);
+		printf("Common SQL DB     : %1d   ", dbOpen);
+		cur_gotoxy(scr_x-23, dbg_pos++);
+		dbOpen = db->IsOpened();
+		if (dbOpen)	term_setattr(32);
+		else term_setattr(31);
+		printf("Main   SQL DB     : %1d   ", dbOpen);
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		if (!settings->winterMode.winterMode)	term_setattr(32);
 		else term_setattr(31);
-		printf("Winter mode  : %1d(%5d)|", settings->winterMode.winterMode, winterModeActive);
+		printf("Winter mode  : %1d(%4d)", settings->winterMode.winterMode, winterModeActive);
+		term_setattr(0);
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("----------------------");
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		term_setattr(35);
-		printf("External temp : %4d  ", status.intDeviceInfo.externalTemp);
+		printf("Pulse coin error cnt.   ");
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		term_setattr(35);
-		printf("Ext panel temp: %4d  ", status.extDeviceInfo.extCurrentTemp);
-		term_setattr(32);
+		printf("C[4] = %10lu [%4lu]", warningPulseCount[0], warningPulseLength[0]);
+		cur_gotoxy(scr_x-23, dbg_pos++);
+		printf("C[3] = %10lu [%4lu]", warningPulseCount[1], warningPulseLength[1]);
+		cur_gotoxy(scr_x-23, dbg_pos++);
+		printf("C[2] = %10lu [%4lu]", warningPulseCount[2], warningPulseLength[2]);
+		cur_gotoxy(scr_x-23, dbg_pos++);
+		printf("C[1] = %10lu [%4lu]", warningPulseCount[3], warningPulseLength[3]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("----------------------");
-		cur_gotoxy(scr_x-23, dbg_pos++);
-		printf("%s", iddqd);
 
 		//
 		// Current status
@@ -179,7 +186,7 @@ PI_THREAD(DebugThread)
 		}
 		term_setattr(37);
 		cur_gotoxy(scr_x-46, dbg_pos++);
-		printf("$:%6d rur RPM: %04d|", status.intDeviceInfo.allMoney, status.intDeviceInfo.engine_currentRpm);
+		printf("$:%6d rur          |", status.intDeviceInfo.allMoney);
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		printf("BAL: %5d I: %s |", status.intDeviceInfo.money_currentBalance, &idkfa[0]);
 		cur_gotoxy(scr_x-46, dbg_pos++);
@@ -206,18 +213,18 @@ PI_THREAD(DebugThread)
 		// Relay 10 - 19
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		term_setattr(35);
-		printf("E");
+		printf("I");
 		term_setattr(32);
-		printf(" 1 2 3 4 5 6 7 8 9 10|");
+		printf("11 12 13 14 15 16 17 |");
 		relayIndex = 0;
 		term_setattr(34);
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		printf(" ");
-		for (relayIndex=0; relayIndex < 10; relayIndex++)
+		for (relayIndex=10; relayIndex < 17; relayIndex++)
 		{
-			rval = status.extDeviceInfo.relay_currentVal[relayIndex];
+			rval = status.intDeviceInfo.relay_currentVal[relayIndex];
 			if (rval) term_setattr(43);	else term_setattr(40);
-			printf(" %1d", rval);
+			printf(" %1d ", rval);
 		}
 		printf(" |");
 		//
@@ -279,68 +286,17 @@ PI_THREAD(DebugThread)
 		else attr1 = 40;
 		printf("bypassMode: \x1b[%dm%04d\x1b[%dm|", attr1, engine->bypassMode, attr2);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
+		if (getGPIOState(bypassPinNum) == 0)
+			term_setattr(42);
+		else
+			term_setattr(40);
 		printf("in BP mod:[%2d]%2d|", bypassPinNum, (getGPIOState(bypassPinNum) == 0));	// 17 chars
-		//
-		// Device status
-		CCBillDevice* 	billDevice 	= CCBillDevice::getInstance();
-		CoinDevice* 	coinDevice1 	= CoinDevice::getInstance();
-		RFIDDevice* 	rfidDevice = RFIDDevice::getInstance();
-  		//CCTalkBillDevice* ccTalkBillDevice = CCTalkBillDevice::getInstance();
-
 		term_setattr(37);
+		term_setattr(0);
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("----------------+");
-		term_setattr(30);
-		term_setattr(47);
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf(" PERIPH STATUS  ");
-		term_setattr(40);
-		term_setattr(37);
-		printf("|");
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("----------------+");	// 17 chars
-//		if (!ccTalkBillDevice->IsOpened() && settings->threadFlag.MoneyCCTalkWatch)
-//			term_setattr(31);
-//		else
-//			term_setattr(0);
-//		cur_gotoxy(scr_x-63, dbg_pos++);
-//		printf("CCTalk Bill Vl %1d", (!ccTalkBillDevice->IsOpened() && settings->threadFlag.MoneyCCTalkWatch));	// 17 chars
-
-		if (!billDevice->IsOpened() && settings->threadFlag.MoneyWatch)
-			term_setattr(31);
-		else
-			term_setattr(0);
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Bill Validator %1d", (!billDevice->IsOpened() && settings->threadFlag.MoneyWatch));	// 17 chars
-
-		if (!settings->threadFlag.CoinPulseWatch)
-			term_setattr(31);
-		else
-			term_setattr(0);
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Coin Pulse Act %1d", (!settings->threadFlag.CoinPulseWatch));	// 17 chars
-
-		if (!rfidDevice->IsOpened() && settings->threadFlag.RFIDWatch)
-			term_setattr(31);
-		else
-			term_setattr(0);
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("RFID Reader    %1d", (!rfidDevice->IsOpened() && settings->threadFlag.RFIDWatch));	// 17 chars
-
-		if (status.extDeviceInfo.collectionButton)
-			term_setattr(31);
-		else
-			term_setattr(0);
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Collection BTN %1d", status.extDeviceInfo.collectionButton);	// 17 chars
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("----------------+");	// 17 chars
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Serial: %08X", settings->digitalVector);	// 17 chars
-		printf("|");
-		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Link ERR: %6d", keyErrorCount);	// 17 chars
-		printf("|");
+		printf("Collection BTN %1d|", status.extDeviceInfo.collectionButton);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("----------------+");	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
@@ -348,6 +304,11 @@ PI_THREAD(DebugThread)
 		printf("|");
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("Queue KKM: %5d", queueKkm->QueueCount);	// 17 chars
+		printf("|");
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("----------------+");	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("Serial: %08X", settings->digitalVector);	// 17 chars
 		printf("|");
 
 		cur_loadattr();

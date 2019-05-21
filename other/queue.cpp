@@ -14,6 +14,7 @@
 
 QueueArray::QueueArray()
 {
+	QueueCount = 0;
 	QueueSize = 100;
 	QUEUE_ELEMENTS = 100;
 	QUEUE_SIZE = QUEUE_ELEMENTS + 1;
@@ -24,6 +25,7 @@ QueueArray::QueueArray()
 
 QueueArray::QueueArray(unsigned int queueSize)
 {
+	QueueCount = 0;
 	QueueSize = queueSize;
 	QUEUE_ELEMENTS = queueSize;
 	QUEUE_SIZE = QUEUE_ELEMENTS + 1;

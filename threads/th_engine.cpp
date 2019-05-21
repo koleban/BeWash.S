@@ -127,6 +127,7 @@ PI_THREAD(EngineWatch)
 	engine->engineStop();
 	engine->CloseDevice();
 	printf("[ENG]: Thread ended.\n");
+
 	return (void*)0;
 }
 //#pragma endregion

@@ -229,6 +229,7 @@ extern unsigned long keyErrorCount;
 extern int licenseError;
 
 extern float prgVer;
+extern int prgBuild;
 extern int globalThreadId;
 extern int externalCtrl;
 
@@ -241,6 +242,13 @@ extern DWORD remoteCounterSumm[30][3];
 // ФЛАГИ: ВЫПОЛНЯЕТСЯ ВНЕШНЯЯ КОМАНДА //
 // Нажатие кнопки инкасации
 extern int externalCmd_collectionButton;
+
+// Количество помех по ИМПУЛЬСНЫМ ВХОДАМ
+// Для отображения в режиме отладки
+//
+extern unsigned long warningPulseCount[4];
+extern unsigned long warningPulseLength[4];
+
 //
 //--------------------------------------------------
 //

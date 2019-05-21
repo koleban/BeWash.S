@@ -286,7 +286,7 @@ DWORD CCTalkBillDevice::cmdPoll()	// [FLAG][BILL_TYPE] - 2 bytes
 			{
 				if (errorId > 0)
 				{
-					printf("     ========> BILL error: %s\n", billErrors[errorId]);
+					printf("     ========> BILL error: [errorId: %d commandId: %d eventId: %d coinId: %d] %s\n", errorId, commandId, eventId, coinId, billErrors[errorId]);
 				}
 			}
 		}

@@ -187,8 +187,11 @@ int thServiceSetupCashEngWork(Settings* settings)
 		if (commonDb->Query(DB_QUERY_TYPE_GET_CASH_STORE, param1, &moneyStore))
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 
-		status.intDeviceInfo.allMoney = status.intDeviceInfo.allMoney + (DWORD)moneyStore;
-		printf("  ===> Load cash store (database): $%d - %s\n", status.intDeviceInfo.allMoney, (char*)&status.intDeviceInfo.wrkOpened[0]);
+		if (!settings->useEeprom)
+		{
+			status.intDeviceInfo.allMoney = status.intDeviceInfo.allMoney + (DWORD)moneyStore;
+			printf("  ===> Load cash store (database): $%d - %s\n", status.intDeviceInfo.allMoney, (char*)&status.intDeviceInfo.wrkOpened[0]);
+		}
 
 		if (commonDb->Query(DB_QUERY_TYPE_GET_ENGINE_WORK_TIME, NULL, &engFullWorkTime))
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
@@ -213,12 +216,12 @@ PI_THREAD(load_params_from_db)
 		if (dateTimeNeedSync == 0)
 			dateTimeNeedSync = thServiceSetupSystemDateTime(settings);
 		if (!settings->useDatabase) {delay_ms(60000); continue; }
-		commonDb->Open();
+		if (commonDb->Open() != DB_OK) {delay_ms(5000); continue; }
 		if (!commonDb->IsOpened())
 		{
 			printf("[DEBUG] Load parameters from db ... Database open error!\n");
 			commonDb->Close();
-			timeOut = 10;
+			timeOut = 60;
 			while (settings->threadFlag.MainWatch && (timeOut-- > 0))
 				delay(1);
 			continue;
@@ -457,8 +460,12 @@ PI_THREAD(ClearQueueLog)
 	while(1)
 	{
 	    int timeout = 100;
-		if (db->IsOpened())
+		if ((db->IsOpened()) && (queueLog->QueueCount > 0))
 		{
+			db->Close();
+			delay_ms(1000);
+			db->Open();
+			if (!db->IsOpened()) { delay_ms(60000); continue; }
 		    while ((timeout-->0) && (settings->busyFlag.QueueLog)) delay_ms(1);
 			while(queueLog->QueueGet(&valueLog) >= 0)
 			{
@@ -470,7 +477,7 @@ PI_THREAD(ClearQueueLog)
 		}
 		else
 			{ delay_ms(10000); db->Open(); }
-		delay_ms(1000);
+		delay_ms(10000);
 	}
 	return (void*)0;
 }

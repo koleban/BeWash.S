@@ -8,10 +8,11 @@ CC49      = g++4.9
 CFLAGS  =
 # RELEASE
 # -O2 -s -DNDEBUG
-MFLAGS  = -x c++ -std=c++11 -lstdc++ -s -DNDEBUG -lwiringPi -Wsizeof-pointer-memaccess -fdiagnostics-color=auto -fsanitize=undefined -Wno-psabi
+MFLAGS  = -x c++ -std=c++11 -lstdc++ -lwiringPi -Wsizeof-pointer-memaccess -fdiagnostics-color=auto -fsanitize=undefined -Wno-psabi
 #-lcryptopp
 # -fdiagnostics-color=auto -fsanitize=undefined
-LFLAGS  = -x c++ -std=c++11 -lstdc++ -s -DNDEBUG -L/usr/local/lib  -L/usr/lib -lwiringPi -lfbclient -lm -ldl -lpthread  -Wsizeof-pointer-memaccess -Wno-psabi -fdiagnostics-color=auto -fsanitize=undefined
+#-O0 -g
+LFLAGS  = -x c++ -O2 -std=c++11 -lstdc++ -L/usr/local/lib  -L/usr/lib -lwiringPi -lfbclient -lm -ldl -lpthread  -Wsizeof-pointer-memaccess -Wno-psabi -fdiagnostics-color=auto -fsanitize=undefined
 
 AR	= ar
 ARFLAGS = rcv

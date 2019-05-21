@@ -13,6 +13,9 @@ void Engine8400::Init(Settings* settings)
 	// Get device pin 0 - DVC_SENSOR_BYPASS
 	bypassValve 		= settings->getPinConfig(DVC_SENSOR_BYPASS, 1);
 	comPortBaundRate	= settings->engine_baundRate;
+	regState = 0;
+	lastRegState = 0;
+	startTime = 0;
 
 	if (settings->getEnabledDevice(DVC_SENSOR_BYPASS))
 	{

@@ -25,6 +25,7 @@ Settings::Settings()
 	memset(&progLimitRelay,	0x00, sizeof(progLimitRelay));
 	memset(&databaseSettings, 0x00, sizeof(databaseSettings));
 	memset(&gdatabaseSettings, 0x00, sizeof(gdatabaseSettings));
+	memset(&workTimeDevice, 0x00, sizeof(workTimeDevice));
 
 	memset(&modbus, 0x00, sizeof(modbus));
 	memset(&winterMode, 0, sizeof(winterMode));
@@ -40,7 +41,6 @@ Settings::Settings()
 	memset(&remoteCounterParam, 0, sizeof(remoteCounterParam));
 	memset(&remoteCounter, 0, sizeof(remoteCounter));
 	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
-
 
 	int model, rev, mem, maker, overVolted ;
 	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
@@ -278,6 +278,12 @@ bool Settings::loadConfig (char* fileName)
 	dayLightSaving				= iniparser_getint(ini, 	"Light:dayLightSaving", 	0);
 	dayLightSavingOnHour		= iniparser_getint(ini, 	"Light:OnHour", 			0);
 	dayLightSavingOffHour		= iniparser_getint(ini, 	"Light:OffHour", 			0);
+
+	workTimeDevice.UseWorkTime		= iniparser_getint(ini, 	"WorkTime:UseWorkTime",		0);
+	workTimeDevice.StartTimeHour	= iniparser_getint(ini, 	"WorkTime:StartTimeHour",		0);
+	workTimeDevice.StartTimeMinute	= iniparser_getint(ini, 	"WorkTime:StartTimeMinute",		0);
+	workTimeDevice.StopTimeHour		= iniparser_getint(ini, 	"WorkTime:StopTimeHour",		0);
+	workTimeDevice.StopTimeMinute	= iniparser_getint(ini, 	"WorkTime:StopTimeMinute",		0);
 
 	//
 	// ��������� ������ ��� ������ ���������

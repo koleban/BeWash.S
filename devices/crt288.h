@@ -33,11 +33,12 @@ void calcCrc(BYTE* command, WORD bufLen);
 
 class Settings;
 
+
 class Crt288KDevice
 {
 private:
-	static Crt288KDevice* p_instance;
 
+	static Crt288KDevice* p_instance;
 	Crt288KDevice();
 	Crt288KDevice( const Crt288KDevice& );
 	Crt288KDevice& operator=( Crt288KDevice& );
@@ -70,7 +71,7 @@ public:
 	bool 		cmdTest();
 	static Crt288KDevice* getInstance()
 	{
-		if(!p_instance)
+		if (!p_instance)
 			p_instance = new Crt288KDevice();
 		return p_instance;
 	}

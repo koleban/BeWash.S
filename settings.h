@@ -346,6 +346,15 @@ struct KKMParam
 	int LocalTime;			//	1 - Использовать локальное время ККМ (МОСКВА +4 часа)
 };
 
+struct WorkTimeDevice		// Рабочее время объекта
+{
+	int 	UseWorkTime;
+	int		StartTimeHour;
+	int 	StartTimeMinute;
+	int		StopTimeHour;
+	int 	StopTimeMinute;
+};
+
 class Settings
 {
 private:
@@ -453,6 +462,10 @@ public:
 	// Работа с БД
 	DatabaseSettings	gdatabaseSettings;
 	DatabaseSettings	databaseSettings;
+
+	//
+	// Рабочее время объекта
+	WorkTimeDevice		workTimeDevice;
 
 	int 				engine_baundRate;
 	int					engine_deviceType;
