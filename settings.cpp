@@ -269,6 +269,7 @@ bool Settings::loadConfig (char* fileName)
 	engine_baundRate 			= iniparser_getuint(ini, 	"Engine:BAUND",			9600);
 	engine_deviceType 			= iniparser_getuint(ini, 	"Engine:DEVICE_TYPE",	3);
 	valveTimeOff 				= iniparser_getuint(ini, 	"Engine:ValveTimeOff",	2);
+	engine_relay 				= (DWORD)iniparser_getuint(ini, 	"Engine:Relay",	0);
 
 	sprintf(thermalParam.portName, 	"%s", iniparser_getstring(ini, 	"Thermal:PORT",	""));
 	thermalParam.thermalRelay	= iniparser_getuint(ini, 	"Thermal:ThermalRelay", 	1);

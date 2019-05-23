@@ -472,6 +472,7 @@ public:
 	bool 				useAutoStop;
 	int					countAutoStop;
 	int					valveTimeOff;
+	DWORD				engine_relay;
 
 	int 				dayLightSaving;
 	int 				dayLightSavingOnHour;
