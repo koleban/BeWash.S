@@ -25,12 +25,6 @@ void EngineEmu::Init(Settings* settings)
   			pullUpDnControl (bypassValve, PUD_DOWN) ;
   		}
 	}
-	if (settings->engine_relay > 0)
-	{
-		setGPIOState(settings->engine_relay, 0);
-		setPinModeMy(settings->engine_relay, 0);
-		pullUpDnControl (settings->engine_relay, PUD_DOWN) ;
-	}
 }
 
 bool EngineEmu::IsOpened()
@@ -64,14 +58,6 @@ bool EngineEmu::engineStart(int freq)
 //	result |= RS485_doCommand(streamId, &command2[0]);
 	if (startTime == 0)
 		startTime = get_uptime() - workTimeSec;
-	if ((freq > 500) && (settings->engine_relay > 0))
-	{
-		setGPIOState(settings->engine_relay, 1);
-	}
-	else if (settings->engine_relay > 0)
-	{
-		setGPIOState(settings->engine_relay, 0);
-	}
 	return result;
 }
 
@@ -84,11 +70,6 @@ bool EngineEmu::engineStop()
 	if ((startTime > 0) && (workTimeSec == 0))
 		workTimeSec = (get_uptime() - startTime);
 	startTime = 0;
-
-	if (settings->engine_relay > 0)
-	{
-		setGPIOState(settings->engine_relay, 0);
-	}
 
 	engineRotates = false;
 	needFreq = 0;
@@ -123,14 +104,6 @@ bool EngineEmu::engineUpdate()
 				bypassCounter = 0;
 			bypassMode = (bypassCounter > 1);
 		}
-	}
-
-	if (settings->engine_relay > 0)
-	{
-		if ((needFreq > 500) && (!bypassMode))
-			setGPIOState(settings->engine_relay, 1);
-		else
-			setGPIOState(settings->engine_relay, 0);
 	}
 
 	if (bypassMode)

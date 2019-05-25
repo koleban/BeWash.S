@@ -116,9 +116,13 @@ PI_THREAD(ButtonWatch)
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
 			int timeout = 50;
-			while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
-
-			status.extDeviceInfo.collectionButton = (timeout < 1);
+			int btnStopTimeOut = 50;
+			while ((timeout-- > 0) && getGPIOState(currentPin)) 
+			{ if (getGPIOState(settings->getPinConfig(DVC_BUTTON01, 1)) == 1) btnStopTimeOut--; delayTime--; delay_ms(1); }
+            if (btnStopTimeOut != 0)
+				status.extDeviceInfo.collectionButton = (timeout < 1);
+			else
+				int tmp11 = 0;		// ÐÅÆÈÌ ÏÀÐÀÌÅÒÐÈÇÀÖÈÈ EEPROM
 			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
 				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
 			if ((settings->debugFlag.ButtonWatch) && (!last_collectionButton) && (status.extDeviceInfo.collectionButton))

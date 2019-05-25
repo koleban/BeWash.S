@@ -249,6 +249,11 @@ extern int externalCmd_collectionButton;
 extern unsigned long warningPulseCount[4];
 extern unsigned long warningPulseLength[4];
 
+//////////////////////
+/// EEPROM PARAMETERS
+///
+extern DWORD eepromPrgPrice[];
+
 //
 //--------------------------------------------------
 //

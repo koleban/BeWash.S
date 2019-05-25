@@ -107,6 +107,9 @@
 
 #define MONEY_COIN_TYPE_COUNT	17
 
+#define MENU_X									4
+#define MENU_Y									16
+
 struct MoneyCoinInfo
 {
 	WORD Count[MONEY_COIN_TYPE_COUNT];
@@ -355,6 +358,13 @@ struct WorkTimeDevice		// Рабочее время объекта
 	int 	StopTimeMinute;
 };
 
+struct MenuDescriptor
+{
+	int 	menuID;
+	int 	menuSlave;
+	char 	menuName[4];
+};
+
 class Settings
 {
 private:
@@ -480,6 +490,19 @@ public:
 
   	bool 				loadConfig			(char* fileName);
   	bool 				saveConfig			(char* fileName);
+
+  	// MENU
+  	MenuDescriptor		menu[MENU_X][MENU_Y];
+  	int 				menuX = 0;
+  	int					menuY = 0;
+	void menuLeft()
+	{if (menuX == 0) menuX = MENU_X-1; else menuX--; menuY = 0;}
+	void menuRight()
+	{if (menuX == MENU_X-1) menuX = 0; else menuX++; menuY = 0;}
+	void menuUp()
+	{if (menuY == 0) menuY = MENU_Y-1; else menuY--;}
+	void menuDown()
+	{if (menuY == MENU_Y-1) menuY = 0; else menuY++;}
 
     static Settings* getInstance() {
         if(!p_instance)

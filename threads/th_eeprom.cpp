@@ -4,9 +4,11 @@
 #define EP_ADDR_MONEY			0x0007	// 4
 #define EP_ADDR_ENGWRKTIME		0x000B	// 4
 #define EP_ADDR_WORKSPACE		0x000F	// 4
-#define EP_ADDR_PRG_PRICE		0x0013	// 12x4 byte (48) 0x30 byte
-#define EP_ADDR_PRG_BP_PRICE	0x0043	// 12x4 byte (48) 0x30 byte
-#define EP_ADDR_LAST_PRG_OSMOS	0x0073	// 2
+#define EP_ADDR_PRG_PRICE		0x0013	// 16x4 byte (48) 0x30 byte
+#define EP_ADDR_PRG_BP_PRICE	0x0053	// 16x4 byte (48) 0x30 byte
+#define EP_ADDR_LAST_PRG_OSMOS	0x0093	// 2
+
+extern DWORD eepromPrgPrice[16];
 
 DWORD readFromEEPROM_DWORD(EEPROM* eeprom, WORD addr, BYTE* errorCode = NULL)
 {
@@ -91,6 +93,9 @@ PI_THREAD(EepromThread)
 	int firstRun = 1;
 	int counter = 0;
 	int osmosLastPrg = 0;
+
+	memset (&eepromPrgPrice[0], 0, sizeof(eepromPrgPrice));
+	
 	while (settings->useEeprom)
 	{
 		if (!settings->useEeprom) {delay_ms(1000); continue;}
@@ -232,7 +237,25 @@ PI_THREAD(EepromThread)
 
 		if(settings->useEepromParams == 1)
 		{
+			BYTE errorCodeRead = 0;
+			DWORD prgPrice[16];
+			memset(&prgPrice, 0, sizeof(prgPrice));
 
+			for (int i=0; i<16; i++)
+			{
+				prgPrice[i] = readFromEEPROM_DWORD(eeprom, (EP_ADDR_PRG_PRICE+i*4), &errorCodeRead);
+				if (errorCodeRead != 0)
+					prgPrice[i] = eepromPrgPrice[i];
+			}
+			if (firstRun)
+				for (int i=0; i<16; i++)
+					eepromPrgPrice[i] = prgPrice[i];
+
+			for (int i=0; i<16; i++)
+				if (eepromPrgPrice[i] != prgPrice[i])
+					writeToEEPROM_DWORD(eeprom, (EP_ADDR_PRG_PRICE + i*4), eepromPrgPrice[i]);
+			for (int i=0; i<16; i++)
+				settings->progPrice[i] = eepromPrgPrice[i];
 		}
 
 		firstRun = 0;

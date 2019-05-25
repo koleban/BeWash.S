@@ -38,6 +38,13 @@ PI_THREAD(EngineWatch)
 		if (!engineStatus) delay(1);
 	}
 
+	if (settings->engine_relay > 0)
+	{
+		setGPIOState(settings->engine_relay, 0);
+		setPinModeMy(settings->engine_relay, PIN_OUTPUT);
+		pullUpDnControl (settings->engine_relay, PUD_DOWN) ;
+	}
+
 	term_setattr(31);
 	if (timeout == 0) printf("DBG:> [ENG] Engine INIT stop FAILED!!!\n");
 	term_setattr(0);
@@ -76,6 +83,14 @@ PI_THREAD(EngineWatch)
 			timeout = requestCount;
 			while (!engineStatus && (timeout-->0))
 			{
+				if (settings->engine_relay > 0)
+				{
+					if (settings->debugFlag.EngineWatch)
+						printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
+						((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
+						getGPIOState(settings->engine_relay), settings->engine_relay);
+					setGPIOState(settings->engine_relay, 0);
+				}
 				engine->needFreq = 1;
 				engineStatus |=	engine->engineStart(1);
 				delay_ms(200);
@@ -101,7 +116,17 @@ PI_THREAD(EngineWatch)
 					engineStatus = false;
 					timeout = requestCount;
 					while (!engineStatus && (timeout-->0))
+					{
+						if (settings->engine_relay > 0)
+						{
+							if (settings->debugFlag.EngineWatch)
+								printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
+								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
+								getGPIOState(settings->engine_relay), settings->engine_relay);
+							setGPIOState(settings->engine_relay, 0);
+						}
 						engineStatus = engine->engineStart(500);
+					}
 					if (timeout == 0)
 						if (settings->debugFlag.EngineWatch) printf("[DEBUG] >> [ENG] Timeout [FLAG: 1]\n");
 					delay_ms(settings->commonParams.engine_StartStopTimeMs);
@@ -111,7 +136,17 @@ PI_THREAD(EngineWatch)
 					engineStatus = false;
 					timeout = requestCount;
 					while (!engineStatus && (timeout-->0))
+					{
+						if (settings->engine_relay > 0)
+						{
+							if (settings->debugFlag.EngineWatch)
+								printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN ON [prev: %d; pin: %d]\n",
+								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
+								getGPIOState(settings->engine_relay), settings->engine_relay);
+							setGPIOState(settings->engine_relay, 1);
+						}
 						engineStatus = engine->engineStart(engine->needFreq);
+					}
 					term_setattr(31);
 					if (timeout == 0)
 						if (settings->debugFlag.EngineWatch) printf("[DEBUG] >> [ENG] Timeout [FLAG: 2]\n");

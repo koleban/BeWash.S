@@ -18,19 +18,13 @@ bool EEPROM::Init()
 		int val = -1;
 		timeout = 20;
 		while ((timeout--) && (val < 0))
-		{
 			val = ReadByte(0x0002);
-			delay_ms(EEPROM_DELAY);
-		}
 		if (timeout < 1) return 0;
 		sign = sign | val;
 		val = -1;
 		timeout = 20;
 		while ((timeout--) && (val < 0))
-		{
 			val = ReadByte(0x0001);
-			delay_ms(EEPROM_DELAY);
-		}
 		if (timeout < 1) return 0;
 		sign |= (val << 8);
 		if (sign != 0x2302)
@@ -58,12 +52,6 @@ int EEPROM::WriteByte(WORD address, BYTE data)
 	union i2c_smbus_data i2c_data;
 	i2c_data.block[0] = data;
 	int result = i2c_smbus_access (i2c_handle, I2C_SMBUS_WRITE, (address) & 0xFF, I2C_SMBUS_BYTE_DATA, &i2c_data);
-// 	**********************************
-//	FOR AT24C256 - address data - WORD
-//	i2c_data.block[0] = address & 0xFF;
-//	i2c_data.block[1] = data;
-//	int result = i2c_smbus_access (i2c_handle, I2C_SMBUS_WRITE, (address >> 8) & 0xFF, I2C_SMBUS_WORD_DATA, &i2c_data);
-//
 	useEeprom = false;
 	if (result < 0)
 		return -1;
@@ -74,27 +62,12 @@ int EEPROM::WriteByte(WORD address, BYTE data)
 int EEPROM::ReadByte(WORD address)
 {
 	union i2c_smbus_data data;
+	useEeprom = true;
 	if (i2c_smbus_access(i2c_handle,I2C_SMBUS_READ,address,
 	                     I2C_SMBUS_BYTE_DATA,&data))
-		return -1;
+		{useEeprom = false; return -1;}
 	else
-return 0x0FF & data.byte;
-
-	useEeprom = true;
-//	union i2c_smbus_data data;
-//	******************************
-//	data.block[0] = address & 0xFF;
-//	int result = i2c_smbus_access (i2c_handle, I2C_SMBUS_WRITE, (address >> 8) & 0xFF, I2C_SMBUS_BYTE_DATA, &data);
-//
-	data.block[0] = 0x00;
-	int result = i2c_smbus_access (i2c_handle, I2C_SMBUS_WRITE, (address) & 0xFF, I2C_SMBUS_QUICK, NULL);
-	if (result < 0)
-		return -1;
-	delay_ms(EEPROM_DELAY);
-	int val = wiringPiI2CRead(i2c_handle);
-//	int val = data.byte;
-	useEeprom = false;
-	return val & 0xFF;
+		{useEeprom = false; return 0x0FF & data.byte;}
 }
 
 int EEPROM::ClearEEPROM()
@@ -105,7 +78,7 @@ int EEPROM::ClearEEPROM()
 	{
 		int timeout = 20;
 		while ((timeout--) && (WriteByte(i, 0x00) < 0))
-			delay_ms(EEPROM_DELAY);
+			delay_ms(EEPROM_DELAY*2);
 		if (timeout < 1) return 0;
 		delay_ms(EEPROM_DELAY);
 	}
