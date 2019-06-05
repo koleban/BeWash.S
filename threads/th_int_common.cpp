@@ -7,6 +7,9 @@ int turnedLight = 0;
 int winterModeActivePrev = 0;
 int winterModeEngineActivePrev = 0;
 
+unsigned int summWithCard = 0;
+unsigned int summWithCardPrev = 0;
+
 MoneyCoinInfo inCoinInfo;
 MoneyCoinInfo inMoneyInfo;
 MoneyCoinInfo logCoinInfo;
@@ -164,6 +167,8 @@ PI_THREAD(IntCommonThread)
 		pullUpDnControl (pinNumLight, PUD_DOWN) ;
 	}
 
+	printf ("[DEBUG] IntThread:Param discount with client card [min_sum: %d proc: %d]\n", settings->progPrice[12], settings->progPrice[16]);
+
 	while (settings->threadFlag.IntCommonThread)
 	{
 		// –ассчитываем, что круг этого потока должен составл€ть примерно 100мс
@@ -215,6 +220,12 @@ PI_THREAD(IntCommonThread)
 			// «аблокируем работу потока внешнего бокса
 			settings->busyFlag.ExtCommonThread++;
 
+			if (status.extDeviceInfo.rfid_cardPresent == 0)
+			{
+				summWithCard = 0;
+				summWithCardPrev = 0;
+			}
+
 			for (int index=1; index<MONEY_COIN_TYPE_COUNT; index++)
 			{
 				// ќбработаем монеты
@@ -225,6 +236,7 @@ PI_THREAD(IntCommonThread)
 					inCoinInfo.Count[index] = status.extDeviceInfo.coin_incomeInfo.Count[index];
 					logCoinInfo.Count[index] = subVal;
 					status.intDeviceInfo.money_currentBalance += subVal*settings->coinWeight.Weight[index];
+					summWithCard += subVal*settings->coinWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->coinWeight.Weight[index];
 					printf("[DEBUG] IntThread: Coin [%d] (%d * %d) = %d\n", inCoinInfo.Count[index], subVal, settings->coinWeight.Weight[index], subVal*settings->coinWeight.Weight[index]);
 					nextCoin(settings->coinWeight.Weight[index]);
@@ -276,6 +288,7 @@ PI_THREAD(IntCommonThread)
 					inMoneyInfo.Count[index] = status.extDeviceInfo.bill_incomeInfo.Count[index];
 					logMoneyInfo.Count[index] = subVal;
 					status.intDeviceInfo.money_currentBalance += subVal*settings->moneyWeight.Weight[index];
+					summWithCard += subVal*settings->moneyWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->moneyWeight.Weight[index];
 					printf("[DEBUG] IntThread: Bill index: %d [%d] (%d * %d) = %d\n", index, inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
 					// ѕроверим: ≈сли вставлена карта и есть скидка на пополнение
@@ -303,6 +316,20 @@ PI_THREAD(IntCommonThread)
 					}
 				}
 			}
+			if (status.extDeviceInfo.rfid_cardPresent)
+			{
+				if ((summWithCardPrev != summWithCard) && (settings->progPrice[12] > 0) && (settings->progPrice[16] > 0))
+				{
+					if (summWithCard >= settings->progPrice[12])
+					{
+						int discSummAdd = (int)((double)(summWithCard - summWithCardPrev) * ((double)(settings->progPrice[16])/100));
+						status.intDeviceInfo.money_currentBalance += discSummAdd;
+						printf ("[DEBUG] IntThread: Add money with client card [prev: %d curr: %d min_sum: %d proc: %d res: %d]\n", summWithCardPrev, summWithCard, settings->progPrice[12], settings->progPrice[16], discSummAdd);
+						summWithCardPrev = summWithCard;
+					}
+				}
+			}
+
 			settings->busyFlag.ExtCommonThread--;
 			settings->busyFlag.NetClient--;
 

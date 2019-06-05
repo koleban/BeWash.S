@@ -289,7 +289,7 @@ bool Settings::loadConfig (char* fileName)
 	//
 	// ��������� ������ ��� ������ ���������
 	//
-	for (index=0; index < 16; index++)
+	for (index=0; index < 32; index++)
 	{
 		sprintf(paramName, 	"PrgConfig:PRG%02d_PRICE", index);
 		progPrice[index]						= iniparser_getuint(ini, paramName, 0);

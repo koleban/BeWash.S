@@ -279,7 +279,7 @@ PI_THREAD(load_params_from_db)
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 		else
 			settings->winterMode.winterMode = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterMode;
-		for (indext=0; indext < 16; indext++)
+		for (indext=0; indext < 32; indext++)
 		{
 			qParam[0] = DB_PARAM_COMMON_PRG_PRICE;
 			qParam[1] = indext;

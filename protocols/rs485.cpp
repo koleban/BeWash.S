@@ -87,9 +87,18 @@ int RS485_doCommand(int fd, char *command)
 		command[i] = out_buff[i];
 	result = (count >= 5);
 	if (!result) return result;
+	RS485_getCRC(&command[0], count-2, &crc_out[0]);
+#ifdef DEBUG
+	printf("\nCRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
+#endif
+	result = ((out_buff[count-2] == crc_out[1]) && (out_buff[count-1] == crc_out[0]));
+	return result;
+
+/*
 	RS485_getCRC(&command[0], 6, &crc_out[0]);
 	result |= (((out_buff[6] ^ out_buff[7]) == (crc_out[0] ^ crc_out[1])) && (devID != command[0]));
 	return result;
+*/
 }
 
 int RS485_doCommandS(int fd, char *command, int size)

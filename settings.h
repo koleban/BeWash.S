@@ -412,19 +412,19 @@ public:
 
 	//
 	// Управление программами мойки
-	BYTE		 		progEnabled[16];		// Разрешение использования программ
-	BYTE		 		progPrice[16];			// Стоимость минуты для каждой программы
+	BYTE		 		progEnabled[32];		// Разрешение использования программ
+	WORD		 		progPrice[32];			// Стоимость минуты для каждой программы
 												// prgPrice[14] Стоимость КАРТЫ для диспенсера карт
 												// prgPrice[15] Стоимость Жетона для хоппера
-	BYTE		 		progStopBP[16];			// Останавливать отсчет времени при Байпассе
-	char				progName[16][30];		// Имена программ
-	DWORD		 		progRelay[16];			//
-	DWORD		 		progRelayBp[16];		//
-	DWORD		 		progRPM[16];			//
-	DWORD		 		progDepends[16];		//
-	DWORD		 		progWinterDelay[16];	// В зимнем режиме есть пауза на прокачку
-	DWORD		 		progLimitSumm[16];			//
-	DWORD		 		progLimitRelay[16];			//
+	BYTE		 		progStopBP[32];			// Останавливать отсчет времени при Байпассе
+	char				progName[32][30];		// Имена программ
+	DWORD		 		progRelay[32];			//
+	DWORD		 		progRelayBp[32];		//
+	DWORD		 		progRPM[32];			//
+	DWORD		 		progDepends[32];		//
+	DWORD		 		progWinterDelay[32];	// В зимнем режиме есть пауза на прокачку
+	DWORD		 		progLimitSumm[32];			//
+	DWORD		 		progLimitRelay[32];			//
 	//
 	// Скидки на жетоны
 	CoinDiscount		coinDiscount;
