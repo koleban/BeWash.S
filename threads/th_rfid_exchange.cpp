@@ -21,7 +21,7 @@ PI_THREAD(RFIDExchangeThread)
 	int rt = 0;
 	while (settings->threadFlag.IntCommonThread)
 	{
-			int timeout = 1000;
+			int timeout = 200;
 			while ((settings->busyFlag.RFIDWatch) && (timeout--)) {delay_ms(1);}
 			//if ((lastCardPresent == 0) && (status.extDeviceInfo.rfid_cardPresent == 0)) {delay_ms(200); continue;}
 			settings->busyFlag.RFIDWatch++;
@@ -124,7 +124,7 @@ PI_THREAD(RFIDExchangeThread)
 					}
 			}
 			settings->busyFlag.RFIDWatch = 0;
-		delay_ms(200);
+		delay_ms(100);
 	}
 	db->Close();
 	printf("[RFID_EXCHANGE]: Thread ended.\n");
