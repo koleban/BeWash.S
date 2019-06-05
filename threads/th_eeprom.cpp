@@ -4,9 +4,9 @@
 #define EP_ADDR_MONEY			0x0007	// 4
 #define EP_ADDR_ENGWRKTIME		0x000B	// 4
 #define EP_ADDR_WORKSPACE		0x000F	// 4
-#define EP_ADDR_PRG_PRICE		0x0013	// 16x4 byte (48) 0x30 byte
-#define EP_ADDR_PRG_BP_PRICE	0x0053	// 16x4 byte (48) 0x30 byte
-#define EP_ADDR_LAST_PRG_OSMOS	0x0093	// 2
+#define EP_ADDR_PRG_PRICE		0x0013	// 12x4 byte (48) 0x30 byte
+#define EP_ADDR_PRG_BP_PRICE	0x0043	// 12x4 byte (48) 0x30 byte
+#define EP_ADDR_LAST_PRG_OSMOS	0x0073	// 2
 
 extern DWORD eepromPrgPrice[16];
 

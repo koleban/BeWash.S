@@ -169,6 +169,7 @@ bool Engine8400::engineUpdate()
 		if (command[1] == 0x03)
 		{
 			currFreq = (command[3] << 8) + command[4];
+			if (currFreq > 5200) { delay_ms(50); continue; }
 			engineRotates = (currFreq > 1);
 			bypassMode = ((currFreq > 0) && (currFreq < 550));
 		}

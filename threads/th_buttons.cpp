@@ -201,7 +201,7 @@ PI_THREAD(ButtonWatch)
 			{
 				if (getGPIOState(currentPin))
 				{
-					int timeout = 50;
+					int timeout = 30;
 					if (settings->debugFlag.ButtonWatch)
 						printf("[DEBUG] ButtonWatch: Pressed state on %d button [PIN: %03d]\n", index, currentPin);
 					while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }

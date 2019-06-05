@@ -157,7 +157,7 @@ PI_THREAD(EngineWatch)
 		}
 
 		settings->busyFlag.EngineWatch--;
-		delay_ms(200);
+		delay_ms(400);
 	}
 	engine->engineStop();
 	engine->CloseDevice();
