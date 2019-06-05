@@ -68,6 +68,7 @@ int main()
 {
 	dictionary*   		ini;
 	int useGuard = 0;
+	int useHWClock = 0;
 	int DeviceID;
 	int GuardCheckTimeSec = 2;
 	char paramName[100];
@@ -93,6 +94,14 @@ int main()
 	useGuard							= iniparser_getint(ini, "Guard:Guard", 	0);
 	GuardCheckTimeSec					= iniparser_getint(ini, "Guard:GuardCheckTimeSec", 	2);
 	DeviceID							= iniparser_getint(ini, "Common:DeviceID", 	109);
+	useHWClock							= iniparser_getint(ini, "Common:UseHWClock", 	0);
+
+	if (useHWClock != 0)
+	{
+		sprintf(devaddr, "sudo hwclock -s");
+		printf("Setting Date\\Time from HW Clock (RTC)\n");
+		system(devaddr);
+	}
 
 	sprintf(devaddr, "sudo ifconfig eth0 add 192.168.254.%d netmask 255.255.255.0", DeviceID);
 	printf("Add new IP: %s\n", devaddr);

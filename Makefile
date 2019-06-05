@@ -4,7 +4,7 @@
 
 CL	= clean
 CC      = g++
-CC49      = g++4.9
+CC49      = g++-4.9
 CFLAGS  =
 # RELEASE
 # -O2 -s -DNDEBUG

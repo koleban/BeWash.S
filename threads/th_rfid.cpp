@@ -54,7 +54,7 @@ PI_THREAD(RFIDWatch)
 					if (resultCardID == 0xFFFFFFFF) {status.extDeviceInfo.rfid_errorNum++; settings->workFlag.RFIDWatch = 0; delay_ms(250);}
 					if ((resultCardID < 0xFFFFFFFF) && (resultCardID > 0xFF)) break;
 				}
-				if (tryCount == 0) { printf("RFID Error: %d\n", status.extDeviceInfo.rfid_errorNum); settings->busyFlag.RFIDWatch--; delay_ms(250); continue;}
+				//if (tryCount == 0) { printf("RFID Error: %d\n", status.extDeviceInfo.rfid_errorNum); settings->busyFlag.RFIDWatch--; delay_ms(250); continue;}
 				///
 				/// Проверим чтоб присутствие карты "установилось постоянным"
 				if (prevCardPresent != rfidDevice->cardPresent)
