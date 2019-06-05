@@ -23,10 +23,8 @@ void RFIDDevice::Init(Settings* settings)
 {
     pinLock		= settings->getPinConfig(DVC_RFID_CARD_LIGHT_CONTROL_RED, 1);
     pinUnlock	= settings->getPinConfig(DVC_RFID_CARD_LIGHT_CONTROL_GRN, 1);
-	if (pinLock != 0xFF) 	setPinModeMy(pinLock, 0);
-	if (pinUnlock != 0xFF) 	setPinModeMy(pinUnlock, 0);
-	setGPIOState(pinLock, 	0);
-	setGPIOState(pinUnlock, 0);
+	if (pinLock != 0xFF) 	{ setPinModeMy(pinLock, 0); setGPIOState(pinLock, 	0);}
+	if (pinUnlock != 0xFF) 	{setPinModeMy(pinUnlock, 0); setGPIOState(pinUnlock, 0);}
 }
 
 void RFIDDevice::Detect()

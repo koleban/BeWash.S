@@ -254,6 +254,8 @@ extern unsigned long warningPulseLength[4];
 ///
 extern DWORD eepromPrgPrice[];
 
+// GlobalDB for RFID CARD
+extern Database* gDbCard;
 //
 //--------------------------------------------------
 //

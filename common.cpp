@@ -232,24 +232,24 @@ BYTE getByteByNum(DWORD valDword, BYTE numByte)
 bool getCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 {
 	bool result = 0;
-	Database* gDb = new Database();
-	gDb->Init(&settings->gdatabaseSettings);
-	if (gDb->Open())
+//	Database* gDbCard = new Database();
+//	gDbCard->Init(&settings->gdatabaseSettings);
+	if (gDbCard->Open())
 	{
-		printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
+		printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 		return false;
 	}
 
 	DWORD cardNumber = getCardIDFromBytes(cardNumberBytes);
 	printf("[DEBUG] GDB_CARD: Get card info\n");
-	if (gDb->Query(DB_QUERY_TYPE_GET_CARD_INFO, &cardNumber, cardInfo))
+	if (gDbCard->Query(DB_QUERY_TYPE_GET_CARD_INFO, &cardNumber, cardInfo))
 	{
-		printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
+		printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 	}
 
 	printf("[%lu]: ID: %08X Money: %4d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney);
 
-	gDb->Close();
+//	gDbCard->Close();
 
 	return result;
 }
@@ -271,11 +271,11 @@ bool setCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 bool setCardMoney(BYTE* cardNumberBytes, SDWORD cardMoney)
 {
 	bool result = 0;
-	Database* gDb = new Database();
-	gDb->Init(&settings->gdatabaseSettings);
-	if (gDb->Open())
+//	Database* gDbCard = new Database();
+//	gDbCard->Init(&settings->gdatabaseSettings);
+	if (gDbCard->Open())
 	{
-		printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
+		printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 		return false;
 	}
 
@@ -286,14 +286,14 @@ bool setCardMoney(BYTE* cardNumberBytes, SDWORD cardMoney)
 	cardInfo->cardMoney = cardMoney;
 
 	if (cardMoney != 0)
-		if (gDb->Query(DB_QUERY_TYPE_SET_CARD_INFO, cardInfo, NULL))
+		if (gDbCard->Query(DB_QUERY_TYPE_SET_CARD_INFO, cardInfo, NULL))
 		{
-			printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
+			printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 		}
 
 	printf("[%d]: ID: %08X Money: %4d\n", cardInfo->cardId, cardInfo->cardId, cardInfo->cardMoney);
 
-	gDb->Close();
+//	gDbCard->Close();
 
 	return result;
 }
@@ -447,7 +447,7 @@ void commonDevice_TurnLight(bool flag)
 
 	if (flag)
 	{
-		if (dayLightWork) 
+		if (dayLightWork)
 			setGPIOState(pinNum, (BYTE)flag);
 	}
 	else

@@ -1,5 +1,7 @@
 #include "../main.h"
 
+Database* gDbCard = new Database();
+
 //#pragma region Ïîäñèòåìà "RFID ÎÁÌÅÍ ÄÀÍÍÛÌÈ"
 PI_THREAD(RFIDExchangeThread)
 {
@@ -9,6 +11,7 @@ PI_THREAD(RFIDExchangeThread)
 	BYTE lastCardNumber[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	Database* db = new Database();
 	db->Init(settings);
+	gDbCard->Init(&settings->gdatabaseSettings);
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] RFID: RFID exchange thread init";
