@@ -48,6 +48,8 @@ DWORD remoteCounterSumm[30][3];
 int externalCmd_collectionButton;
 int dayLightWork = 1;
 
+TDeviceWorkMode deviceWorkMode;
+
 RemoteCtrl remoteCtrl[30];
 
 char str[255];

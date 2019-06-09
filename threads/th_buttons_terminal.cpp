@@ -94,7 +94,7 @@ PI_THREAD(ButtonTerminalWatch)
 				currentPin = settings->getPinConfig(DVC_SENSOR_EMPTY_RFID_CARD, 1);
 				setPinModeMy(currentPin, PIN_INPUT);
 				delay_ms(5);
-				int timeout = 50;
+				int timeout = 30;
 				while((timeout-- > 0) && getGPIOState(currentPin)) { delay_ms(1); }
 				if (timeout > 0)
 				{
@@ -154,7 +154,7 @@ PI_THREAD(ButtonTerminalWatch)
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Out RFID card\n");
 						db->Log(DB_EVENT_TYPE_CARD_OUT, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
-						payRFIDCardCounter = 200;
+						payRFIDCardCounter = 20;
 					}
 					else
 					{
@@ -167,6 +167,7 @@ PI_THREAD(ButtonTerminalWatch)
 			}
 		}
 
+		// Ждем 20 тиков до покупки еще одной карты
 		if (payRFIDCardCounter > 0) payRFIDCardCounter--;
 		if (status.intDeviceInfo.money_currentBalance <= 0) payRFIDCardCounter = 0;
 
@@ -178,8 +179,12 @@ PI_THREAD(ButtonTerminalWatch)
 		/// *************************
 		/// progPrice[15] - Стоимость 1 жетона
 		///
-		if ( (settings->progPrice[15] <= status.intDeviceInfo.money_currentBalance) &&
+		if (
+			// Текущий балан больше стоимости жетона 
+			(settings->progPrice[15] <= status.intDeviceInfo.money_currentBalance) &&
+			// Кнопка выдачи жетона определена
 			((settings->getEnabledDevice(DVC_BUTTON_OUT_COIN)) && (settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1) != 0xFF)) &&
+			// Контроль выдачи жетона активен
 			((settings->getEnabledDevice(DVC_RELAY_OUT_COIN)) && (settings->getPinConfig(DVC_RELAY_OUT_COIN, 1) != 0xFF) )
 			)
 		{
@@ -188,7 +193,7 @@ PI_THREAD(ButtonTerminalWatch)
 			if (getGPIOState(currentPin))
 			{
 				int btnError = 0;
-				int timeout = 50;
+				int timeout = 30;
 				if (settings->debugFlag.ButtonTerminalThread)
 					printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY COIN button [PIN: %03d]\n", currentPin);
 				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY COIN button pressed");
@@ -275,6 +280,7 @@ PI_THREAD(ButtonTerminalWatch)
 					}
 					// Останавливаем выдачу жетонов
 				}
+				// Кнопка нажата менее 30 мсек или более 2000 мсек
 				else
 				{
 					if (settings->debugFlag.ButtonTerminalThread)
@@ -282,8 +288,16 @@ PI_THREAD(ButtonTerminalWatch)
 					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonTerminalThread]: Button don't detected. Failed");
 					thread_timeout -= (50 - timeout);
 				}
-
 			}
+		}
+
+		///
+		/// Обработка эквайринга
+		/// Если устройство эквайринга активно
+		/// и активны режимы работы
+		///
+		if (visaDevice->Work)
+		{
 		}
 
 		if (thread_timeout < 0) thread_timeout = 0;

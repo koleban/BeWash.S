@@ -140,9 +140,11 @@ PI_THREAD(ConsoleThread)
 				printf ("Collect mode: [External command]\n");
 				externalCmd_collectionButton = 1;
 				status.extDeviceInfo.collectionButton = 1;
+				deviceWorkMode = TDeviceWorkMode::CollectionMode;
 				delay(5);
 				externalCmd_collectionButton = 0;
 				status.extDeviceInfo.collectionButton = 0;
+				deviceWorkMode = TDeviceWorkMode::WorkMode;
 			break;
 			// prg
 			case 0x20677270:

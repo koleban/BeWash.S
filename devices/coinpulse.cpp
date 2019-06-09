@@ -124,7 +124,7 @@ CoinPulseDevice::CoinPulseDevice()
 void CoinPulseDevice::Init(Settings* settings)
 {
 	BYTE currentDeviceID = DVC_COIN_PULSE_ACCEPTOR;
-	BYTE currentDeviceIDAdd = DVC_COIN_PULSE_ACCEPTOR_ADD;
+	BYTE currentDeviceIDAdd = DVC_COIN_PULSE_ACCEPTOR_INHIBIT;
 
 	printf("[CoinPulse Device] Init ...\n[CoinPulse Device] PIN[ 4  3  2  1] = CoinWeigth [ 4  6  8  10 ]\n");
 	printf("[CoinPulse Device] PIN[4] CoinWeigth[ 4] = %d rur \n", settings->coinWeight.Weight[4]);

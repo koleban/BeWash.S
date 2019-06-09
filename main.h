@@ -75,6 +75,8 @@
 #include "devices/crt288.h"
 #include "devices/lcd.h"
 #include "devices/remoteCtrl.h"
+#include "devices/visa.h"
+#include "devices/pax_d200.h"
 #include "protocols/ccnet.h"
 #include "protocols/cctalk.h"
 #include "protocols/max7219.h"
@@ -168,6 +170,7 @@ PI_THREAD(AlienDeviceWatch);
 PI_THREAD(OsmosWatch);
 PI_THREAD(ButtonTerminalWatch);
 
+PI_THREAD(VisaDeviceWatch);
 // ����������
 extern Settings* 		settings;
 extern NetServer* 		netServer;
@@ -179,6 +182,7 @@ extern Monitor*			monitor;
 extern RelaySwitch* 	relay;
 extern Sensors*			sensors;
 extern Engine*			engine;
+extern VisaDevice*		visaDevice;
 #ifndef _RFID_DEVICE_CRT288K_
 extern RFIDDevice* 		rfid;
 #endif
@@ -256,6 +260,9 @@ extern DWORD eepromPrgPrice[];
 
 // GlobalDB for RFID CARD
 extern Database* gDbCard;
+
+// Global DEVICE WORK MODE
+extern TDeviceWorkMode deviceWorkMode;
 //
 //--------------------------------------------------
 //
@@ -321,7 +328,7 @@ typedef enum
 	WaitSelectDevice = 2,
 	SendingCommand = 3,
 	PrintCheck = 4,
-	CollectionMode = 5
+	CollectionModeWork = 5
 } TBtnMasterProgress;
 
 #ifdef CRYPTOPP

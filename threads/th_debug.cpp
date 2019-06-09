@@ -298,6 +298,25 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("Collection BTN %1d|", status.extDeviceInfo.collectionButton);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
+		switch (deviceWorkMode)
+		{
+			case TDeviceWorkMode::WorkMode:
+				printf("WM: WorkMode    |");	// 17 chars
+				break;
+			case TDeviceWorkMode::CollectionMode:
+				printf("WM: CollectionMo|");	// 17 chars
+				break;
+			case TDeviceWorkMode::SettingsMode:
+				printf("WM: SettingsMode|");	// 17 chars
+				break;
+			case TDeviceWorkMode::VISAMode:
+				printf("WM: VISAMode    |");	// 17 chars
+				break;
+			default:
+				printf("WM: !!UNKNOWN!! |");	// 17 chars
+				break;
+		}
+		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("----------------+");	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("Queue log: %5d", queueLog->QueueCount);	// 17 chars

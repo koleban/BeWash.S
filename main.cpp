@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGTERM, &sigIntHandler, NULL);
 	*/
 
+	deviceWorkMode = TDeviceWorkMode::WorkMode;
 	struct sigaction sigIntHandler;
 	struct sigaction old_action;
 	sigIntHandler.sa_handler = signal_handler;
@@ -236,6 +237,8 @@ int main(int argc, char *argv[])
 		engine				= (Engine*)Engine8400::getInstance();
 	else
 		engine				= (Engine*)EngineEmu::getInstance();
+
+	visaDevice = (VisaDevice*)PaxD200::getInstance();
 #ifndef _RFID_DEVICE_CRT288K_
 	rfid = RFIDDevice::getInstance();
 #endif
@@ -325,6 +328,8 @@ int main(int argc, char *argv[])
 	piThreadCreate(OsmosWatch);
 
 	piThreadCreate(ButtonTerminalWatch);
+
+	piThreadCreate(VisaDeviceWatch);
 
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;

@@ -41,6 +41,7 @@ Settings::Settings()
 	memset(&remoteCounterParam, 0, sizeof(remoteCounterParam));
 	memset(&remoteCounter, 0, sizeof(remoteCounter));
 	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
+	memset(&visaParam, 0, sizeof(visaParam));
 
 	int model, rev, mem, maker, overVolted ;
 	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
@@ -189,6 +190,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.AlienDeviceThread		= iniparser_getuint(ini, "ThreadFlag:RemoteCounterCtrlThread", 	0);
 	threadFlag.OsmosThread				= iniparser_getuint(ini, "ThreadFlag:OsmosThread", 	0);
 	threadFlag.ButtonTerminalThread		= iniparser_getuint(ini, "ThreadFlag:ButtonTerminalThread", 	0);
+	threadFlag.VisaDeviceThread			= iniparser_getuint(ini, "ThreadFlag:VisaDeviceThread", 	0);
 
 	debugFlag.DebugThread				= threadFlag.DebugThread;
 	debugFlag.NetServer					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:NetServer", 		0);
@@ -217,6 +219,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.AlienDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCounterCtrlThread", 	0);
 	debugFlag.OsmosThread				= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:OsmosThread", 	0);
 	debugFlag.ButtonTerminalThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonTerminalThread", 	0);
+	debugFlag.VisaDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:VisaDeviceThread", 	0);
 
 	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
@@ -352,6 +355,65 @@ bool Settings::loadConfig (char* fileName)
 		sprintf(paramName, 	"Device_Enabled:enabledDevice_%03d", index);
 		enabledDevice[index]							= iniparser_getuint(ini, paramName, 0);
 	}
+
+	sprintf(visaParam.portName, 	"%s", iniparser_getstring(ini, 	"VISA:PORT", 			"/dev/ttyUSB0"	));
+	visaParam.baudRate 						= iniparser_getuint(ini, 	"VISA:BAUND",			9600);
+	visaParam.dataParity 					= (char)(0xFF & iniparser_getuint(ini, 	"VISA:PARITY",		'N'));	// ÏÐÈÍÈÌÀÅÒ "ÑÈÌÂÎË" (char) Val: 'N' 'O' 'D'
+	visaParam.dataBit 						= iniparser_getuint(ini, 	"VISA:BIT",			8);
+	visaParam.stopBit 						= iniparser_getuint(ini, 	"VISA:STOPBIT",		0);
+	//--
+	visaParam.workMode						= iniparser_getuint(ini, 	"VISA:WorkMode",	0);
+	visaParam.sub10Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Sub10Btn_PIN",	0);
+	visaParam.sub10Btn.pinEnable			= (BYTE)(visaParam.sub10Btn.pinNum > 0);
+	visaParam.add10Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Add10Btn_PIN",	0);
+	visaParam.add10Btn.pinEnable			= (BYTE)(visaParam.add10Btn.pinNum > 0);
+	visaParam.add50Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Add50Btn_PIN",	0);
+	visaParam.add50Btn.pinEnable			= (BYTE)(visaParam.add50Btn.pinNum > 0);
+	visaParam.add100Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Add100Btn_PIN",	0);
+	visaParam.add100Btn.pinEnable			= (BYTE)(visaParam.add100Btn.pinNum > 0);
+	visaParam.add500Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Add500Btn_PIN",	0);
+	visaParam.add500Btn.pinEnable			= (BYTE)(visaParam.add500Btn.pinNum > 0);
+	
+	visaParam.payBtn.pinNum					= (BYTE)iniparser_getuint(ini, 	"VISA:PayBtn_PIN",	0);
+	visaParam.payBtn.pinEnable				= (BYTE)(visaParam.payBtn.pinNum > 0);
+	visaParam.cancelBtn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:CancelBtn_PIN",	0);
+	visaParam.cancelBtn.pinEnable			= (BYTE)(visaParam.cancelBtn.pinNum > 0);
+
+	visaParam.pay50Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay50Btn_PIN",	0);
+	visaParam.pay50Btn.pinEnable			= (BYTE)(visaParam.pay50Btn.pinNum > 0);
+	visaParam.pay100Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay100Btn_PIN",	0);
+	visaParam.pay100Btn.pinEnable			= (BYTE)(visaParam.pay100Btn.pinNum > 0);
+	visaParam.pay150Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay150Btn_PIN",	0);
+	visaParam.pay150Btn.pinEnable			= (BYTE)(visaParam.pay150Btn.pinNum > 0);
+	visaParam.pay200Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay200Btn_PIN",	0);
+	visaParam.pay200Btn.pinEnable			= (BYTE)(visaParam.pay200Btn.pinNum > 0);
+	visaParam.pay500Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay500Btn_PIN",	0);
+	visaParam.pay500Btn.pinEnable			= (BYTE)(visaParam.pay500Btn.pinNum > 0);
+
+/*
+[VISA]
+PORT = "/dev/ttyUSB0"
+BAUND = 9600
+BIT = 8
+STOPBIT = 0
+;--
+WorkMode = 0
+;--
+PayBtn_PIN = 0
+CancelBtn_PIN = 0
+;--
+Sub10Btn_PIN = 0
+Add10Btn_PIN = 0
+Add50Btn_PIN = 0
+Add100Btn_PIN = 0
+Add500Btn_PIN = 0
+;--
+Pay50Btn_PIN = 0
+Pay100Btn_PIN = 0
+Pay150Btn_PIN = 0
+Pay200Btn_PIN = 0
+Pay500Btn_PIN = 0
+*/
 
 	digitalKey 		= (unsigned long)iniparser_getlong(ini, 	"License:KEY1",			0xF7ED);
 	digitalKey 		= (digitalKey << 16) + (unsigned long)iniparser_getlong(ini, 	"License:KEY2",			0x936C);

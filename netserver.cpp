@@ -254,9 +254,11 @@ PI_THREAD(NetServerClientThread)
 				printf ("Collect mode: [External command]\n");
 				externalCmd_collectionButton = 1;
 				status.extDeviceInfo.collectionButton = 1;
+				deviceWorkMode = TDeviceWorkMode::CollectionMode;
 				delay(5);
 				externalCmd_collectionButton = 0;
 				status.extDeviceInfo.collectionButton = 0;
+				deviceWorkMode = TDeviceWorkMode::WorkMode;
 				break;
 
 			case CMD_SRV_DONWLOAD_CONFIG:

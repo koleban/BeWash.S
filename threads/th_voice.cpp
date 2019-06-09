@@ -25,7 +25,7 @@ PI_THREAD(VoiceWatch)
 				case TBtnMasterProgress::PrintCheck:
 					printf("[VOICE] Progress state: TBtnMasterProgress::PrintCheck\n");
 					break;
-				case TBtnMasterProgress::CollectionMode:
+				case TBtnMasterProgress::CollectionModeWork:
 					printf("[VOICE] Progress state: TBtnMasterProgress::CollectionMode\n");
 					break;
 

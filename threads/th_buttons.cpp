@@ -101,6 +101,7 @@ PI_THREAD(ButtonWatch)
 	}
 
 	int last_collectionButton = status.extDeviceInfo.collectionButton;
+	int last_settingsButton = 0;
 	while (settings->threadFlag.ButtonWatch)
 	{
 		int delayTime = 100;
@@ -116,13 +117,9 @@ PI_THREAD(ButtonWatch)
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
 			int timeout = 50;
-			int btnStopTimeOut = 50;
 			while ((timeout-- > 0) && getGPIOState(currentPin)) 
-			{ if (getGPIOState(settings->getPinConfig(DVC_BUTTON01, 1)) == 1) btnStopTimeOut--; delayTime--; delay_ms(1); }
-            if (btnStopTimeOut != 0)
-				status.extDeviceInfo.collectionButton = (timeout < 1);
-			else
-				int tmp11 = 0;		// РЕЖИМ ПАРАМЕТРИЗАЦИИ EEPROM
+			{ delayTime--; delay_ms(1); }
+			status.extDeviceInfo.collectionButton = (timeout < 1);
 			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
 				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
 			if ((settings->debugFlag.ButtonWatch) && (!last_collectionButton) && (status.extDeviceInfo.collectionButton))
@@ -131,8 +128,38 @@ PI_THREAD(ButtonWatch)
 				printf("[DEBUG] ButtonWatch: Collection button is TURN OFF\n");
 		}
 
+		if (settings->getEnabledDevice(DVC_BUTTON_SETTINGS))
+		{
+			currentPin = settings->getPinConfig(DVC_BUTTON_SETTINGS, 1);
+			int timeout = 50;
+			if (deviceWorkMode != TDeviceWorkMode::SettingsMode)
+			{
+				while ((timeout-- > 0) && getGPIOState(currentPin)) 
+					{ delayTime--; delay_ms(1); }
+				if (timeout < 1)
+					deviceWorkMode = TDeviceWorkMode::SettingsMode;
+			}
+			else
+			{
+				if ((getGPIOState(currentPin) == 0))
+					deviceWorkMode = TDeviceWorkMode::WorkMode;
+			}
+			if ((!last_settingsButton) && (deviceWorkMode == TDeviceWorkMode::SettingsMode))
+				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Settings button pressed!");
+			if ((settings->debugFlag.ButtonWatch) && (!last_settingsButton) && (deviceWorkMode == TDeviceWorkMode::SettingsMode))
+				printf("[DEBUG] ButtonWatch: Settings button is TURN ON\n");
+			if ((settings->debugFlag.ButtonWatch) && (last_settingsButton) && (deviceWorkMode != TDeviceWorkMode::SettingsMode))
+				printf("[DEBUG] ButtonWatch: Settings button is TURN OFF\n");
+
+			last_settingsButton = (deviceWorkMode == TDeviceWorkMode::SettingsMode);
+		}
+
+		///
+        /// Если устройство в режиме ИНКАСАЦИЯ
+        ///
 		if (status.extDeviceInfo.collectionButton)
 		{
+			deviceWorkMode = TDeviceWorkMode::CollectionMode;
 			for (index = 0; index < 12; index++)
 			{
 				// Turn on light on all buttons for show user "Collection mode"
@@ -146,6 +173,9 @@ PI_THREAD(ButtonWatch)
 			continue;
 		}
 
+		///
+        /// Если устройство в вышло из режима ИНКАСАЦИЯ
+        ///
 		if (last_collectionButton)
 		{
 			for (index = 0; index < 12; index++)
@@ -156,88 +186,108 @@ PI_THREAD(ButtonWatch)
 				setPinModeMy(settings->getPinConfig(DVC_BUTTON01+index, 1), PIN_INPUT);
 			}
 			last_collectionButton = status.extDeviceInfo.collectionButton;
+			deviceWorkMode = TDeviceWorkMode::WorkMode;
 		}
 
 		///
-		/// Проверяем все кнопки на нажатие и устанавливаем "externalInfo.lastButtonEvent"
-		///
-		lightDeviceID = DVC_BUTTON01 + (status.extDeviceInfo.button_currentLight);
-		if (status.extDeviceInfo.button_newEvent == 255)
+        /// Если устройство в режиме РАБОТА
+        ///
+		// >>>>>>>> deviceWorkMode == TDeviceWorkMode::WorkMode
+		if (deviceWorkMode == TDeviceWorkMode::WorkMode)
 		{
-			setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
-			setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
-			status.extDeviceInfo.button_currentLight = 255;
-			status.extDeviceInfo.button_lastEvent = 255;
-			status.extDeviceInfo.button_newEvent = 100;
-		}
-
-		if (status.extDeviceInfo.button_newEvent < 99)
-		{
+			///
+			/// Проверяем все кнопки на нажатие и устанавливаем "externalInfo.lastButtonEvent"
+			///
+			lightDeviceID = DVC_BUTTON01 + (status.extDeviceInfo.button_currentLight);
+			if (status.extDeviceInfo.button_newEvent == 255)
+			{
+				setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
+				setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
+				status.extDeviceInfo.button_currentLight = 255;
+				status.extDeviceInfo.button_lastEvent = 255;
+				status.extDeviceInfo.button_newEvent = 100;
+			}
+	
+			if (status.extDeviceInfo.button_newEvent < 99)
+			{
+				for (index = 0; index < 12; index++)
+				{
+					currentDeviceID = DVC_BUTTON01 + index;
+					if (!settings->getEnabledDevice(currentDeviceID)) continue;
+					currentPin = settings->getPinConfig(currentDeviceID, 1);
+					if ((currentPin == 0xFF) || (index == status.extDeviceInfo.button_newEvent)) continue;
+					setGPIOState(settings->getPinConfig(DVC_BUTTON01 + index, 1), 1);
+					setPinModeMy(settings->getPinConfig(DVC_BUTTON01 + index, 1), PIN_INPUT);
+				}
+				setPinModeMy(settings->getPinConfig(DVC_BUTTON01 + status.extDeviceInfo.button_newEvent, 1), PIN_OUTPUT);
+				setGPIOState(settings->getPinConfig(DVC_BUTTON01 + status.extDeviceInfo.button_newEvent, 1), 1);
+				status.extDeviceInfo.button_currentLight = status.extDeviceInfo.button_newEvent;
+				status.extDeviceInfo.button_lastEvent = status.extDeviceInfo.button_newEvent;
+				status.extDeviceInfo.button_newEvent = 100;
+			}
+	
+			int lastMyEvent = status.extDeviceInfo.button_currentLight;
 			for (index = 0; index < 12; index++)
 			{
 				currentDeviceID = DVC_BUTTON01 + index;
 				if (!settings->getEnabledDevice(currentDeviceID)) continue;
 				currentPin = settings->getPinConfig(currentDeviceID, 1);
-				if ((currentPin == 0xFF) || (index == status.extDeviceInfo.button_newEvent)) continue;
-				setGPIOState(settings->getPinConfig(DVC_BUTTON01 + index, 1), 1);
-				setPinModeMy(settings->getPinConfig(DVC_BUTTON01 + index, 1), PIN_INPUT);
-			}
-			setPinModeMy(settings->getPinConfig(DVC_BUTTON01 + status.extDeviceInfo.button_newEvent, 1), PIN_OUTPUT);
-			setGPIOState(settings->getPinConfig(DVC_BUTTON01 + status.extDeviceInfo.button_newEvent, 1), 1);
-			status.extDeviceInfo.button_currentLight = status.extDeviceInfo.button_newEvent;
-			status.extDeviceInfo.button_lastEvent = status.extDeviceInfo.button_newEvent;
-			status.extDeviceInfo.button_newEvent = 100;
-		}
-
-		int lastMyEvent = status.extDeviceInfo.button_currentLight;
-		for (index = 0; index < 12; index++)
-		{
-			currentDeviceID = DVC_BUTTON01 + index;
-			if (!settings->getEnabledDevice(currentDeviceID)) continue;
-			currentPin = settings->getPinConfig(currentDeviceID, 1);
-			if (currentPin == 0xFF) continue;
-
-			if (lightDeviceID != currentDeviceID)
-			{
-				if (getGPIOState(currentPin))
+				if (currentPin == 0xFF) continue;
+	
+				if (lightDeviceID != currentDeviceID)
 				{
-					int timeout = 30;
-					if (settings->debugFlag.ButtonWatch)
-						printf("[DEBUG] ButtonWatch: Pressed state on %d button [PIN: %03d]\n", index, currentPin);
-					while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
-					if (timeout <= 0)
+					if (getGPIOState(currentPin))
 					{
-						setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
-						setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
-
-						lightDeviceID = DVC_BUTTON01 + index;
+						int timeout = 30;
 						if (settings->debugFlag.ButtonWatch)
-							printf("[DEBUG] ButtonWatch: Setting new programm %d --> %d\n", status.extDeviceInfo.button_lastEvent, index);
-						status.extDeviceInfo.button_lastEvent = index;
-						status.extDeviceInfo.button_currentLight = status.extDeviceInfo.button_lastEvent;
-						if ((settings->debugFlag.ButtonWatch) && (status.extDeviceInfo.button_currentLight != lastMyEvent))
+							printf("[DEBUG] ButtonWatch: Pressed state on %d button [PIN: %03d]\n", index, currentPin);
+						while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
+						if (timeout <= 0)
 						{
-							printf("[DEBUG] ButtonWatch: New button pressed - %d [%3d:%02d:%02d]\n", status.extDeviceInfo.button_currentLight, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, status.extDeviceInfo.button_currentLight, status.extDeviceInfo.button_currentLight, "[External]: New button pressed");
-							lastMyEvent = status.extDeviceInfo.button_currentLight;
+							setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
+							setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
+	
+							lightDeviceID = DVC_BUTTON01 + index;
+							if (settings->debugFlag.ButtonWatch)
+								printf("[DEBUG] ButtonWatch: Setting new programm %d --> %d\n", status.extDeviceInfo.button_lastEvent, index);
+							status.extDeviceInfo.button_lastEvent = index;
+							status.extDeviceInfo.button_currentLight = status.extDeviceInfo.button_lastEvent;
+							if ((settings->debugFlag.ButtonWatch) && (status.extDeviceInfo.button_currentLight != lastMyEvent))
+							{
+								printf("[DEBUG] ButtonWatch: New button pressed - %d [%3d:%02d:%02d]\n", status.extDeviceInfo.button_currentLight, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
+								db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, status.extDeviceInfo.button_currentLight, status.extDeviceInfo.button_currentLight, "[External]: New button pressed");
+								lastMyEvent = status.extDeviceInfo.button_currentLight;
+							}
+							setPinModeMy(currentPin, PIN_OUTPUT);
+							setGPIOState(currentPin, 1);
 						}
+					}
+				}
+				// Иногда не фиксируется кнопка. Заглушка!!!
+				// >>>>
+				else
+				{
+					if (!status.extDeviceInfo.collectionButton && (status.extDeviceInfo.remote_currentBalance > 0))
+					{
 						setPinModeMy(currentPin, PIN_OUTPUT);
 						setGPIOState(currentPin, 1);
 					}
 				}
+				// <<<<<<
 			}
-			// Иногда не фиксируется кнопка. Заглушка!!!
-			// >>>>
-			else
-			{
-				if (!status.extDeviceInfo.collectionButton && (status.extDeviceInfo.remote_currentBalance > 0))
-				{
-					setPinModeMy(currentPin, PIN_OUTPUT);
-					setGPIOState(currentPin, 1);
-				}
-			}
-			// <<<<<<
 		}
+		// <<<<<<<< deviceWorkMode == TDeviceWorkMode::WorkMode
+		///
+        /// Если устройство в режиме НАСТРОЙКА
+        ///
+		// >>>>>>>> deviceWorkMode == TDeviceWorkMode::SettingsMode
+        if (deviceWorkMode == TDeviceWorkMode::SettingsMode)
+        {
+        	printf("[ButtonThread] TDeviceWorkMode::SettingsMode\n");
+        	delay_ms(1000);
+        }
+		// <<<<<<<< deviceWorkMode == TDeviceWorkMode::SettingsMode
+
 		settings->busyFlag.ButtonWatch--;
 
 		if (delayTime > 0) delay_ms(delayTime);

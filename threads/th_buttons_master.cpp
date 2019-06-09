@@ -74,7 +74,7 @@ PI_THREAD(ButtonMasterWatch)
 
 		if (status.extDeviceInfo.collectionButton)
 		{
-			btnMasterProgress = (int)TBtnMasterProgress::CollectionMode;
+			btnMasterProgress = (int)TBtnMasterProgress::CollectionModeWork;
 			for (index = 0; index < 12; index++)
 			{
 				// Turn on light on all buttons for show user "Collection mode"

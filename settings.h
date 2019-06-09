@@ -44,6 +44,7 @@
 #define DVC_BUTTON11							31
 #define DVC_BUTTON12							32		//Кнопка 12
 #define DVC_BUTTON_COLLECTION					33		//Кнопка "инкасация"
+#define DVC_BUTTON_SETTINGS						34		//Кнопка "НАСТРОЙКА"
 
 #define DVC_ENGINE								35		//Двигатель
 
@@ -90,7 +91,7 @@
 #define DVC_VALVE10								80		//Клапан 10
 #define DVC_LED_DISPLAY_EXT						81		//Дисплей внешний
 #define DVC_COIN_PULSE_ACCEPTOR					82		//Монетоприемник в пульсовом режиме
-#define DVC_COIN_PULSE_ACCEPTOR_ADD				83		//Монетоприемник в пульсовом режиме
+#define DVC_COIN_PULSE_ACCEPTOR_INHIBIT			83		//ЗАПРЕТ ПРОБРОСА
 #define DVC_ERROR_LED_1							84
 #define DVC_ERROR_LED_2							85
 #define DVC_ERROR_LED_3							86
@@ -109,6 +110,14 @@
 
 #define MENU_X									4
 #define MENU_Y									16
+
+enum TDeviceWorkMode
+{
+	WorkMode = 1,
+	CollectionMode = 2,
+	SettingsMode = 3,
+	VISAMode = 4
+};
 
 struct MoneyCoinInfo
 {
@@ -211,6 +220,7 @@ struct ThreadFlag
 	BYTE AlienDeviceThread;			// СЧЕТЧИК НА УДАЛЕННЫХ АППАРАТАХ: Процесс для формирования чеков и сбора данных со стороннего оборудования
 	BYTE OsmosThread;				// ПОТОК ОСМОСА: Управление установкой ОСМОСа
 	BYTE ButtonTerminalThread;		// ПОТОК терминала пополнения, выдачи карт и жетонов
+	BYTE VisaDeviceThread;			// ПОТОК устройства Эквайринга (PAX D200)
 };
 
 struct ErrorFlag
@@ -358,6 +368,39 @@ struct WorkTimeDevice		// Рабочее время объекта
 	int 	StopTimeMinute;
 };
 
+struct VISAButton
+{
+	BYTE pinNum;
+	BYTE pinEnable;
+};
+
+struct VISAParam			// Настройки эквайринга
+{
+	char portName[250];			// Имя порта для интерфейса MODBUS
+	int baudRate;				// Скорость интерфейса
+	int dataParity;				// Четность
+	int dataBit;				// Количество битов данных
+	int stopBit;				// Стоповые биты
+
+	int workMode;				// Режим работы
+								// 0 - Выбор предопределенной суммы платежа кнопкой
+								// 1 - Кнопки -10 +10 +50 Оплатить Отмена
+	VISAButton sub10Btn;	
+	VISAButton add10Btn;	
+	VISAButton add50Btn;
+	VISAButton add100Btn;
+	VISAButton add500Btn;
+
+	VISAButton payBtn;
+	VISAButton cancelBtn;
+
+	VISAButton pay50Btn;	
+	VISAButton pay100Btn;
+	VISAButton pay150Btn;
+	VISAButton pay200Btn;
+	VISAButton pay500Btn;
+};
+
 struct MenuDescriptor
 {
 	int 	menuID;
@@ -461,6 +504,10 @@ public:
 	//
 	// Обмен по MODBUS
 	Modbus 				modbus;
+
+	//
+	// Параметры эквайринга
+	VISAParam visaParam;
 
 	//
 	// СКИДКИ

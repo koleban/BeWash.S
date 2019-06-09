@@ -1,10 +1,3 @@
-//
-// Error CODE
-// EE-H - Error EEPROM
-// EE-1 - Error MCP21017
-// EE-2 - Error COIN NOT DETECTED
-// EE-3 - Error BILL NOT DETECTED
-
 #include "../main.h"
 
 PI_THREAD(MonitorWatch)
@@ -57,100 +50,11 @@ PI_THREAD(MonitorWatch)
 		///
 		/// ÎÒÎÁÐÀÆÅÍÈÅ ÈÍÔÎÐÌÀÖÈÈ ÎÒÍÎÑÈÒÅËÜÍÎ ÑÎÑÒÎßÍÈß È ÒÈÏÀ ÁÎÊÑÀ
 		///
-		/// Îòîáðàæåíèå âðåìåííîé îøèáêè ïî EEPROM
-		///
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if (settings->intErrorCode.MainWatch == 222)
-		{
-			if (errIter++ > 20)
-			{
-				settings->intErrorCode.MainWatch = 0;
-				errIter = 0;
-			}
-			memset(&digit_out, 0, sizeof(digit_out));
-			tmpFlag ^= (iter % 5 == 0);
-			if (tmpFlag)
-				sprintf(&digit_out[0], "EE- ");
-			else
-				sprintf(&digit_out[0], "EE-H");
-
-
-			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
-			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
-			monitor->showText(&digit_out[0]);
-			delay_ms(200);
-			continue;
-		}
-		if (settings->intErrorCode.MainWatch == 221)
-		{
-			if (errIter++ > 20)
-			{
-				settings->intErrorCode.MainWatch = 0;
-				errIter = 0;
-			}
-			memset(&digit_out, 0, sizeof(digit_out));
-			tmpFlag ^= (iter % 5 == 0);
-			if (tmpFlag)
-				sprintf(&digit_out[0], "EE- ");
-			else
-				sprintf(&digit_out[0], "EE-1");
-
-
-			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
-			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
-			monitor->showText(&digit_out[0]);
-			delay_ms(200);
-			continue;
-		}
-		if (settings->intErrorCode.MainWatch == 220)
-		{
-			if (errIter++ > 20)
-			{
-				settings->intErrorCode.MainWatch = 0;
-				errIter = 0;
-			}
-			memset(&digit_out, 0, sizeof(digit_out));
-			tmpFlag ^= (iter % 5 == 0);
-			if (tmpFlag)
-				sprintf(&digit_out[0], "EE- ");
-			else
-				sprintf(&digit_out[0], "EE-2");
-
-
-			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
-			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
-			monitor->showText(&digit_out[0]);
-			delay_ms(200);
-			continue;
-		}
-		if (settings->intErrorCode.MainWatch == 219)
-		{
-			if (errIter++ > 20)
-			{
-				settings->intErrorCode.MainWatch = 0;
-				errIter = 0;
-			}
-			memset(&digit_out, 0, sizeof(digit_out));
-			tmpFlag ^= (iter % 5 == 0);
-			if (tmpFlag)
-				sprintf(&digit_out[0], "EE- ");
-			else
-				sprintf(&digit_out[0], "EE-3");
-
-
-			memcpy(status.intDeviceInfo.monitor_currentText, digit_out, 4);
-			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
-			monitor->showText(&digit_out[0]);
-			delay_ms(200);
-			continue;
-		}
-		///
-		/// ÎÒÎÁÐÀÆÅÍÈÅ ÈÍÔÎÐÌÀÖÈÈ ÎÒÍÎÑÈÒÅËÜÍÎ ÑÎÑÒÎßÍÈß È ÒÈÏÀ ÁÎÊÑÀ
-		///
 		/// Îòîáðàæåíèå ÊÀÑÑÛ åñëè íàæàòà ÊÍÎÏÊÀ ÈÍÊÀÑÀÖÈÈ
 		///
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if (status.extDeviceInfo.collectionButton)
+//		if (status.extDeviceInfo.collectionButton)
+		if (deviceWorkMode == TDeviceWorkMode::CollectionMode)
 		{
 			counter = status.intDeviceInfo.allMoney;
 			memset(&digit, 0, sizeof(digit));
@@ -175,7 +79,8 @@ PI_THREAD(MonitorWatch)
 		/// Îòîáðàæåíèå òåêóùåãî áàëàíñà åñëè åñòü ÎÁÙÈÉ ÏÎÒÎÊ ÂÍÅØÍÅÃÎ ÁËÎÊÀ
 		///
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if ((settings->threadFlag.ExtCommonThread != 0) && (status.extDeviceInfo.collectionButton == 0))
+//		if ((settings->threadFlag.ExtCommonThread != 0) && (status.extDeviceInfo.collectionButton == 0))
+		if ((settings->threadFlag.ExtCommonThread) && (deviceWorkMode == TDeviceWorkMode::WorkMode))
 		{
 			counter = status.extDeviceInfo.remote_currentBalance;
 			memset(&digit, 0, sizeof(digit));
@@ -204,7 +109,7 @@ PI_THREAD(MonitorWatch)
 		/// Îòîáðàæåíèå ÑÒÀÒÓÑÎÂ è ÎØÈÁÎÊ åñëè åñòü ÎÁÙÈÉ ÏÎÒÎÊ ÂÍÓÒÐÅÍÍÅÃÎ ÁËÎÊÀ
 		///
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if ((settings->threadFlag.IntCommonThread != 0) && (settings->threadFlag.ExtCommonThread == 0) && (status.extDeviceInfo.collectionButton == 0))
+		if ((settings->threadFlag.IntCommonThread != 0) && (!settings->threadFlag.ExtCommonThread) && (deviceWorkMode == TDeviceWorkMode::WorkMode))
 		{
 			BYTE intFlag = 0;
 			for (int ind=0; ind<sizeof(settings->intErrorCode); ind++)
@@ -322,16 +227,39 @@ PI_THREAD(MonitorWatch)
 	        	}
 			}
 
-			if (licenseError > 10)
-			{
-				sprintf(&errText[0], "E-06%s", "");
-				delay_ms(1000);
-			}
 			memcpy(status.intDeviceInfo.monitor_currentText, &errText[0], 4);
     		monitor->showText(&errText[0]);
 
 			if (errIter > 20) delay_ms(100);
 		}
+
+		///
+		/// Îòîáðàæåíèå â ðåæèìå ÍÀÑÒÐÎÉÊÀ 
+		///
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if (deviceWorkMode == TDeviceWorkMode::SettingsMode)
+		{
+			memset(&digit, 0, sizeof(digit));
+			sprintf(&digit[0], "____");
+			sprintf(&digit_out[0], "____");
+			int len = strlen(&digit[0]);
+			if (len > 4)
+			{
+				memset(&digit[0], 0x20, len + 8);
+				sprintf(&digit[4], "%d", counter);
+				digit[strlen(&digit[0])] = 0x20;
+				digit[len+8] = 0x00;
+				len = strlen(&digit[0]);
+				if (len-4 <= offs) offs = 0;
+				sprintf(&digit_out[0], "%s", &digit[offs]);
+			}
+
+			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+			monitor->showText(&digit_out[0]);
+		}
+
+		// <<<<<<<<<<<<<
+		// END MAIN LOOP
 
 		delay_ms(display_WaitTimeMs);
 	}
