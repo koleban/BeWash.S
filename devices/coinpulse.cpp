@@ -11,7 +11,7 @@ void intCoin1()
 	int sigTime = 0;
 	BYTE coinNum = 4;
 	int fallCount = 0;
-	while ((fallCount < 10) && (sigTime++ < 1000)) 
+	while ((fallCount < 10) && (sigTime++ < 1000))
 	{
 		if (digitalRead(exchangeDevice->pinCoinType1)) fallCount++;
 		delay_ms(1);
@@ -37,7 +37,7 @@ void intCoin2()
 	int sigTime = 0;
 	BYTE coinNum = 6;
 	int fallCount = 0;
-	while ((fallCount < 10) && (sigTime++ < 1000)) 
+	while ((fallCount < 10) && (sigTime++ < 1000))
 	{
 		if (digitalRead(exchangeDevice->pinCoinType2)) fallCount++;
 		delay_ms(1);
@@ -62,7 +62,7 @@ void intCoin3()
 	int sigTime = 0;
 	BYTE coinNum = 8;
 	int fallCount = 0;
-	while ((fallCount < 10) && (sigTime++ < 1000)) 
+	while ((fallCount < 10) && (sigTime++ < 1000))
 	{
 		if (digitalRead(exchangeDevice->pinCoinType3)) fallCount++;
 		delay_ms(1);
@@ -87,7 +87,7 @@ void intCoin4()
 	int sigTime = 0;
 	BYTE coinNum = 10;
 	int fallCount = 0;
-	while ((fallCount < 10) && (sigTime++ < 1000)) 
+	while ((fallCount < 10) && (sigTime++ < 1000))
 	{
 		if (digitalRead(exchangeDevice->pinCoinType4)) fallCount++;
 		delay_ms(1);
@@ -165,7 +165,7 @@ bool CoinPulseDevice::cmdPoll()
 
     sigWidth = settings->coinPulseWidth;
 	BYTE currentDeviceID = DVC_COIN_PULSE_ACCEPTOR;
-	BYTE currentDeviceIDAdd = DVC_COIN_PULSE_ACCEPTOR_ADD;
+	BYTE currentDeviceIDAdd = DVC_COIN_PULSE_ACCEPTOR_INHIBIT;
 	bool deviceStatus = settings->getEnabledDevice(currentDeviceID) | settings->getEnabledDevice(currentDeviceIDAdd);
 	if (!deviceStatus) { return 0; }
 
@@ -176,7 +176,7 @@ bool CoinPulseDevice::cmdPoll()
 
 bool CoinPulseDevice::Lock(bool newLockState)
 {
-	if ((settings->getEnabledDevice(DVC_COIN_PULSE_ACCEPTOR_ADD)) && (pinCoinLock != 0xFF))
+	if ((settings->getEnabledDevice(DVC_COIN_PULSE_ACCEPTOR_INHIBIT)) && (pinCoinLock != 0xFF))
 		setGPIOState(pinCoinLock, !newLockState);
 	return newLockState;
 }

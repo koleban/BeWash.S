@@ -15,6 +15,7 @@ Database* commonDb;
 
 /// PRG PRICE
 DWORD	eepromPrgPrice[16];
+int 	currentPrgPriceIndex;
 ////////////////////////////////////////////////////////////
 
 // Устройства

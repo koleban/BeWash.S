@@ -28,6 +28,7 @@ PI_THREAD(ConsoleThread)
 		int myNewPrg = 0;
 		int chPointer = 0;
 		int cmdType = 0;
+		int tmpIndex = 0;
 		WORD valTemp = 0x0000;
 		WORD valTemp1 = 0x0000;
 		WORD valTemp2 = 0x0000;
@@ -35,6 +36,11 @@ PI_THREAD(ConsoleThread)
 		char strTmp256[256];
 		switch(*((DWORD*)(command)))
 		{
+			// eprg
+			case 0x67727065:
+				for(tmpIndex = 0; tmpIndex < 9; tmpIndex++)
+					eepromPrgPrice[tmpIndex] = 0;
+				break;
 			case 0x316B6863:
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);

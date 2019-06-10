@@ -117,7 +117,7 @@ PI_THREAD(ButtonWatch)
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
 			int timeout = 50;
-			while ((timeout-- > 0) && getGPIOState(currentPin)) 
+			while ((timeout-- > 0) && getGPIOState(currentPin))
 			{ delayTime--; delay_ms(1); }
 			status.extDeviceInfo.collectionButton = (timeout < 1);
 			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
@@ -134,10 +134,13 @@ PI_THREAD(ButtonWatch)
 			int timeout = 50;
 			if (deviceWorkMode != TDeviceWorkMode::SettingsMode)
 			{
-				while ((timeout-- > 0) && getGPIOState(currentPin)) 
+				while ((timeout-- > 0) && getGPIOState(currentPin))
 					{ delayTime--; delay_ms(1); }
 				if (timeout < 1)
+				{
+					currentPrgPriceIndex = 0;
 					deviceWorkMode = TDeviceWorkMode::SettingsMode;
+				}
 			}
 			else
 			{
@@ -207,7 +210,7 @@ PI_THREAD(ButtonWatch)
 				status.extDeviceInfo.button_lastEvent = 255;
 				status.extDeviceInfo.button_newEvent = 100;
 			}
-	
+
 			if (status.extDeviceInfo.button_newEvent < 99)
 			{
 				for (index = 0; index < 12; index++)
@@ -225,7 +228,7 @@ PI_THREAD(ButtonWatch)
 				status.extDeviceInfo.button_lastEvent = status.extDeviceInfo.button_newEvent;
 				status.extDeviceInfo.button_newEvent = 100;
 			}
-	
+
 			int lastMyEvent = status.extDeviceInfo.button_currentLight;
 			for (index = 0; index < 12; index++)
 			{
@@ -233,7 +236,7 @@ PI_THREAD(ButtonWatch)
 				if (!settings->getEnabledDevice(currentDeviceID)) continue;
 				currentPin = settings->getPinConfig(currentDeviceID, 1);
 				if (currentPin == 0xFF) continue;
-	
+
 				if (lightDeviceID != currentDeviceID)
 				{
 					if (getGPIOState(currentPin))
@@ -246,7 +249,7 @@ PI_THREAD(ButtonWatch)
 						{
 							setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
 							setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
-	
+
 							lightDeviceID = DVC_BUTTON01 + index;
 							if (settings->debugFlag.ButtonWatch)
 								printf("[DEBUG] ButtonWatch: Setting new programm %d --> %d\n", status.extDeviceInfo.button_lastEvent, index);
@@ -283,8 +286,44 @@ PI_THREAD(ButtonWatch)
 		// >>>>>>>> deviceWorkMode == TDeviceWorkMode::SettingsMode
         if (deviceWorkMode == TDeviceWorkMode::SettingsMode)
         {
-        	printf("[ButtonThread] TDeviceWorkMode::SettingsMode\n");
-        	delay_ms(1000);
+			for (index = 1; index < 6; index++)
+			{
+				currentDeviceID = DVC_BUTTON01 + index;
+				if (!settings->getEnabledDevice(currentDeviceID)) continue;
+				currentPin = settings->getPinConfig(currentDeviceID, 1);
+				if (currentPin == 0xFF) continue;
+
+				if (getGPIOState(currentPin))
+				{
+					int timeout = 30;
+					while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
+					if (timeout <= 0)
+					{
+						switch(index)
+						{
+							case 1:
+								break;
+							case 2:
+								if (currentPrgPriceIndex < 8) currentPrgPriceIndex++;
+								else currentPrgPriceIndex = 0;
+								delay_ms(500);
+								break;
+							case 3:
+								eepromPrgPrice[currentPrgPriceIndex]++;
+								if (eepromPrgPrice[currentPrgPriceIndex] > 99) eepromPrgPrice[currentPrgPriceIndex] = 0;
+								delay_ms(100);
+								break;
+							case 4:
+								eepromPrgPrice[currentPrgPriceIndex]--;
+								if (eepromPrgPrice[currentPrgPriceIndex] > 99) eepromPrgPrice[currentPrgPriceIndex] = 0;
+								delay_ms(100);
+								break;
+							case 5:
+								break;
+						}
+					}
+				}
+			}
         }
 		// <<<<<<<< deviceWorkMode == TDeviceWorkMode::SettingsMode
 

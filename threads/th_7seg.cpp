@@ -234,14 +234,14 @@ PI_THREAD(MonitorWatch)
 		}
 
 		///
-		/// Отображение в режиме НАСТРОЙКА 
+		/// Отображение в режиме НАСТРОЙКА
 		///
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (deviceWorkMode == TDeviceWorkMode::SettingsMode)
 		{
 			memset(&digit, 0, sizeof(digit));
-			sprintf(&digit[0], "____");
-			sprintf(&digit_out[0], "____");
+			sprintf(&digit[0], "%1d_%2d", currentPrgPriceIndex+1, eepromPrgPrice[currentPrgPriceIndex]);
+			sprintf(&digit_out[0], "%1d_%2d", currentPrgPriceIndex+1, eepromPrgPrice[currentPrgPriceIndex]);
 			int len = strlen(&digit[0]);
 			if (len > 4)
 			{

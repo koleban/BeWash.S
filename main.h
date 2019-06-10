@@ -256,7 +256,8 @@ extern unsigned long warningPulseLength[4];
 //////////////////////
 /// EEPROM PARAMETERS
 ///
-extern DWORD eepromPrgPrice[];
+extern DWORD eepromPrgPrice[16];
+extern int 	currentPrgPriceIndex;
 
 // GlobalDB for RFID CARD
 extern Database* gDbCard;

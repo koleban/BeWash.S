@@ -48,14 +48,15 @@ void EEPROM::Close()
 
 int EEPROM::WriteByte(WORD address, BYTE data)
 {
+
 	useEeprom = true;
 	union i2c_smbus_data i2c_data;
 	i2c_data.block[0] = data;
 	int result = i2c_smbus_access (i2c_handle, I2C_SMBUS_WRITE, (address) & 0xFF, I2C_SMBUS_BYTE_DATA, &i2c_data);
 	useEeprom = false;
-	if (result < 0)
-		return -1;
 	delay_ms(EEPROM_DELAY);
+	if (result < 0)
+		return result;
 	return data;
 }
 
