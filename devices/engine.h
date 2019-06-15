@@ -20,6 +20,7 @@ class Engine
   	int 		needFreq;
   	int 		currFreq;
   	int 		errorCode;
+  	int			powerA;
   	unsigned char bypassMode;
   	unsigned long workTimeSec;
 

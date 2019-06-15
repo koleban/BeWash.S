@@ -6,6 +6,7 @@ Engine9300* Engine9300::p_instance = NULL;
 
 Engine9300::Engine9300()
 {
+	powerA = 0;
 }
 
 void Engine9300::Init(Settings* settings)

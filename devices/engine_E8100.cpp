@@ -6,6 +6,7 @@ Engine8100* Engine8100::p_instance = NULL;
 
 Engine8100::Engine8100()
 {
+	powerA = 0;
 }
 
 void Engine8100::Init(Settings* settings)

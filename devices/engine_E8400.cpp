@@ -147,7 +147,7 @@ bool Engine8400::engineUpdate()
 	//
 	while (!testResult && (timeOut++ < engineCommandTryCount))
 	{
-		char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x03, 0x00, 0x10, 0x00, 0x01, 0x00, 0x00 };
+		char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x03, 0x00, 0x14, 0x00, 0x01, 0x00, 0x00 };
 		testResult = RS485_doCommand(streamId, &command[0]);
 		if (!testResult) { delay_ms(50); continue; }
 		if (command[1] == 0x03)
@@ -172,6 +172,20 @@ bool Engine8400::engineUpdate()
 			if (currFreq > 5200) { delay_ms(50); continue; }
 			engineRotates = (currFreq > 1);
 			bypassMode = ((currFreq > 0) && (currFreq < 550));
+		}
+	}
+
+		timeOut = 0;
+	testResult = false;
+
+	while (!testResult && (timeOut++ < engineCommandTryCount))
+	{
+		char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x03, 0x00, 0x22, 0x00, 0x01, 0x00, 0x00 };
+		testResult = RS485_doCommand(streamId, &command[0]);
+		if (!testResult) { delay_ms(50); continue; }
+		if (command[1] == 0x03)
+		{
+			powerA = (command[3] << 8) + command[4];
 		}
 	}
 

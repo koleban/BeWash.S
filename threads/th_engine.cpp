@@ -50,6 +50,7 @@ PI_THREAD(EngineWatch)
 	term_setattr(0);
 	int bypassPinNum = settings->getPinConfig(DVC_SENSOR_BYPASS, 1);
 	if (!settings->getEnabledDevice(DVC_SENSOR_BYPASS)) bypassPinNum = 0xFF;
+	int lastPower = 0;
 	while (settings->threadFlag.EngineWatch)
 	{
 		settings->workFlag.EngineWatch = 0;
@@ -76,7 +77,7 @@ PI_THREAD(EngineWatch)
 		   )
 		{
 			if (settings->debugFlag.EngineWatch)
-				printf("DBG:> [%3d:%02d:%02d] [ENG] STOP [c: %d; n: %d; bal: %d]\n",
+				printf("[ENG] [%3d:%02d:%02d] -- [c: %d; n: %d; bal: %d]\n",
 					((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60 ,
 					engine->currFreq, engine->needFreq, status.intDeviceInfo.money_currentBalance);
 			engineStatus = false;
@@ -86,7 +87,7 @@ PI_THREAD(EngineWatch)
 				if (settings->engine_relay > 0)
 				{
 					if (settings->debugFlag.EngineWatch)
-						printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
+						printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
 						((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 						getGPIOState(settings->engine_relay), settings->engine_relay);
 					setGPIOState(settings->engine_relay, 0);
@@ -103,14 +104,16 @@ PI_THREAD(EngineWatch)
 			term_setattr(0);
 		}
 
-        if ((engine->currFreq != engine->needFreq) || (getGPIOState(bypassPinNum) == 0))
+        if ((engine->currFreq != engine->needFreq) || (getGPIOState(bypassPinNum) == 0) || (lastPower != engine->powerA))
 		{
 			if (engine->needFreq > 0)
 			{
 				if (settings->debugFlag.EngineWatch)
-					printf("DBG:> [%3d:%02d:%02d] [ENG] START [p:%d c:%d; n:%d; bal:%d; bp:%d]\n",
+					printf("[ENG] [%2d:%02d:%02d] >> [p:%d c:%d; n:%d; bal:%d; bp:%d] [power: %d.%02dA]\n",
 						((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
-						status.intDeviceInfo.program_currentProgram, engine->currFreq, engine->needFreq, status.intDeviceInfo.money_currentBalance, (getGPIOState(bypassPinNum) == 0));
+						status.intDeviceInfo.program_currentProgram, engine->currFreq, engine->needFreq, status.intDeviceInfo.money_currentBalance, (getGPIOState(bypassPinNum) == 0),
+						(int)(engine->powerA/10), engine->powerA%10);
+				lastPower = engine->powerA;
 				if (getGPIOState(bypassPinNum) == 0)
 				{
 					engineStatus = false;
@@ -120,7 +123,7 @@ PI_THREAD(EngineWatch)
 						if (settings->engine_relay > 0)
 						{
 							if (settings->debugFlag.EngineWatch)
-								printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
+								printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
 								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 								getGPIOState(settings->engine_relay), settings->engine_relay);
 							setGPIOState(settings->engine_relay, 0);
@@ -140,7 +143,7 @@ PI_THREAD(EngineWatch)
 						if (settings->engine_relay > 0)
 						{
 							if (settings->debugFlag.EngineWatch)
-								printf("DBG:> [%3d:%02d:%02d] [ENG] ENGINE RELAY TURN ON [prev: %d; pin: %d]\n",
+								printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN ON [prev: %d; pin: %d]\n",
 								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 								getGPIOState(settings->engine_relay), settings->engine_relay);
 							setGPIOState(settings->engine_relay, 1);

@@ -278,7 +278,9 @@ PI_THREAD(DebugThread)
 		else attr1 = 40;
 		printf("engineRotates: \x1b[%dm%1d\x1b[%dm|", attr1, engine->engineRotates, attr2);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("resState:   %04X|", engine->regState);	// 17 chars
+		printf("EngState:   %04X|", engine->regState);	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("Power:    %2d.%02dA|", (int)(engine->powerA/10), (int)(engine->powerA%10));	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
 			printf("wrkTime:%8d|", (unsigned long)((gEngineFullWorkTime+engine->workTimeSec)));	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
