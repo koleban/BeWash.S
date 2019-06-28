@@ -378,10 +378,11 @@ PI_THREAD(IntCommonThread)
 				// Delay turn off valve befor engine stop
 				// 27.07.2018
 				// >>>
+				/// Отключим двигатель
 				status.intDeviceInfo.engine_currentRpm = 500;
 				engine->needFreq = status.intDeviceInfo.engine_currentRpm;
+				/// Установим состояние реле в СТОП1 + БАЙПАС
 				helper_TurnRelaysOnProgramm(51);
-/* TEST */
 				for (int index=1; index <= 14; index++)
 					if (status.intDeviceInfo.relay_currentVal[index-1])
 						relay->relayOn(index);
@@ -393,7 +394,7 @@ PI_THREAD(IntCommonThread)
 					break;
 				}
 				else
-/* TEST */
+					/// Ждем ValveTimeOff секунд
 					delay_ms(settings->valveTimeOff*1000);
 				// <<<
 				helper_TurnRelaysOnProgramm(status.intDeviceInfo.program_currentProgram);

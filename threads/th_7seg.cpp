@@ -1,4 +1,10 @@
 #include "../main.h"
+//
+// Error CODE
+// EE-H - Error EEPROM
+// EE-1 - Error MCP21017
+// EE-2 - Error COIN NOT DETECTED
+// EE-3 - Error BILL NOT DETECTED
 
 PI_THREAD(MonitorWatch)
 {
