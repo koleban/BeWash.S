@@ -382,11 +382,15 @@ struct VISAParam			// Настройки эквайринга
 	int dataBit;				// Количество битов данных
 	int stopBit;				// Стоповые биты
 
+	char login[126];			// Логин сервиса
+	char password[126];			// Пароль сервиса
+	int	 debug;					// Флаг вывода отладки
+
 	int workMode;				// Режим работы
 								// 0 - Выбор предопределенной суммы платежа кнопкой
 								// 1 - Кнопки -10 +10 +50 Оплатить Отмена
-	VISAButton sub10Btn;	
-	VISAButton add10Btn;	
+	VISAButton sub10Btn;
+	VISAButton add10Btn;
 	VISAButton add50Btn;
 	VISAButton add100Btn;
 	VISAButton add500Btn;
@@ -394,7 +398,7 @@ struct VISAParam			// Настройки эквайринга
 	VISAButton payBtn;
 	VISAButton cancelBtn;
 
-	VISAButton pay50Btn;	
+	VISAButton pay50Btn;
 	VISAButton pay100Btn;
 	VISAButton pay150Btn;
 	VISAButton pay200Btn;

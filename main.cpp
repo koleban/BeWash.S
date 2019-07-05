@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	///
 	///
     prgVer = 2.08;
-    prgBuild = 44;
+    prgBuild = 90;
     ///
     ///
     /////////////////////////
@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
 	sigIntHandler.sa_handler = signal_handler;
 	sigemptyset(&sigIntHandler.sa_mask);
 	sigIntHandler.sa_flags = 0;
-	
+
 	sigaction (SIGINT, NULL, &old_action);
 	if (old_action.sa_handler != SIG_IGN)
 		sigaction(SIGINT, &sigIntHandler, NULL);
-	
+
 	sigaction (SIGKILL, NULL, &old_action);
 	if (old_action.sa_handler != SIG_IGN)
 		sigaction(SIGKILL, &sigIntHandler, NULL);
@@ -238,7 +238,6 @@ int main(int argc, char *argv[])
 	else
 		engine				= (Engine*)EngineEmu::getInstance();
 
-	visaDevice = (VisaDevice*)PaxD200::getInstance();
 #ifndef _RFID_DEVICE_CRT288K_
 	rfid = RFIDDevice::getInstance();
 #endif
@@ -343,11 +342,11 @@ int main(int argc, char *argv[])
 		sigIntHandler.sa_handler = signal_handler;
 		sigemptyset(&sigIntHandler.sa_mask);
 		sigIntHandler.sa_flags = 0;
-		
+
 		sigaction (SIGINT, NULL, &old_action);
 		if (old_action.sa_handler != SIG_IGN)
 			sigaction(SIGINT, &sigIntHandler, NULL);
-		
+
 		sigaction (SIGKILL, NULL, &old_action);
 		if (old_action.sa_handler != SIG_IGN)
 			sigaction(SIGKILL, &sigIntHandler, NULL);
@@ -381,7 +380,7 @@ int main(int argc, char *argv[])
 			time_t currTime = time(NULL);
   			struct tm* timeInfo;
   			timeInfo = localtime(&currTime);
-  			if 	(  ((timeInfo->tm_hour*60+timeInfo->tm_min)	>= (settings->workTimeDevice.StartTimeHour*60+settings->workTimeDevice.StartTimeMinute)) 
+  			if 	(  ((timeInfo->tm_hour*60+timeInfo->tm_min)	>= (settings->workTimeDevice.StartTimeHour*60+settings->workTimeDevice.StartTimeMinute))
   				&& ((timeInfo->tm_hour*60+timeInfo->tm_min) <= (settings->workTimeDevice.StopTimeHour*60+settings->workTimeDevice.StopTimeMinute)))
   			{
   				if (stopWork != 0)

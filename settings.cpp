@@ -362,6 +362,10 @@ bool Settings::loadConfig (char* fileName)
 	visaParam.dataBit 						= iniparser_getuint(ini, 	"VISA:BIT",			8);
 	visaParam.stopBit 						= iniparser_getuint(ini, 	"VISA:STOPBIT",		0);
 	//--
+	sprintf(visaParam.login, 	"%s", iniparser_getstring(ini, 	"VISA:Login", 			""	));
+	sprintf(visaParam.password, 	"%s", iniparser_getstring(ini, 	"VISA:Password", 			""	));
+	visaParam.debug							= iniparser_getuint(ini,"VISA:Debug",	0);
+	//--
 	visaParam.workMode						= iniparser_getuint(ini, 	"VISA:WorkMode",	0);
 	visaParam.sub10Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Sub10Btn_PIN",	0);
 	visaParam.sub10Btn.pinEnable			= (BYTE)(visaParam.sub10Btn.pinNum > 0);
@@ -373,7 +377,7 @@ bool Settings::loadConfig (char* fileName)
 	visaParam.add100Btn.pinEnable			= (BYTE)(visaParam.add100Btn.pinNum > 0);
 	visaParam.add500Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Add500Btn_PIN",	0);
 	visaParam.add500Btn.pinEnable			= (BYTE)(visaParam.add500Btn.pinNum > 0);
-	
+
 	visaParam.payBtn.pinNum					= (BYTE)iniparser_getuint(ini, 	"VISA:PayBtn_PIN",	0);
 	visaParam.payBtn.pinEnable				= (BYTE)(visaParam.payBtn.pinNum > 0);
 	visaParam.cancelBtn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:CancelBtn_PIN",	0);

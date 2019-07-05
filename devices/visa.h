@@ -13,23 +13,13 @@ class VisaDevice
 {
   public:
 
-	BYTE 		buffer[1024];
-    bool		isOpened;
-	int 		deviceDelayMs;
-	int 		comPortBaudRate;
-	int 		comPortDataParity;
-	int 		comPortDataBit;
-	int 		comPortStopBit;
-	int 		fd;
-	int 		Work;
-
-  	virtual void Init(Settings* setting) = 0;
-	virtual bool IsOpened() = 0;
-	virtual bool OpenDevice() = 0;
-	virtual bool CloseDevice() = 0;
-	virtual bool Update() = 0;
+  	void Init(Settings* setting);
+	bool IsOpened();
+	bool OpenDevice();
+	bool CloseDevice();
+	bool Update();
 	VisaDevice();
-	virtual ~VisaDevice();
+	~VisaDevice();
 };
 
 #endif

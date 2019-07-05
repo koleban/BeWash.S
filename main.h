@@ -49,6 +49,7 @@
 #include "filters.h"
 #include "pssr.h"
 #endif
+
 #include "ibpp/ibpp.h"
 #include "iniparser/iniparser.h"
 #include "iniparser/dictionary.h"
@@ -76,7 +77,6 @@
 #include "devices/lcd.h"
 #include "devices/remoteCtrl.h"
 #include "devices/visa.h"
-#include "devices/pax_d200.h"
 #include "protocols/ccnet.h"
 #include "protocols/cctalk.h"
 #include "protocols/max7219.h"
