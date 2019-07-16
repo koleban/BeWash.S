@@ -37,14 +37,16 @@ PI_THREAD(DebugThread)
 			oscr_x = scr_x;
 			oscr_y = scr_y;
 		}
-		//
-		// print app name
-		cur_gotoxy(0,0);
-		term_setattr(1);
-		term_setattr(37);
-		printf("beWash: System v%2.2f [build: %d] | http://www.bewash.ru | +7 (861) 372-52-76", prgVer, prgBuild);
-		term_eraseendline();
-
+		if (settings->showAppLabel)
+		{
+			//
+			// print app name
+			cur_gotoxy(0,0);
+			term_setattr(1);
+			term_setattr(37);
+			printf("beWash: System v%2.2f [build: %d] | http://www.bewash.ru | +7 (861) 372-52-76", prgVer, prgBuild);
+			term_eraseendline();
+		}
 		//
 		// print current time
 		workTimer = time(NULL);

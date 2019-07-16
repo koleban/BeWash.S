@@ -103,7 +103,7 @@ bool Engine8400::engineStop()
 
 	//char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x06, 0xEA, 0x10, 0x84, 0x07, 0x00, 0x00 };
 	//char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x10, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00 };
-	char command[13] = { CTRL_ENGINE_DEVICE_ID, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00 , 0x00, 0x00};
+	char command[13] = { CTRL_ENGINE_DEVICE_ID, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x02, 0x00, 0x00, 0x00 , 0x00, 0x00};
 	bool result = RS485_doCommandS(streamId, &command[0], sizeof(command));
 
 	if ((startTime > 0) && (workTimeSec == 0))
@@ -127,7 +127,7 @@ bool Engine8400::engineTestConnection()
 	{
 		char command[8] = { CTRL_ENGINE_DEVICE_ID, 0x08, 0xAA, 0xAA, 0xBB, 0xBB, 0x00, 0x00 };
 		testResult = RS485_doCommandS(streamId, &command[0], sizeof(command));
-        if (!testResult) delay_ms(10);
+        if (!testResult) delay_ms(50);
 	}
 
 	return testResult;

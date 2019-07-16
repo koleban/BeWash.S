@@ -357,6 +357,9 @@ struct KKMParam
 	char ServiceName[250];
 	int TaxType;
 	int LocalTime;			//	1 - Использовать локальное время ККМ (МОСКВА +4 часа)
+	int MaxAmount;			//	Сумма максимальной покупки для пробития чека. 
+							//	Свыше  - не побьет, выдаст ошибку
+	int SharedMode;			// Режим разделенного доступа (Присоединился, пробил чек, отвалил)
 };
 
 struct WorkTimeDevice		// Рабочее время объекта
@@ -472,6 +475,10 @@ public:
 	DWORD		 		progWinterDelay[32];	// В зимнем режиме есть пауза на прокачку
 	DWORD		 		progLimitSumm[32];			//
 	DWORD		 		progLimitRelay[32];			//
+	//
+	// Отображать или нет версию программы
+	// при отображении затерается предыдущий лог в консоле
+	int					showAppLabel;
 	//
 	// Скидки на жетоны
 	CoinDiscount		coinDiscount;

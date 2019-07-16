@@ -296,10 +296,10 @@ PI_THREAD(ButtonTerminalWatch)
 		/// Если устройство эквайринга активно
 		/// и активны режимы работы
 		///
-		if (visaDevice->Work)
+/*		if (visaDevice->Work)
 		{
 		}
-
+*/
 		if (thread_timeout < 0) thread_timeout = 0;
 	}
 

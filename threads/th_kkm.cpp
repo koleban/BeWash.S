@@ -377,7 +377,8 @@ PI_THREAD(KKMWatch)
 			if (settings->debugFlag.KKMWatch)
 				printf("%s\n", myNote);
 			settings->workFlag.KKMWatch = 0;
-			drv->Beep();
+			if (settings->kkmParam.SharedMode == 0)
+				drv->Beep();
 			delay_ms(200);
 			drv->FNGetInfoExchangeStatus();
 			if (drv->MessageCount > 0)
@@ -386,11 +387,28 @@ PI_THREAD(KKMWatch)
 				printf("[THREAD] ÊÊÌ: ÂÍÈÌÀÍÈÅ : ÅÑÒÜ ÍÅ ÎÒÏÐÀÂËÅÍÈÅ ×ÅÊÈ Â ÎÔÄ. ÏÐÎÂÅÐÜÒÅ ÁÀËÀÍÑ, ÏÎÄÏÈÑÊÓ, ÏÀÐÀÌÅÒÐÛ ÎÔÄ È ÑÂßÇÜ Ñ ÈÍÒÅÐÍÅÒÎÌ!!!\n");
 				term_setattr(37);
 			}
+			
+			if (settings->kkmParam.SharedMode)
+			{
+				drv->Disconnect();
+				printf("[THREAD] ÊÊÌ: ÈÑÏÎËÜÇÓÅÒÑß SHARED ÐÅÆÈÌ !!!\n");
+			}
+
 			while (settings->threadFlag.KKMWatch)
 			{
 				time(&rawtime);
 				now = localtime(&rawtime);
 				fflush(stdout);
+				if (settings->kkmParam.SharedMode)
+				{
+					if (queueKkm->QueueCount <= 0)
+					{
+						delay(1);
+						continue;
+					}
+					else
+						drv->Connect();
+				}
 				if (drv->CheckConnection() != 1)
 				{
 							if (!error)
@@ -436,9 +454,9 @@ PI_THREAD(KKMWatch)
 				{
 					while(queueKkm->QueueGet(&valueKkm) >= 0)
 					{
-						if (valueKkm.eventId > 1001)
+						if (valueKkm.eventId >= settings->kkmParam.MaxAmount)
 						{
-							printf("[THREAD] KKM: Îáíàðóæåíà ÎØÈÁÊÀ. Ñóììà îïëàòû áîëüøå äîïóñòèìîé (1001 ðóá) : %d ðóá\n", valueKkm.eventId);
+							printf("[THREAD] KKM: Îáíàðóæåíà ÎØÈÁÊÀ. Ñóììà îïëàòû áîëüøå äîïóñòèìîé (%d ðóá) : %d ðóá\n", settings->kkmParam.MaxAmount, valueKkm.eventId);
 							continue;
 						}
 						CheckDevice(drv);
@@ -477,6 +495,8 @@ PI_THREAD(KKMWatch)
 							showTLVStruct(drv);
 						delay_ms(3000);
 					}
+					if (settings->kkmParam.SharedMode)
+						drv->Disconnect();
 				}
 				settings->workFlag.KKMWatch = 0;
 				delay_ms(settings->kkmParam.QueryTime);

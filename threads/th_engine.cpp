@@ -53,9 +53,11 @@ PI_THREAD(EngineWatch)
 	int lastPower = 0;
 	while (settings->threadFlag.EngineWatch)
 	{
+		requestCount = 3;
 		settings->workFlag.EngineWatch = 0;
 		timeout = 500;
 		while ((settings->busyFlag.EngineWatch) && (timeout-- > 0)) {delay_ms(1);}
+		if (timeout == 0) settings->busyFlag.EngineWatch = 0;
 		settings->busyFlag.EngineWatch++;
         engineStatus = false;
 		timeout = requestCount;
@@ -92,9 +94,11 @@ PI_THREAD(EngineWatch)
 						getGPIOState(settings->engine_relay), settings->engine_relay);
 					setGPIOState(settings->engine_relay, 0);
 				}
+				engine->engineUpdate();
+				delay_ms(100);
 				engine->needFreq = 1;
 				engineStatus |=	engine->engineStart(1);
-				delay_ms(200);
+				delay_ms(500);
 				engineStatus |=	engine->engineStop();
 				delay_ms(settings->commonParams.engine_StartStopTimeMs);
 			}
@@ -114,7 +118,19 @@ PI_THREAD(EngineWatch)
 						status.intDeviceInfo.program_currentProgram, engine->currFreq, engine->needFreq, status.intDeviceInfo.money_currentBalance, (getGPIOState(bypassPinNum) == 0),
 						(int)(engine->powerA/10), engine->powerA%10);
 				lastPower = engine->powerA;
+				// calc time for bypass turn ON
+				int checkTime = 0;
 				if (getGPIOState(bypassPinNum) == 0)
+					for (int itmp=0; itmp<100; itmp++)
+					{
+						if (getGPIOState(bypassPinNum) == 0)
+						{
+							checkTime++;
+							delay_ms(1);
+						}
+					}
+				// if bypass turn ON and is it not NOISE
+				if ((checkTime > 80) && (getGPIOState(bypassPinNum) == 0))
 				{
 					engineStatus = false;
 					timeout = requestCount;
@@ -129,6 +145,7 @@ PI_THREAD(EngineWatch)
 							setGPIOState(settings->engine_relay, 0);
 						}
 						engineStatus = engine->engineStart(500);
+						delay_ms(50);
 					}
 					if (timeout == 0)
 						if (settings->debugFlag.EngineWatch) printf("[DEBUG] >> [ENG] Timeout [FLAG: 1]\n");
@@ -149,6 +166,7 @@ PI_THREAD(EngineWatch)
 							setGPIOState(settings->engine_relay, 1);
 						}
 						engineStatus = engine->engineStart(engine->needFreq);
+						delay_ms(100);
 					}
 					term_setattr(31);
 					if (timeout == 0)
@@ -159,8 +177,9 @@ PI_THREAD(EngineWatch)
 			}
 		}
 
-		settings->busyFlag.EngineWatch--;
-		delay_ms(400);
+		if (settings->busyFlag.EngineWatch > 0)
+			settings->busyFlag.EngineWatch--;
+		delay_ms(100);
 	}
 	engine->engineStop();
 	engine->CloseDevice();

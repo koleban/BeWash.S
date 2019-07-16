@@ -156,6 +156,7 @@ bool Settings::loadConfig (char* fileName)
 	useEepromParams						= iniparser_getuint(ini, "Common:useEepromParams",	0);
 	cardBonus							= iniparser_getuint(ini, "Common:CardBonus",			0);
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
+	showAppLabel						= iniparser_getuint(ini, "Common:ShowAppLabel",			0);
 
 	netServerConfig.PortNumber 			= iniparser_getuint(ini, "NetServer:PortNumber", 		3355);
 
@@ -235,6 +236,8 @@ bool Settings::loadConfig (char* fileName)
 	kkmParam.QueryTime						= iniparser_getuint(ini, 	"KKM:QueryTime",			10000);
 	kkmParam.TaxType						= iniparser_getuint(ini, 	"KKM:TaxType",			8); // ENVD
 	kkmParam.LocalTime						= iniparser_getuint(ini, 	"KKM:LocalTime",			1); // ENVD
+	kkmParam.MaxAmount						= iniparser_getuint(ini, 	"KKM:MaxAmount",			1001);
+	kkmParam.SharedMode						= iniparser_getuint(ini, 	"KKM:SharedMode",			0); 
 
 	osmosParam.gidrodynWaitTime				= iniparser_getuint(ini, 	"OSMOS:gidrodynWaitTime",			600);
 	osmosParam.gidrodynTurnOnTime			= iniparser_getuint(ini, 	"OSMOS:gidrodynTurnOnTime",			60);
