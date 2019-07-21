@@ -353,6 +353,7 @@ struct KKMParam
 	int kkmPort;
 	BYTE kkmPass;
 	int QueryTime;
+	int CutType;
 	// Наименование услуги которая печатается в чеке ККМ
 	char ServiceName[250];
 	int TaxType;

@@ -238,6 +238,7 @@ bool Settings::loadConfig (char* fileName)
 	kkmParam.LocalTime						= iniparser_getuint(ini, 	"KKM:LocalTime",			1); // ENVD
 	kkmParam.MaxAmount						= iniparser_getuint(ini, 	"KKM:MaxAmount",			1001);
 	kkmParam.SharedMode						= iniparser_getuint(ini, 	"KKM:SharedMode",			0); 
+	kkmParam.CutType						= iniparser_getuint(ini, 	"KKM:CutType",			0); 
 
 	osmosParam.gidrodynWaitTime				= iniparser_getuint(ini, 	"OSMOS:gidrodynWaitTime",			600);
 	osmosParam.gidrodynTurnOnTime			= iniparser_getuint(ini, 	"OSMOS:gidrodynTurnOnTime",			60);

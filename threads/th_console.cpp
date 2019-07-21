@@ -5,7 +5,7 @@ PI_THREAD(ConsoleThread)
 {
 	Settings* settings = Settings::getInstance();
 	if (!settings->threadFlag.ConsoleWatch) return (void*)0;
-	char command[100];
+	char command[1024];
 	while (settings->threadFlag.ConsoleWatch)
 	{
 		bool cmdYes = 0;
@@ -18,6 +18,7 @@ PI_THREAD(ConsoleThread)
 			command[chIndex++] = t;
 			t = (BYTE)mygetch();
 			if (t == 0x0A) { t = 0; command[chIndex] = 0x00; }
+			if (chIndex > 15) break;
 			cmdYes = 1;
 		}
 		if (cmdYes)
@@ -33,7 +34,7 @@ PI_THREAD(ConsoleThread)
 		WORD valTemp1 = 0x0000;
 		WORD valTemp2 = 0x0000;
 		char strTemp[20];
-		char strTmp256[256];
+		char strTmp256[1024];
 		switch(*((DWORD*)(command)))
 		{
 			// eprg
@@ -41,19 +42,25 @@ PI_THREAD(ConsoleThread)
 				for(tmpIndex = 0; tmpIndex < 9; tmpIndex++)
 					eepromPrgPrice[tmpIndex] = 0;
 				break;
+			// chk1
 			case 0x316B6863:
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
 				break;
+			// chk5
 			case 0x356B6863:
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 1);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				delay_ms(500);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 2);
 				queueKkm->QueuePut(0, 2, 0, strTmp256);
+				delay_ms(500);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 3);
 				queueKkm->QueuePut(0, 2, 0, strTmp256);
+				delay_ms(500);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 4);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
+				delay_ms(500);
 				sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, 5);
 				queueKkm->QueuePut(1, 0, 0, strTmp256);
 				break;
@@ -199,6 +206,7 @@ PI_THREAD(ConsoleThread)
 			default:
 				printf ("%08X   %08X\n", *((DWORD*)(command)), *((DWORD*)(command+4)));
 				printf("\n");
+				memset(command, 0x00, sizeof(command));
 			break;
 		}
 		}

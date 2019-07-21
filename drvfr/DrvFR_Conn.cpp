@@ -63,7 +63,11 @@ int DrvFR_Conn::opendev()
 		struct sockaddr_in addr;
 		devfile = socket(AF_INET, SOCK_STREAM, 0);
 		signal(SIGPIPE, SIG_IGN);
-		if (devfile < 0) return -1;
+		if (devfile < 0)
+		{
+			printf ("Error: Can't create SOCKET\n");
+        	return -1;
+        }
 
 		struct timeval timeout;
 		timeout.tv_sec = 3;
@@ -77,6 +81,12 @@ int DrvFR_Conn::opendev()
 			perror("SO_REUSEADDR");
         	return -1;
         }
+
+      	int status = fcntl(devfile, F_GETFD, 0);
+      	if (status >= 0)
+         	status = fcntl(devfile, F_SETFD, status | FD_CLOEXEC);
+      	if (status < 0)
+        	printf("Error getting/setting socket FD_CLOEXEC flags");
 
 		trueVal = 1;
 		if (setsockopt (devfile, SOL_SOCKET, SO_KEEPALIVE, (const char*)&trueVal,
@@ -151,6 +161,20 @@ int DrvFR_Conn::set_up_tty(int tty_fd)
 //--------------------------------------------------------------------------------------
 int DrvFR_Conn::closedev(void)
 {
+	if (drvFR->ConnectionType == TConnectionType::ctSocket)
+	{
+   		if (devfile >= 0) 
+   		{
+   			int err = 0;
+			socklen_t len = sizeof(int);
+			getsockopt(devfile, SOL_SOCKET, SO_ERROR, (char *)&err, &len);
+      		if (shutdown(devfile, SHUT_RDWR) < 0) // secondly, terminate the 'reliable' delivery
+         		if (errno != ENOTCONN && errno != EINVAL) // SGI causes EINVAL
+            		printf("SOCKET ERROR: shutdown");
+      			if (close(devfile) < 0) // finally call close()
+         			printf("SOCKET ERROR: close\n");
+   		}	
+	}
 	return close(devfile);
 }
 //--------------------------------------------------------------------------------------

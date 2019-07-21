@@ -9,7 +9,7 @@ void cp866_cp1251( unsigned char* s , int length);
 //---------------------------------------------------------------------
 int OpenPaymentDocument(DrvFR* drvFr)
 {
-	drvFr->CutType = 0;
+	drvFr->CutType = settings->kkmParam.CutType;
 	drvFr->CutCheck();
 	return 0;
 }
@@ -21,6 +21,7 @@ int OpenPaymentDocument(DrvFR* drvFr)
 //---------------------------------------------------------------------
 int AddWareString(DrvFR* drvFr, TCheckType checkType, double quantity, double price, char* stringForPrinting, int taxType, int paymentItemSign, int paymentTypeSign)
 {
+	drvFr->Department = 1;
 	drvFr->Price = price;
 	drvFr->Quantity = quantity;
 	drvFr->Summ1 = drvFr->Price * drvFr->Quantity;
@@ -121,7 +122,7 @@ void CheckDevice(DrvFR* drv)
 			errorCode = 0x11;
 			drv->FNCloseSession();
 			delay_ms(10000);
-			drv->CutType = 0;
+			drv->CutType = settings->kkmParam.CutType;
 			drv->CutCheck();
 			delay_ms(500);
 			break;
@@ -187,7 +188,7 @@ void CheckDevice(DrvFR* drv)
 			errorCode = 0x18;
 			drv->FNOpenSession();
 			delay_ms(3000);
-			drv->CutType = 0;
+			drv->CutType = settings->kkmParam.CutType;
 			drv->CutCheck();
 			delay_ms(500);
 		}
@@ -250,6 +251,7 @@ void showTLVStruct(DrvFR* drv)
 {
 	if (!settings->debugFlag.KKMWatch) return;
 
+	printf("FNRequestFiscalDocumentTLV: Show TLV structure for fiscal document\n");
 	struct tm* now;
 	time_t rawtime;
 	tlv_box_t* parsedBoxes = tlv_box_parse(drv->TLVData, drv->DataLength);
@@ -258,17 +260,17 @@ void showTLVStruct(DrvFR* drv)
 	int l_index = 0;
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FN, value, &length);
-	printf("‘Õ: %s", value);
+	printf("‘Õ: %s\n", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_RNKKT, value, &length);
-	printf(" –Õ   “: %s", value);
+	printf(" –Õ   “: %s\n", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_INN, value, &length);
-	printf(" »ÕÕ: %s", value);
+	printf(" »ÕÕ: %s\n", value);
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FD, value, &length);
-	printf(" ‘ƒ: %d", *((DWORD*)&value[0]));
+	printf(" ‘ƒ: %d\n", *((DWORD*)&value[0]));
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_DATE_TIME, value, &length);
@@ -279,7 +281,7 @@ void showTLVStruct(DrvFR* drv)
 			now = localtime(&rawtime);
 		else
 			now = gmtime(&rawtime);
-		printf(" %02d.%02d.%04d %02d:%02d:%02d", now->tm_mday, now->tm_mon, now->tm_year, now->tm_hour, now->tm_min, now->tm_sec);
+		printf(" %02d.%02d.%04d %02d:%02d:%02d\n", now->tm_mday, now->tm_mon, now->tm_year, now->tm_hour, now->tm_min, now->tm_sec);
 	}
 	else
 	{
@@ -293,38 +295,47 @@ void showTLVStruct(DrvFR* drv)
 	tlv_box_get_string(parsedBoxes, TLV_DATA_FP, value, &length);
 	printf(" ‘œ:");
 	printf(" %lu", (value[2] << 24)+(value[3] << 16)+(value[4] << 8)+(value[5]));
+	printf("\n");
 
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SESSION, value, &length);
 	printf(" —Ã≈Õ¿: %d", *((DWORD*)&value[0]));
+	printf("\n");
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_DOCNUM, value, &length);
 	printf(" ÕŒÃ. ◊≈ ¿: %d", *((DWORD*)&value[0]));
+	printf("\n");
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM, value, &length);
 	printf(" —”ÃÃ¿: %g", ((float)*((DWORD*)&value[0]))/100);
+	printf("\n");
 	length = 128;
 //	tlv_box_get_string(parsedBoxes, TLV_DATA_DEVNUMBER, value, &length);
 //	printf("TLV_DATA_DEVNUMBER:			 %s \n", value);
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CASH, value, &length);
 	printf(" Õ¿À.: %g", ((float)*((DWORD*)&value[0]))/100);
+	printf("\n");
 	length = 128;
 	tlv_box_get_string(parsedBoxes, TLV_DATA_SUMM_CARD, value, &length);
 	printf(" VISA: %g", ((float)*((DWORD*)&value[0]))/100);
+	printf("\n");
 	length = 128;
 //	tlv_box_get_string(parsedBoxes, TLV_DATA_FNS_LINK, value, &length);
 //	printf("TLV_DATA_FNS_LINK:			 %s \n", value);
+//	printf("\n");
 
 	length = 128;
 //	tlv_box_get_string(parsedBoxes, TLV_DATA_ADDR_DOC, value, &length);
 //	cp866_cp1251((unsigned char*)value, length);
 //	printf("TLV_DATA_ADDR_DOC:			 %s \n", value);
+//	printf("\n");
 
 	length = 128;
 //	tlv_box_get_string(parsedBoxes, TLV_DATA_USERNAME, value, &length);
 //	cp866_cp1251((unsigned char*)value, length);
 //	printf("TLV_DATA_USERNAME:			 %s \n", value);
+//	printf("\n");
 
 	length = 128;
 //	tlv_box_get_string(parsedBoxes, TLV_DATA_USERADDR, value, &length);
@@ -403,11 +414,15 @@ PI_THREAD(KKMWatch)
 				{
 					if (queueKkm->QueueCount <= 0)
 					{
-						delay(1);
+						drv->Disconnect();
+						delay_ms(1000);
 						continue;
 					}
 					else
-						drv->Connect();
+					{
+						if (drv->Connect() <= 0) drv->Disconnect();
+						delay_ms(200);
+					}
 				}
 				if (drv->CheckConnection() != 1)
 				{
@@ -466,7 +481,14 @@ PI_THREAD(KKMWatch)
 						db->Log(DB_EVENT_TYPE_KKM_FN, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
-						AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId+valueKkm.data1, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
+						result = AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId+valueKkm.data1, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
+						if (result != 0)
+						{
+							term_setattr(31);
+							printf("œÂ˜‡Ú¸ ˜ÂÍ‡ Œ“Ã≈Õ¿\n");
+							term_setattr(37);
+							break;
+						}
 						printf("[THREAD] KKM: œÓ‰‡Ê‡ : %s - 1 ¯Ú\n", valueKkm.note);
 						fflush(stdout);
 //
@@ -488,16 +510,14 @@ PI_THREAD(KKMWatch)
 						delay_ms(500);
 						drv->FNGetStatus();
 						CheckDevice(drv);
-						printf("FNRequestFiscalDocumentTLV\n");
 						drv->Password = 30;
-						drv->FNRequestFiscalDocumentTLV();
 						if (drv->FNReadFiscalDocumentTLV() == 1)
 							showTLVStruct(drv);
-						delay_ms(3000);
+						delay_ms(settings->kkmParam.QueryTime);
 					}
-					if (settings->kkmParam.SharedMode)
-						drv->Disconnect();
 				}
+				if (settings->kkmParam.SharedMode)
+					drv->Disconnect();
 				settings->workFlag.KKMWatch = 0;
 				delay_ms(settings->kkmParam.QueryTime);
 			}

@@ -173,7 +173,7 @@ int RS485_doCommandS(int fd, char *command, int size)
 	printf("\nCRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
 #endif
 	result = ((out_buff[count-2] == crc_out[1]) && (out_buff[count-1] == crc_out[0]));
-	if (!result)
-		printf("\nERROR CRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
+//	if (!result)
+//		printf("\nERROR CRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
 	return result;
 }

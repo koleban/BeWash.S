@@ -169,6 +169,9 @@ PI_THREAD(IntCommonThread)
 
 	printf ("[DEBUG] IntThread:Param discount with client card [min_sum: %d proc: %d]\n", settings->progPrice[12], settings->progPrice[16]);
 
+	int amountCash = 0;
+	int amountCard = 0;
+
 	while (settings->threadFlag.IntCommonThread)
 	{
 		// Рассчитываем, что круг этого потока должен составлять примерно 100мс
@@ -177,6 +180,17 @@ PI_THREAD(IntCommonThread)
 		status.intDeviceInfo.objectId = settings->commonParams.objectId;
 		status.intDeviceInfo.deviceId = settings->commonParams.deviceId;
 		status.intDeviceInfo.userId = settings->commonParams.userId;
+
+		if ((status.intDeviceInfo.money_currentBalance == 0) && ((amountCash + amountCard) > 0))
+		{
+			char strTmp256[1024];
+			int devId = settings->commonParams.deviceId;
+			if (devId > 100) devId -= 100;
+			sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
+			queueKkm->QueuePut(amountCash, amountCard, 1, strTmp256);
+			amountCash = 0;
+			amountCard = 0;
+		}
 
 		///
 		/// Обработка поступления монет и купюр
@@ -238,6 +252,7 @@ PI_THREAD(IntCommonThread)
 					status.intDeviceInfo.money_currentBalance += subVal*settings->coinWeight.Weight[index];
 					summWithCard += subVal*settings->coinWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->coinWeight.Weight[index];
+					amountCash += subVal*settings->coinWeight.Weight[index];
 					printf("[DEBUG] IntThread: Coin [%d] (%d * %d) = %d\n", inCoinInfo.Count[index], subVal, settings->coinWeight.Weight[index], subVal*settings->coinWeight.Weight[index]);
 					nextCoin(settings->coinWeight.Weight[index]);
 
@@ -290,6 +305,7 @@ PI_THREAD(IntCommonThread)
 					status.intDeviceInfo.money_currentBalance += subVal*settings->moneyWeight.Weight[index];
 					summWithCard += subVal*settings->moneyWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->moneyWeight.Weight[index];
+					amountCash += subVal*settings->moneyWeight.Weight[index];
 					printf("[DEBUG] IntThread: Bill index: %d [%d] (%d * %d) = %d\n", index, inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
 					// Проверим: Если вставлена карта и есть скидка на пополнение
 					if ((status.extDeviceInfo.rfid_cardPresent) && ((settings->discountCardDeposit + settings->cardBonus) > 0))

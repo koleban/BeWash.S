@@ -189,8 +189,15 @@ int DrvFR::Connect(void)
 //-----------------------------------------------------------------------------
 int DrvFR::Disconnect(void)
 {
+	int res = 0;
 	Connected = false;
-	return conn->closedev();
+	if (conn != NULL)
+	{
+		res = conn->closedev();
+		delete conn;
+		conn = NULL;
+	}
+	return res;
 }
 //-----------------------------------------------------------------------------
 int DrvFR::Beep(void)
