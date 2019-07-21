@@ -416,6 +416,13 @@ struct MenuDescriptor
 	char 	menuName[4];
 };
 
+struct ServiceCards
+{
+	int prgNumber;
+	int washBalance;
+	DWORD cardId[5];
+};
+
 class Settings
 {
 private:
@@ -520,6 +527,14 @@ public:
 	//
 	// Параметры эквайринга
 	VISAParam visaParam;
+
+	//
+	// Сервисные карты
+	// [ServiceCards]
+	// PrgNumber = 8
+	// CardID_1 = xxxxxx
+	// WashBalance = 123
+	ServiceCards serviceCards;
 
 	//
 	// СКИДКИ

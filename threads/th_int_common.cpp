@@ -367,6 +367,28 @@ PI_THREAD(IntCommonThread)
 		}
 
 		///
+		/// Обработка СЕРВИСНЫХ КАРТ
+		///
+		if (status.extDeviceInfo.rfid_cardPresent)
+		{
+			bool status_crd = false;
+			for (int indexcrd=0; indexcrd < 5; indexcrd++)
+				status_crd |= (getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber) == settings->serviceCards.cardId[indexcrd]);
+			if (status_crd)
+			{
+				if (status.intDeviceInfo.program_currentProgram != settings->serviceCards.prgNumber)
+				{
+					printf("[DEBUG] IntThread: SERVICE CARD. Only prg number %d\n", settings->serviceCards.prgNumber);
+					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
+					status.intDeviceInfo.extPrgNeedUpdate = 1;
+					status.intDeviceInfo.money_currentBalance += settings->serviceCards.washBalance;
+					if (status.intDeviceInfo.money_currentBalance > settings->serviceCards.washBalance)
+						status.intDeviceInfo.money_currentBalance = settings->serviceCards.washBalance;
+				}
+			}
+		}
+
+		///
 		/// Обработка изменения программы
 		///
 		int t_currFreq = engine->currFreq;
@@ -395,10 +417,10 @@ PI_THREAD(IntCommonThread)
 				// 27.07.2018
 				// >>>
 				/// Отключим двигатель
-				status.intDeviceInfo.engine_currentRpm = 500;
+				status.intDeviceInfo.engine_currentRpm = 0;
 				engine->needFreq = status.intDeviceInfo.engine_currentRpm;
-				/// Установим состояние реле в СТОП1 + БАЙПАС
-				helper_TurnRelaysOnProgramm(51);
+				/// Установим состояние реле в СТОП + БАЙПАС
+				helper_TurnRelaysOnProgramm(50);
 				for (int index=1; index <= 14; index++)
 					if (status.intDeviceInfo.relay_currentVal[index-1])
 						relay->relayOn(index);
@@ -410,8 +432,11 @@ PI_THREAD(IntCommonThread)
 					break;
 				}
 				else
+				{
 					/// Ждем ValveTimeOff секунд
+					printf("Waiting %d sec before VALVE turn off\n", settings->valveTimeOff);
 					delay_ms(settings->valveTimeOff*1000);
+				}
 				// <<<
 				helper_TurnRelaysOnProgramm(status.intDeviceInfo.program_currentProgram);
 				status.intDeviceInfo.engine_currentRpm = 0;

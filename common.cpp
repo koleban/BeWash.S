@@ -408,8 +408,10 @@ long get_uptime()
 
 long get_prguptime()
 {
-	return (long)(time(NULL) - prgStartTimer);
-
+	time_t currTime = time(NULL);
+	struct tm* timeInfo;
+	timeInfo = localtime(&currTime);
+	return (long)(timeInfo->tm_hour*3600+timeInfo->tm_min*60+timeInfo->tm_sec);
 }
 
 int mygetch( )

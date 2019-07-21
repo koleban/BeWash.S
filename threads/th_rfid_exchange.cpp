@@ -55,7 +55,7 @@ PI_THREAD(RFIDExchangeThread)
 						/// New card inserted
 						///
 						char noteBuffer[1024];
-						sprintf(noteBuffer, "New card [BAL: %2d, CRD: %08X]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
+						sprintf(noteBuffer, "New card [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
 						db->Log(DB_EVENT_TYPE_INT_CARD_INSERTED, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);
 						///
 						///
@@ -74,14 +74,14 @@ PI_THREAD(RFIDExchangeThread)
 					/// Card is gone
 					///
 					char noteBuffer[1024];
-					sprintf(noteBuffer, "Card is gone [BAL: %2d, CRD: %08X]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(lastCardNumber));
+					sprintf(noteBuffer, "Card is gone [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(lastCardNumber));
 					db->Log(DB_EVENT_TYPE_INT_CARD_GONE, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);
 					///
 					///
 
 					status.intDeviceInfo.money_currentBalance = 0;
 					memcpy(&status.extDeviceInfo.rfid_prevCardNumber[0], &lastCardNumber[0], 6);
-					printf("[RFID] Card is gone [%08X]: %02X%02X%02X%02X%02X%02X\n", getCardIDFromBytes(lastCardNumber),
+					printf("[RFID] Card is gone [%lu]: %02X%02X%02X%02X%02X%02X\n", getCardIDFromBytes(lastCardNumber),
 						status.extDeviceInfo.rfid_incomeCardNumber[0],
 						status.extDeviceInfo.rfid_incomeCardNumber[1],
 						status.extDeviceInfo.rfid_incomeCardNumber[2],
@@ -107,7 +107,7 @@ PI_THREAD(RFIDExchangeThread)
 							setCardMoney(lastCardNumber, status.intDeviceInfo.money_currentBalance - cardInfo.cardMoney);
 
 						char noteBuffer[1024];
-						sprintf(noteBuffer, "Card is gone (change) [BAL: %2d, CRD: %08X]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(lastCardNumber));
+						sprintf(noteBuffer, "Card is gone (change) [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(lastCardNumber));
 						db->Log(DB_EVENT_TYPE_INT_CARD_GONE, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);
 
 						status.intDeviceInfo.money_currentBalance = 0;
@@ -115,7 +115,7 @@ PI_THREAD(RFIDExchangeThread)
 						getCardInfo(status.extDeviceInfo.rfid_incomeCardNumber, &cardInfo);
 						status.intDeviceInfo.money_currentBalance = cardInfo.cardMoney;
 
-						sprintf(noteBuffer, "New card (change) [BAL: %2d, CRD: %08X]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
+						sprintf(noteBuffer, "New card (change) [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
 						db->Log(DB_EVENT_TYPE_INT_CARD_INSERTED, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);
 
 						memcpy(status.extDeviceInfo.rfid_prevCardNumber, lastCardNumber, 6);

@@ -53,7 +53,11 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-32, 1);
 		printf("%s", buff);
 		term_setattr(32);
-		printf("Program [%d] uptime: %3d:%02d:%02d", settings->commonParams.deviceId, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
+//		printf("Program [%d] uptime: %3d:%02d:%02d", settings->commonParams.deviceId, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
+		time_t currTime = time(NULL);
+  		struct tm* timeInfo;
+  		timeInfo = localtime(&currTime);
+		printf("Program [%d] d/t: %3d:%02d:%02d", settings->commonParams.deviceId, timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec);
 		term_setattr(31);
 		if (tmp_scr++ > sizeof(scrl)-2) tmp_scr = 0;
 		printf("%c", scrl[tmp_scr]);

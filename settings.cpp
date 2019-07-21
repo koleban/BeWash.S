@@ -42,6 +42,7 @@ Settings::Settings()
 	memset(&remoteCounter, 0, sizeof(remoteCounter));
 	memset(&remoteCounterSumm, 0, sizeof(remoteCounterSumm));
 	memset(&visaParam, 0, sizeof(visaParam));
+	memset(&serviceCards, 0, sizeof(serviceCards));
 
 	int model, rev, mem, maker, overVolted ;
 	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
@@ -292,6 +293,14 @@ bool Settings::loadConfig (char* fileName)
 	workTimeDevice.StartTimeMinute	= iniparser_getint(ini, 	"WorkTime:StartTimeMinute",		0);
 	workTimeDevice.StopTimeHour		= iniparser_getint(ini, 	"WorkTime:StopTimeHour",		0);
 	workTimeDevice.StopTimeMinute	= iniparser_getint(ini, 	"WorkTime:StopTimeMinute",		0);
+
+	serviceCards.prgNumber = iniparser_getuint(ini, "ServiceCards:PrgNumber", 0);
+	serviceCards.washBalance = iniparser_getuint(ini, "ServiceCards:WashBalance", 333);
+	for (index=0; index < 5; index++)
+	{
+		sprintf(paramName, 	"ServiceCards:CardID_%d", index+1);
+		serviceCards.cardId[index] = iniparser_getuint(ini, paramName, 0); 
+	}
 
 	//
 	// ��������� ������ ��� ������ ���������
