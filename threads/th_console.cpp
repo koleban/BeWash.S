@@ -10,8 +10,8 @@ PI_THREAD(ConsoleThread)
 	{
 		bool cmdYes = 0;
 		int chIndex = 0;
-		BYTE t = (BYTE)mygetch();
 		memset(command, 0x00, sizeof(command));
+		BYTE t = (BYTE)mygetch();
 		while (t > 0)
 		{
 			if (chIndex > 99) { chIndex = 0; command[1] = 0x00;}
