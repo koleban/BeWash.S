@@ -1,7 +1,7 @@
 #include "../main.h"
 
 //#define DEBUG
-
+//#define __REMOTE_COUNTER__
 void RS485_getCRC(char *buf, int bufLen, char *crc)
 {
 	unsigned long crc_0 = 0xffff;
@@ -87,18 +87,18 @@ int RS485_doCommand(int fd, char *command)
 		command[i] = out_buff[i];
 	result = (count >= 5);
 	if (!result) return result;
+#ifndef __REMOTE_COUNTER__
 	RS485_getCRC(&command[0], count-2, &crc_out[0]);
 #ifdef DEBUG
 	printf("\nCRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
 #endif
 	result = ((out_buff[count-2] == crc_out[1]) && (out_buff[count-1] == crc_out[0]));
 	return result;
-
-/*
+#else
 	RS485_getCRC(&command[0], 6, &crc_out[0]);
 	result |= (((out_buff[6] ^ out_buff[7]) == (crc_out[0] ^ crc_out[1])) && (devID != command[0]));
 	return result;
-*/
+#endif
 }
 
 int RS485_doCommandS(int fd, char *command, int size)
@@ -167,6 +167,7 @@ int RS485_doCommandS(int fd, char *command, int size)
 	result = 0;
 	if ((count < 5) || (count > 20)) return result;
 	if ((devID != command[0]) || ((command[0] + command[1]) == 0)) return result;
+#ifndef __REMOTE_COUNTER__
 	result = 1;
 	RS485_getCRC(&command[0], count-2, &crc_out[0]);
 #ifdef DEBUG
@@ -175,5 +176,11 @@ int RS485_doCommandS(int fd, char *command, int size)
 	result = ((out_buff[count-2] == crc_out[1]) && (out_buff[count-1] == crc_out[0]));
 //	if (!result)
 //		printf("\nERROR CRC: %02X %02X == %02X %02X\n", out_buff[count-2], out_buff[count-1], crc_out[0], crc_out[1]);
+#else
+	result = 1;
+//	RS485_getCRC(&command[0], count, &crc_out[0]);
+//	result = (((out_buff[count-2] ^ out_buff[count-1]) == (crc_out[0] ^ crc_out[1])) && (devID != command[0]));
+#endif
+
 	return result;
 }
