@@ -102,19 +102,21 @@ PI_THREAD(AlienDeviceWatch)
 
 
 			DWORD incomeMoney = remoteCounter[index][0]*settings->remoteCounterParam.PriceIN1 + remoteCounter[index][1]*settings->remoteCounterParam.PriceIN2;
-			term_setattr(36);
-			printf ("[ => ] ");
-			term_setattr(37);
-			printf ("Зафиксированы поступление данных: ");
-			term_setattr(36);
-			printf("Пост N:%d ", slaveId);
-			term_setattr(37);
-			printf("Счетчики [%d rur, %d rur]: [%d, %d] = ", settings->remoteCounterParam.PriceIN1, settings->remoteCounterParam.PriceIN2, remoteCounter[index][0], remoteCounter[index][1]);
-			term_setattr(36);
-			printf("%d руб.\n", incomeMoney);
-			term_setattr(37);
-			delay_ms(500);
-
+			if (incomeMoney < settings->kkmParam.MaxAmount)
+			{
+				term_setattr(36);
+				printf ("[ => ] ");
+				term_setattr(37);
+				printf ("Зафиксированы поступление данных: ");
+				term_setattr(36);
+				printf("Пост N:%d ", slaveId);
+				term_setattr(37);
+				printf("Счетчики [%d rur, %d rur]: [%d, %d] = ", settings->remoteCounterParam.PriceIN1, settings->remoteCounterParam.PriceIN2, remoteCounter[index][0], remoteCounter[index][1]);
+				term_setattr(36);
+				printf("%d руб.\n", incomeMoney);
+				term_setattr(37);
+				delay_ms(500);
+			}
 			//
 			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			if (settings->debugFlag.AlienDeviceThread)
@@ -137,14 +139,17 @@ PI_THREAD(AlienDeviceWatch)
 			{
 				time_t rcv_timer;
 				time(&rcv_timer);
-				remoteCounterSumm[index][2] = (DWORD)rcv_timer;
-				remoteCounterSumm[index][0] += remoteCounter[index][0];
-				remoteCounterSumm[index][1] += remoteCounter[index][1];
-				remoteCounter[index][0] = 0;
-				remoteCounter[index][1] = 0;
-				if (settings->debugFlag.AlienDeviceThread)
-					printf ("              WRITE COMMAND OK\n");
-				delay_ms(100);
+				if (incomeMoney < settings->kkmParam.MaxAmount)
+				{
+					remoteCounterSumm[index][2] = (DWORD)rcv_timer;
+					remoteCounterSumm[index][0] += remoteCounter[index][0];
+					remoteCounterSumm[index][1] += remoteCounter[index][1];
+					remoteCounter[index][0] = 0;
+					remoteCounter[index][1] = 0;
+					if (settings->debugFlag.AlienDeviceThread)
+						printf ("              WRITE COMMAND OK\n");
+					delay_ms(100);
+				}
 			}
 		}
 
