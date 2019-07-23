@@ -17,6 +17,7 @@ MoneyCoinInfo logMoneyInfo;
 char iddqd_etalon[20];
 
 double dsSize = 0;
+double discSummAdd = 0;
 extern int dayLightWork;
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,7 @@ void helper_TurnRelaysOnProgramm(int program)
 			{
 				if (relNum < 16)
 					status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
-				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16) 
+				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16)
 					&& (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
 					status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
 			}
@@ -238,6 +239,7 @@ PI_THREAD(IntCommonThread)
 			{
 				summWithCard = 0;
 				summWithCardPrev = 0;
+				discSummAdd = 0;
 			}
 
 			for (int index=1; index<MONEY_COIN_TYPE_COUNT; index++)
@@ -332,15 +334,17 @@ PI_THREAD(IntCommonThread)
 					}
 				}
 			}
+
 			if (status.extDeviceInfo.rfid_cardPresent)
 			{
 				if ((summWithCardPrev != summWithCard) && (settings->progPrice[12] > 0) && (settings->progPrice[16] > 0))
 				{
 					if (summWithCard >= settings->progPrice[12])
 					{
-						int discSummAdd = (int)((double)(summWithCard - summWithCardPrev) * ((double)(settings->progPrice[16])/100));
-						status.intDeviceInfo.money_currentBalance += discSummAdd;
-						printf ("[DEBUG] IntThread: Add money with client card [prev: %d curr: %d min_sum: %d proc: %d res: %d]\n", summWithCardPrev, summWithCard, settings->progPrice[12], settings->progPrice[16], discSummAdd);
+						discSummAdd += ((double)(summWithCard - summWithCardPrev) * ((double)(settings->progPrice[16])/100));
+						status.intDeviceInfo.money_currentBalance += (int)discSummAdd;
+						printf ("[DEBUG] IntThread: Add money with client card [prev: %d curr: %d min_sum: %d proc: %d res: %4.2f]\n", summWithCardPrev, summWithCard, settings->progPrice[12], settings->progPrice[16], discSummAdd);
+						discSummAdd -= (int)discSummAdd;
 						summWithCardPrev = summWithCard;
 					}
 				}
