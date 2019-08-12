@@ -361,7 +361,7 @@ PI_THREAD(NetServerThread)
 		settings->workFlag.NetServer = 0;
 		globalInSock = accept(mySocket, NULL, NULL);
 		printf("Connection accepted [%d] ...\n", ++globalThreadId);
-		int nTimeout = 5000;
+		int nTimeout = 10000;
 		setsockopt(globalInSock, SOL_SOCKET, SO_RCVTIMEO, (char*)&nTimeout,sizeof(int));
 		try
 		{

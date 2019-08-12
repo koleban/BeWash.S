@@ -113,6 +113,13 @@ int main()
 		pid_t pid = proc_find(process_name);
 		if (pid == -1)
 		{
+			if (useHWClock != 0)
+			{
+				sprintf(devaddr, "sudo hwclock -s");
+				printf("[GUARD]: Setting Date\\Time from HW Clock (RTC)\n");
+				system(devaddr);
+			}
+
 			printf("\n\n\n[GUARD]: Start BeWash Application ...\n\n");
 			status = system(command_name);
 			printf("[GUARD]: beWash application closed: STATUS %d\n", status);

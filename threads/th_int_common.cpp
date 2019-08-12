@@ -172,6 +172,7 @@ PI_THREAD(IntCommonThread)
 
 	int amountCash = 0;
 	int amountCard = 0;
+	BYTE mciDelay = 0;
 
 	while (settings->threadFlag.IntCommonThread)
 	{
@@ -196,6 +197,16 @@ PI_THREAD(IntCommonThread)
 		///
 		/// Обработка поступления монет и купюр
 		///
+
+		//--------------------------------------------------
+		// ОБРАБОТКА ЗАДЕРЖКИ ВО АНАЛИЗУ НОВЫХ КУПЮР И МОНЕТ
+		// !!! ТЕСТ !!!
+		// ДЛЯ УМЕНЬШЕНИЯ ОБЪЕМА ПОСТУПАЮЩИХ ЛОГОВ
+		//
+
+		if (mciDelay++ > 5)
+		{
+		mciDelay = 0;
 		int timeout = 300;
 		settings->busyFlag.IntCommonThread++;
 		int mciChanged = 0;
@@ -209,6 +220,7 @@ PI_THREAD(IntCommonThread)
 				inMoneyInfo.Count[index] = (status.intDeviceInfo.money_moneyCoinUpdate == 2)?0:status.extDeviceInfo.bill_incomeInfo.Count[index];
 			}
 		}
+
 
 		// Сравним внешние и внутреннии счетчики по монетам и купюрам
 		for (int index=1; index<MONEY_COIN_TYPE_COUNT; index++)
@@ -368,6 +380,7 @@ PI_THREAD(IntCommonThread)
 					db->Log(DB_EVENT_TYPE_INT_MONEY_EVENT, mnCount, settings->moneyWeight.Weight[index], "MONEY INCOME");
 				}
 			}
+		}
 		}
 
 		///
