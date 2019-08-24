@@ -398,9 +398,6 @@ PI_THREAD(IntCommonThread)
 					printf("[DEBUG] IntThread: SERVICE CARD. Only prg number %d\n", settings->serviceCards.prgNumber);
 					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
 					status.intDeviceInfo.extPrgNeedUpdate = 1;
-					status.intDeviceInfo.money_currentBalance += settings->serviceCards.washBalance;
-					if (status.intDeviceInfo.money_currentBalance > settings->serviceCards.washBalance)
-						status.intDeviceInfo.money_currentBalance = settings->serviceCards.washBalance;
 				}
 			}
 		}
