@@ -158,6 +158,8 @@ bool Settings::loadConfig (char* fileName)
 	cardBonus							= iniparser_getuint(ini, "Common:CardBonus",			0);
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
 	showAppLabel						= iniparser_getuint(ini, "Common:ShowAppLabel",			0);
+	useStoreBalance						= iniparser_getuint(ini, "Common:UseStoreBalance",		0);
+
 
 	netServerConfig.PortNumber 			= iniparser_getuint(ini, "NetServer:PortNumber", 		3355);
 
@@ -185,6 +187,7 @@ bool Settings::loadConfig (char* fileName)
 	threadFlag.GPIOExtWatch				= iniparser_getuint(ini, "ThreadFlag:GPIOExtWatch", 	useMCPWatch);
 	threadFlag.Lcd20x4Watch				= iniparser_getuint(ini, "ThreadFlag:Lcd20x4Watch", 	0);
 	threadFlag.RemoteCtrlThread			= iniparser_getuint(ini, "ThreadFlag:RemoteCtrlThread", 	0);
+	threadFlag.RemoteSenderThread		= iniparser_getuint(ini, "ThreadFlag:RemoteSenderThread", 	0);
 	threadFlag.ButtonMasterThread		= iniparser_getuint(ini, "ThreadFlag:ButtonMasterThread", 	0) & !threadFlag.ButtonWatch;
 	threadFlag.KKMWatch					= iniparser_getuint(ini, "ThreadFlag:KKMWatch", 	0);
 	threadFlag.VoiceWatch				= iniparser_getuint(ini, "ThreadFlag:VoiceWatch", 	0);
@@ -214,6 +217,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.MainWatch					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:MainWatch", 		0);
 	debugFlag.Lcd20x4Watch				= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:Lcd20x4Watch", 	0);
 	debugFlag.RemoteCtrlThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteCtrlThread", 	0);
+	debugFlag.RemoteSenderThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:RemoteSenderThread", 	0);
 	debugFlag.ButtonMasterThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonMasterThread", 	0);
 	debugFlag.KKMWatch					= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:KKMWatch", 	0);
 	debugFlag.VoiceWatch				= (debugFlag.DebugThread == 1) && threadFlag.VoiceWatch;
@@ -238,8 +242,8 @@ bool Settings::loadConfig (char* fileName)
 	kkmParam.TaxType						= iniparser_getuint(ini, 	"KKM:TaxType",			8); // ENVD
 	kkmParam.LocalTime						= iniparser_getuint(ini, 	"KKM:LocalTime",			1); // ENVD
 	kkmParam.MaxAmount						= iniparser_getuint(ini, 	"KKM:MaxAmount",			1001);
-	kkmParam.SharedMode						= iniparser_getuint(ini, 	"KKM:SharedMode",			0); 
-	kkmParam.CutType						= iniparser_getuint(ini, 	"KKM:CutType",			0); 
+	kkmParam.SharedMode						= iniparser_getuint(ini, 	"KKM:SharedMode",			0);
+	kkmParam.CutType						= iniparser_getuint(ini, 	"KKM:CutType",			0);
 
 	osmosParam.gidrodynWaitTime				= iniparser_getuint(ini, 	"OSMOS:gidrodynWaitTime",			600);
 	osmosParam.gidrodynTurnOnTime			= iniparser_getuint(ini, 	"OSMOS:gidrodynTurnOnTime",			60);
@@ -299,7 +303,7 @@ bool Settings::loadConfig (char* fileName)
 	for (index=0; index < 5; index++)
 	{
 		sprintf(paramName, 	"ServiceCards:CardID_%d", index+1);
-		serviceCards.cardId[index] = iniparser_getuint(ini, paramName, 0); 
+		serviceCards.cardId[index] = iniparser_getuint(ini, paramName, 0);
 	}
 
 	//

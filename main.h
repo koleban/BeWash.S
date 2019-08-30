@@ -88,6 +88,12 @@
 
 #include "drvfr/DrvFR_Conn.h"
 
+extern "C"{
+#include "SDK/PaymentController.h"
+#include "SDK/Result.h"
+#include "SDK/WebObject.h"
+}
+
 #define ERROR(fmt, ...) do { printf(fmt, __VA_ARGS__); return -1; } while(0)
 
 
@@ -160,6 +166,7 @@ PI_THREAD(ClearQueueLog);
 PI_THREAD(TurnLightWatch);
 
 PI_THREAD(RemoteCtrlWatch);
+PI_THREAD(RemoteSenderWatch);
 PI_THREAD(ButtonMasterWatch);
 PI_THREAD(KKMWatch);
 PI_THREAD(VoiceWatch);
@@ -171,6 +178,7 @@ PI_THREAD(OsmosWatch);
 PI_THREAD(ButtonTerminalWatch);
 
 PI_THREAD(VisaDeviceWatch);
+
 // ����������
 extern Settings* 		settings;
 extern NetServer* 		netServer;
@@ -253,6 +261,8 @@ extern int externalCmd_collectionButton;
 extern unsigned long warningPulseCount[4];
 extern unsigned long warningPulseLength[4];
 
+extern PayInfo payInfo;
+
 //////////////////////
 /// EEPROM PARAMETERS
 ///
@@ -322,6 +332,8 @@ int getIpList( unsigned int* addr_array, int arr_size);
 
 DWORD GetTimeToEeprom(time_t currentTime);
 time_t GetTimeFromEeprom(DWORD date_time_eeprom);
+
+void cp2utf( char* str, char* res );
 
 typedef enum
 {

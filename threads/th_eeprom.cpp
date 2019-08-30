@@ -7,7 +7,7 @@
 #define EP_ADDR_PRG_PRICE		0x0013	// 12x4 byte (48) 0x30 byte
 #define EP_ADDR_PRG_BP_PRICE	0x0043	// 12x4 byte (48) 0x30 byte
 #define EP_ADDR_LAST_PRG_OSMOS	0x0073	// 2
-
+#define EP_ADDR_STORED_BALANCE	0x0075
 DWORD readFromEEPROM_DWORD(EEPROM* eeprom, WORD addr, BYTE* errorCode = NULL)
 {
 	BYTE errCode = 0;
@@ -90,6 +90,7 @@ PI_THREAD(EepromThread)
 	Settings* 		settings 	= Settings::getInstance();
 	int firstRun = 1;
 	int counter = 0;
+	int balCounter = 0;
 	int osmosLastPrg = 0;
 
 	memset (&eepromPrgPrice[0], 0, sizeof(eepromPrgPrice));
@@ -97,6 +98,37 @@ PI_THREAD(EepromThread)
 	while (settings->useEeprom)
 	{
 		if (!settings->useEeprom) {delay_ms(1000); continue;}
+
+		//////////////
+		/// EEPROM STORE BALANCE
+		//////////////
+		if (settings->useStoreBalance)
+		{
+			DWORD storeBal = readFromEEPROM_DWORD(eeprom, EP_ADDR_STORED_BALANCE);
+			if (firstRun)
+			{
+				if ((storeBal > 1000) || ((SDWORD)storeBal < 0))
+					storeBal = 0;
+				status.intDeviceInfo.money_currentBalance = (SDWORD)storeBal;
+			}
+			if (storeBal != (DWORD)status.intDeviceInfo.money_currentBalance)
+				writeToEEPROM_DWORD(eeprom, EP_ADDR_STORED_BALANCE, (DWORD)status.intDeviceInfo.money_currentBalance);
+			delay_ms(1000);
+			if ((!firstRun) &&(balCounter++ < 59)) continue;
+			balCounter = 0;
+		}
+		else
+		{
+			if (firstRun)
+			{
+				DWORD storeBal = readFromEEPROM_DWORD(eeprom, EP_ADDR_STORED_BALANCE);
+				if (storeBal > 0)
+					writeToEEPROM_DWORD(eeprom, EP_ADDR_STORED_BALANCE, 0);
+			}
+			if ((!firstRun) &&(balCounter++ < 59)) continue;
+			balCounter = 0;
+		}
+
 		counter++;
 		//////////////
 		/// EEPROM DATE TIME
@@ -278,7 +310,7 @@ PI_THREAD(EepromThread)
 		}
 
 		firstRun = 0;
-  		delay(10);
+  		delay(1);
 	}
 	return (void*)0;
 }

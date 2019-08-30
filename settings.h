@@ -213,6 +213,7 @@ struct ThreadFlag
 	BYTE Lcd20x4Watch;				// ПЫЛЕСОС: Процесс вывода информации на LCD дисплей
 
 	BYTE RemoteCtrlThread;			// БОКС ПОПОЛНЕНИЯ: Процесс работы с удалеными MODBUS контроллерами
+	BYTE RemoteSenderThread;		// БОКС ПОПОЛНЕНИЯ: Процесс пополнения удаленных боксов
 	BYTE ButtonMasterThread;		// БОКС ПОПОЛНЕНИЯ: Процесс работы с кнопками при режиме "БОКС ПОПОЛНЕНИЯ"
 	BYTE KKMWatch;					// БОКС ПОПОЛНЕНИЯ: Процесс для работы с Online KKM (Штрих-М)
 	BYTE VoiceWatch;				// БОКС ПОПОЛНЕНИЯ: Процесс голосового оповещения
@@ -358,7 +359,7 @@ struct KKMParam
 	char ServiceName[250];
 	int TaxType;
 	int LocalTime;			//	1 - Использовать локальное время ККМ (МОСКВА +4 часа)
-	int MaxAmount;			//	Сумма максимальной покупки для пробития чека. 
+	int MaxAmount;			//	Сумма максимальной покупки для пробития чека.
 							//	Свыше  - не побьет, выдаст ошибку
 	int SharedMode;			// Режим разделенного доступа (Присоединился, пробил чек, отвалил)
 };
@@ -463,6 +464,7 @@ public:
 	unsigned int		useEepromParams;		// Использовать EEPROM как параметров программ
 	unsigned int		LightTimeOff;			// Время в сек. перед выключением света
 	unsigned int		useHWClock;				// Используется RTC и время мы не контролируем
+	unsigned int		useStoreBalance;		// Сохранять баланс в EEPROM
 	// ***********************************************************************************************************
   	bool 				getEnabledDevice	(int deviceID);								// Усттройство разрешено ?
   	bool 				setEnabledDevice	(int deviceID, bool state);				// Установить статус устройства

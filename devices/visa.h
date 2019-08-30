@@ -7,17 +7,53 @@
 #define DWORD 	unsigned int
 #endif
 
+#include "../protocols/hw.h"
+#include "../protocols/serial.h"
+extern "C"{
+#include "../SDK/PaymentController.h"
+#include "../SDK/Result.h"
+#include "../SDK/WebObject.h"
+}
+
+struct PayInfo
+{
+	public:
+	unsigned long id;
+	int 	inUse;
+	double 	summ;
+	int 	deviceNum;
+	char 	note[128];
+	char 	r_email[128];
+	char 	r_phone[128];
+	char	transactionId[1024];
+	int 	result;
+};
+
+static const char *mTransactionId = NULL;
+static char sTransactionId[1024] = {0};
+
 class Settings;
 
 class VisaDevice
 {
-  public:
+	public:
 
-  	void Init(Settings* setting);
+	char user_name[100] = {0};
+	char user_password[100] = {0};
+	int debug_enabled = 0;
+
+	unsigned long transactionCount = 1;
+	Ibox_Result_ReaderId* readerIdResult = NULL;
+	Ibox_Result_ReaderInfo* readerInfoResult = NULL;
+	Ibox_Result_Authentication* authResult = NULL;
+	int errorCode = 0;
+
+	void Init(Settings* setting);
 	bool IsOpened();
 	bool OpenDevice();
 	bool CloseDevice();
 	bool Update();
+	bool DoPayment(PayInfo* payInfo);
 	VisaDevice();
 	~VisaDevice();
 };

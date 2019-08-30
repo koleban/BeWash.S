@@ -5,6 +5,8 @@ using namespace DriverFR;
 int errorCode = 0;
 static DrvFR* drv;
 
+char tmpUTFStr[1024] = {0};
+char tmpCPStr[1024] = {0};
 void cp866_cp1251( unsigned char* s , int length);
 //---------------------------------------------------------------------
 int OpenPaymentDocument(DrvFR* drvFr)
@@ -103,11 +105,15 @@ void CheckDevice(DrvFR* drv)
 		if (drv->ECRMode == (int)TECRMode::DataInProgress)
 		{
 			if (errorCode != 0x10)
-				printf("Устройство выдает данные. Ожидаем ...\n");
+			{
+				cp2utf("Устройство выдает данные. Ожидаем ...", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x10;
 			if (dataReceiveCount++ > 5)
 			{
-				printf("Прерываем передачу данных от устройства!\n");
+				cp2utf("Прерываем передачу данных от устройства!", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
 				drv->Password = 0;
 				drv->InterruptDataStream();
 				drv->PrintErrorDescription();
@@ -118,7 +124,10 @@ void CheckDevice(DrvFR* drv)
 		else if (drv->ECRMode == (int)TECRMode::OpenWorkspace24h)
 		{
 			if (errorCode != 0x11)
-				printf("Открытая смена, 24 часа кончились. Закроем смену.\n");
+			{
+				cp2utf("Открытая смена, 24 часа кончились. Закроем смену.", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x11;
 			drv->FNCloseSession();
 			delay_ms(10000);
@@ -130,35 +139,50 @@ void CheckDevice(DrvFR* drv)
 		else if (drv->ECRMode == (int)TECRMode::Blocked_WrongPasswordTaxInspector)
 		{
 			if (errorCode != 0x12)
-				printf("Пароль налогового инспектора не корректен. Установим пароль администратора.\n");
+			{
+				cp2utf("Пароль налогового инспектора не корректен. Установим пароль администратора.", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x12;
 			drv->Password = 30;
 		}
 		else if ((drv->ECRMode == (int)TECRMode::WorkWithFNDocument) || (drv->ECRMode == (int)TECRMode::WorkFNDocumentDone))
 		{
 			if (errorCode != 0x13)
-				printf("Работа с подкладным документом ....\n");
+			{
+				cp2utf("Работа с подкладным документом ....", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x13;
 			break;
 		}
 		else if (drv->ECRMode == (int)TECRMode::PrintingEKLZReport)
 		{
 			if (errorCode != 0x14)
-				printf("Печать отчета ЕКЛЗ ....\n");
+			{
+				cp2utf("Печать отчета ЕКЛЗ ....", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x14;
 			break;
 		}
 		else if (drv->ECRMode == (int)TECRMode::PrintingFNReport)
 		{
 			if (errorCode != 0x15)
-				printf("Печать фискального отчета ....\n");
+			{
+				cp2utf("Печать фискального отчета ....", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x15;
 			break;
 		}
 		else if (drv->ECRMode == (int)TECRMode::DigitPointChangeRight)
 		{
 			if (errorCode != 0x16)
-				printf("Разрешение изменения положения десятичной точки. \n");
+			{
+				cp2utf("Разрешение изменения положения десятичной точки.", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x16;
 			drv->PointPosition = true;
 			drv->SetPointPosition();
@@ -166,7 +190,10 @@ void CheckDevice(DrvFR* drv)
 		else if (drv->ECRMode == (int)TECRMode::WaitingDateConfirm)
 		{
 			if (errorCode != 0x17)
-				printf("Ожидание подтверждения ввода даты. \n");
+			{
+				cp2utf("Ожидание подтверждения ввода даты.", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x17;
 			int day = 24;
 			int month = 10;
@@ -184,7 +211,10 @@ void CheckDevice(DrvFR* drv)
 		else if (drv->ECRMode == (int)TECRMode::CloseWorkspace)
 		{
 			if (errorCode != 0x18)
-				printf("Смена закрыта. Откроем смену.\n");
+			{
+				cp2utf("Смена закрыта. Откроем смену.", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x18;
 			drv->FNOpenSession();
 			delay_ms(3000);
@@ -195,7 +225,10 @@ void CheckDevice(DrvFR* drv)
 		else if (drv->ECRMode == (int)TECRMode::PrintFNDocument)
 		{
 			if (errorCode != 0x19)
-				printf("Печать чека ....\n");
+			{
+				cp2utf("Печать чека ....", tmpUTFStr);
+				printf("%s\n", tmpUTFStr);
+			}
 			errorCode = 0x19;
 			break;
 		}
@@ -204,7 +237,11 @@ void CheckDevice(DrvFR* drv)
 			break;
 		}
 		else
-			printf("Не корректный режим устройства. Ожидается \"Принтер готов\" или \"Смена открыта\" Debug: (%d) %s\n", drv->ECRMode, drv->ECRModeDescription);
+		{
+			sprintf(tmpCPStr, "Не корректный режим устройства. Ожидается \"Принтер готов\" или \"Смена открыта\" Debug: (%d) %s\n", drv->ECRMode, drv->ECRModeDescription);
+			cp2utf(tmpCPStr, tmpUTFStr);
+			printf("%s\n", tmpUTFStr);
+		}
 		usleep(1000000);
 		drv->GetECRStatus();
 	}
@@ -214,31 +251,51 @@ void CheckDevice(DrvFR* drv)
 		if (drv->ECRAdvancedMode == (int)TECRAdvancedMode::NoPapper)
 		{
 			if (errorCode != 0x1A)
-				printf("Отсутствует бумага. Ожидаем ...\n");
+			{
+				sprintf(tmpCPStr, "Отсутствует бумага. Ожидаем ...\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+			}
 			errorCode = 0x1A;
 		}
 		if (drv->ECRAdvancedMode == (int)TECRAdvancedMode::PrintingFNDocument)
 		{
 			if (errorCode != 0x1B)
-				printf("Печатается фискальный документ. Ожидаем завершения ...\n");
+			{
+				sprintf(tmpCPStr, "Печатается фискальный документ. Ожидаем завершения ...\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+			}
 			errorCode = 0x1B;
 		}
 		if (drv->ECRAdvancedMode == (int)TECRAdvancedMode::PrintingFNDocument)
 		{
 			if (errorCode != 0x1C)
-				printf("Печатается документ. Ожидаем завершения ...\n");
+			{
+				sprintf(tmpCPStr, "Печатается документ. Ожидаем завершения ...\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+			}
 			errorCode = 0x1C;
 		}
 		if (drv->ECRAdvancedMode == (int)TECRAdvancedMode::NoPapperError)
 		{
 			if (errorCode != 0x1D)
-				printf("Внимание! Закончилась бумага!\n");
+			{
+				sprintf(tmpCPStr, "Внимание! Закончилась бумага!\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+			}
 			errorCode = 0x1D;
 		}
 		if (drv->ECRAdvancedMode == (int)TECRAdvancedMode::WaitPrintContinue)
 		{
 			if (errorCode != 0x1E)
-				printf("Продолжаем печать ...\n");
+			{
+				sprintf(tmpCPStr, "Продолжаем печать ...\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+			}
 			errorCode = 0x1E;
 			drv->ContinuePrinting();
 		}
@@ -362,12 +419,12 @@ PI_THREAD(KKMWatch)
 	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	printf("Thread KKM is now working TaxType: %d\n", settings->kkmParam.TaxType);
-	printf("    TaxType  1 : НДС\n");
+	printf("    TaxType  1 : NDS\n");
 	printf("    TaxType  2 : 6%\n");
 	printf("    TaxType  4 : 15%\n");
-	printf("    TaxType  8 : ЕНВД\n");
-	printf("    TaxType 16 : ЕСХН\n");
-	printf("    TaxType 32 : Патент\n");
+	printf("    TaxType  8 : ENVD\n");
+	printf("    TaxType 16 : ESHN\n");
+	printf("    TaxType 32 : PATENT\n");
 
 	QueueType valueKkm;
 
@@ -395,14 +452,19 @@ PI_THREAD(KKMWatch)
 			if (drv->MessageCount > 0)
 			{
 				term_setattr(32);
-				printf("[THREAD] ККМ: ВНИМАНИЕ : ЕСТЬ НЕ ОТПРАВЛЕНИЕ ЧЕКИ В ОФД. ПРОВЕРЬТЕ БАЛАНС, ПОДПИСКУ, ПАРАМЕТРЫ ОФД И СВЯЗЬ С ИНТЕРНЕТОМ!!!\n");
+				sprintf(tmpCPStr, "[THREAD] ККМ: ВНИМАНИЕ : ЕСТЬ НЕ ОТПРАВЛЕНИЕ ЧЕКИ В ОФД. ПРОВЕРЬТЕ БАЛАНС, ПОДПИСКУ, ПАРАМЕТРЫ ОФД И СВЯЗЬ С ИНТЕРНЕТОМ!!!\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
+
 				term_setattr(37);
 			}
-			
+
 			if (settings->kkmParam.SharedMode)
 			{
 				drv->Disconnect();
-				printf("[THREAD] ККМ: ИСПОЛЬЗУЕТСЯ SHARED РЕЖИМ !!!\n");
+				sprintf(tmpCPStr, "[THREAD] ККМ: ИСПОЛЬЗУЕТСЯ SHARED РЕЖИМ !!!\n");
+				cp2utf(tmpCPStr, tmpUTFStr);
+				printf("%s", tmpUTFStr);
 			}
 
 			while (settings->threadFlag.KKMWatch)
@@ -427,7 +489,11 @@ PI_THREAD(KKMWatch)
 				if (drv->CheckConnection() != 1)
 				{
 							if (!error)
-								printf ("[  CHK  ] Проверка связи с ККМ %s", asctime(now));
+							{
+								sprintf(tmpCPStr, "[  CHK  ] Проверка связи с ККМ %s", asctime(now));
+								cp2utf(tmpCPStr, tmpUTFStr);
+								printf("%s", tmpUTFStr);
+							}
 							error = true;
 							fflush(stdout);
 							drv->Disconnect();
@@ -449,7 +515,9 @@ PI_THREAD(KKMWatch)
 					result = 1;
 					if (drv->ECRMode == (int)TECRMode::OpenedDocument)
 					{
-						printf ("[THREAD] KKM: Обнаружен открытый документ. Отменяем его\n");
+						sprintf(tmpCPStr, "[THREAD] KKM: Обнаружен открытый документ. Отменяем его\n");
+						cp2utf(tmpCPStr, tmpUTFStr);
+						printf("%s", tmpUTFStr);
 						drv->CancelCheck();
 						if (drv->ResultCode == 0)
 							result = 0;
@@ -473,7 +541,9 @@ PI_THREAD(KKMWatch)
 						{
 							sprintf(myNote, "[THREAD] KKM: Error on amount size [MAX: %d, Curr: %d]", settings->kkmParam.MaxAmount, valueKkm.eventId);
 							db->Log(DB_EVENT_TYPE_KKM_AMOUNT_ERROR, (double)valueKkm.eventId, valueKkm.data1, myNote);
-							printf("[THREAD] KKM: Обнаружена ОШИБКА. Сумма оплаты больше допустимой (%d руб) : %d руб\n", settings->kkmParam.MaxAmount, valueKkm.eventId);
+							sprintf(tmpCPStr, "[THREAD] KKM: Обнаружена ОШИБКА. Сумма оплаты больше допустимой (%d руб) : %d руб\n", settings->kkmParam.MaxAmount, valueKkm.eventId);
+							cp2utf(tmpCPStr, tmpUTFStr);
+							printf("%s", tmpUTFStr);
 							continue;
 						}
 						CheckDevice(drv);
@@ -489,11 +559,15 @@ PI_THREAD(KKMWatch)
 							sprintf(myNote, "[THREAD] KKM: Cancel payment document");
 							db->Log(DB_EVENT_TYPE_KKM_FN_CANCEL_DOC, 0, 0, myNote);
 							term_setattr(31);
-							printf("Печать чека ОТМЕНА\n");
+							sprintf(tmpCPStr, "Печать чека ОТМЕНА\n");
+							cp2utf(tmpCPStr, tmpUTFStr);
+							printf("%s", tmpUTFStr);
 							term_setattr(37);
 							break;
 						}
-						printf("[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);
+						sprintf(tmpCPStr, "[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);
+						cp2utf(tmpCPStr, tmpUTFStr);
+						printf("%s", tmpUTFStr);
 						fflush(stdout);
 //
 //						!!! LOG for payment !!!
@@ -502,7 +576,9 @@ PI_THREAD(KKMWatch)
 						drv->CheckSubTotal();
 						delay_ms(50);
 						term_setattr(32);
-						printf("[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
+						sprintf(tmpCPStr, "[THREAD] KKM: Закрываем чек : Сумма: Нал. %d  Картой: %d\n", valueKkm.eventId, valueKkm.data1);
+						cp2utf(tmpCPStr, tmpUTFStr);
+						printf("%s", tmpUTFStr);
 						term_setattr(37);
 						sprintf(myNote, "[THREAD] KKM: Close the payment document [$: %d, VISA: %d]", valueKkm.eventId, (int)valueKkm.data1);
 						db->Log(DB_EVENT_TYPE_KKM_FN_CLOSE_DOC, (double)valueKkm.eventId, valueKkm.data1, myNote);

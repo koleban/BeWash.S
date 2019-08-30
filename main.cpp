@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
 	/////////////////////////
 	///
 	///
-    prgVer = 2.08;
-    prgBuild = 333;
+    prgVer = 2.09;
+    prgBuild = 1;
     ///
     ///
     /////////////////////////
@@ -316,6 +316,7 @@ int main(int argc, char *argv[])
 
 	piThreadCreate(Lcd20x4);
 	piThreadCreate(RemoteCtrlWatch);
+	piThreadCreate(RemoteSenderWatch);
 	piThreadCreate(ButtonMasterWatch);
 	piThreadCreate(KKMWatch);
 

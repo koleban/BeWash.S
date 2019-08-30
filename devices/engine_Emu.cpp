@@ -8,6 +8,7 @@ EngineEmu::EngineEmu()
 {
 	bypassCounter = 0;
 	currFreq = 0;
+	powerA = 0;
 }
 
 void EngineEmu::Init(Settings* settings)

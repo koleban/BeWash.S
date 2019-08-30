@@ -132,3 +132,34 @@ bool NetClient::cmdSetExtPrg()
 
 	return 1;
 }
+
+bool NetClient::cmdSendBalance(int balance, int* currentBalance)
+{
+	Settings* settings 	= Settings::getInstance();		// Параметры приложения
+	if (!isConnected) OpenConnection();
+
+	ssize_t result = netSendData(sock, CMD_SET_EXT_PRG, (BYTE*)&status, sizeof(status));
+	if (result < 0) { CloseConnection(); return 0; }
+
+	BYTE in_buff[0xFFFF];
+	WORD index = 0;
+	index = netReadData(sock, &in_buff[0], 0xFFF0);
+
+	if (index <= 0) { CloseConnection(); return 0; }
+
+	if (index > 5)
+	{
+		BYTE* SYNC 	= (BYTE*)&in_buff[0];
+		BYTE* ADR 	= (BYTE*)&in_buff[1];
+		WORD* LEN 	= (WORD*)&in_buff[2];
+		BYTE* CMD 	= (BYTE*)&in_buff[4];
+		BYTE* DATA 	= (BYTE*)&in_buff[5];
+		DeviceInfo* deviceInfo = (DeviceInfo*)&in_buff[5];
+
+		if ((*SYNC != 0x02) || (*ADR != 0xFF)) return 0;
+		if (settings->debugFlag.NetClient)
+			printf("[NETCTRL] Setting new external prg >>> \n");
+    }
+
+	return 1;
+}

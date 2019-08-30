@@ -1,5 +1,37 @@
 #include "../main.h"
 
+int blinkBtn(unsigned char mask)
+{
+	int l = 0;
+	if (mask == 0x00) l++;
+	for (int i=0; i < 8; i++)
+	{
+		if (!settings->getEnabledDevice(DVC_BUTTON01+i)) continue;
+		int currentPin = settings->getPinConfig(DVC_BUTTON01+i, 1);
+		if ((currentPin == 0) || (currentPin > 0x7F)) continue;
+		if (((mask >> i) & 0x01) && (i < 8))
+		{
+			l++;
+			setPinModeMy(currentPin, PIN_OUTPUT);
+			setGPIOState(currentPin, 1);
+		}
+		else
+		{
+			setGPIOState(currentPin, 0);
+			setPinModeMy(currentPin, PIN_INPUT);
+  			pullUpDnControl (currentPin, PUD_DOWN) ;
+		}
+	}
+	return l;
+}
+
+int sendBalanceToRemoteDevice(int deviceNumber)
+{
+	int t = deviceNumber * deviceNumber;
+	delay_ms(5000);
+	return 0;
+}
+
 PI_THREAD(ButtonTerminalWatch)
 {
 	/// Общие параметры
@@ -14,8 +46,32 @@ PI_THREAD(ButtonTerminalWatch)
 	if (settings->debugFlag.ButtonTerminalThread)
 		printf("[DEBUG] ButtonTerminalThread: Debug information is showed\n");
 
+	unsigned char blinkMask[] =
+				{0b11111111, 0b01010101, 0b10101010, 0b01010101, 0b10101010, 0b00000000,
+				 0b00000001, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01000000, 0b10000000,
+				 0b10000000, 0b01000000, 0b00100000, 0b00010000, 0b00001000, 0b00000100, 0b00000010, 0b00000001, 0b00000000 };
+
 	int index;
 	int currentPin;
+
+	delay_ms(1000);
+
+	int btnPins[12] = {0};
+
+	for (int i=0; i<12; i++)
+	{
+		if (!settings->getEnabledDevice(DVC_BUTTON01+i)) continue;
+		btnPins[i] = settings->getPinConfig(DVC_BUTTON01+i, 1);
+		if ((btnPins[i] == 0) || (btnPins[i] > 0x7F)) continue;
+	}
+
+	for (int i=0; i < sizeof(btnPins); i++)
+	{
+		int currentPin = btnPins[i];
+		if ((currentPin == 0) || (currentPin > 0x7F)) continue;
+		setGPIOState(btnPins[i], 0);
+		setPinModeMy(btnPins[i], PIN_INPUT);
+	}
 
 	if (settings->getEnabledDevice(DVC_RELAY_OUT_RFID_CARD))
 	{
@@ -55,12 +111,88 @@ PI_THREAD(ButtonTerminalWatch)
 	int thread_timeout = 100;
 	int emptyRFIDCardSensor = 0;
 	int emptyCoinSensor = 0;
-	int payRFIDCardCounter = 1;
+	int emptyLightCounter = 0;
+	int payRFIDCardCounter = 5;
+	int paymentSumm = 0;
+	int waitSumm = 0;
+	int trId = 0;
+	int firstBtnInit = 0;
+	int counterBtnLight = 0;
+	int maskIndex = 0;
 	while (settings->threadFlag.ButtonTerminalThread)
 	{
 		if (thread_timeout > 0)
 			delay_ms(thread_timeout);
 		thread_timeout = 100;
+
+		///
+		/// Обработка КНОПОК ПЕРЕЧИСЛЕНИЯ НА БОКСЫ
+		/// в проуцессе простоя поморгаем кнопками
+		///
+
+		if (status.intDeviceInfo.money_currentBalance == 0)
+		{
+			if (counterBtnLight++ > 3)
+			{
+				if (maskIndex >= sizeof(blinkMask)) maskIndex = 0;
+				firstBtnInit = 0;
+				counterBtnLight = 0;
+				if (blinkBtn(blinkMask[maskIndex++]) == 0) counterBtnLight = 5;
+			}
+		}
+		else
+		{
+			if (!firstBtnInit)
+			{
+				for (int t = 0; t < 12; t++)
+				{
+					if (!settings->getEnabledDevice(DVC_BUTTON01+t)) continue;
+					int currentPin = settings->getPinConfig(DVC_BUTTON01+t, 1);
+					if ((currentPin == 0) || (currentPin > 0x7F)) continue;
+					setGPIOState(currentPin, 0);
+					setPinModeMy(currentPin, PIN_INPUT);
+  					pullUpDnControl (currentPin, PUD_DOWN) ;
+  				}
+			}
+			maskIndex = 0;
+			firstBtnInit = 1;
+			counterBtnLight = 0;
+			//------------------
+
+			for (int i = 0; i < 12; i++)
+			{
+				if (!settings->getEnabledDevice(DVC_BUTTON01+i)) continue;
+				int currentPin = settings->getPinConfig(DVC_BUTTON01+i, 1);
+				if ((currentPin == 0) || (currentPin > 0x7F)) continue;
+				int timeout = 30;
+				while(getGPIOState(currentPin) && (timeout-- > 0)) { delay_ms(1); }
+				if (timeout <= 0)
+				{
+					if (settings->debugFlag.ButtonTerminalThread)
+						printf("[DEBUG] ButtonTerminalThread: Pressed state on %d button [PIN: %03d]\n", i, currentPin);
+					setGPIOState(currentPin, 1);
+					setPinModeMy(currentPin, PIN_OUTPUT);
+					setGPIOState(currentPin, 1);
+					if (settings->debugFlag.ButtonTerminalThread)
+						printf("[DEBUG] ButtonTerminalThread: Sending balance %d to device %d\n", status.intDeviceInfo.money_currentBalance, i);
+
+					if (sendBalanceToRemoteDevice(i))
+					{
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Sended OK\n");
+						status.intDeviceInfo.money_currentBalance = 0;
+					}
+					else
+					{
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Sended ERROR\n");
+					}
+
+					setGPIOState(currentPin, 0);
+					setPinModeMy(currentPin, PIN_INPUT);
+				}
+			}
+		}
 
 		///
 		/// Если Устройство ВЫДАЧИ КАРТ активно и разрешены пины
@@ -107,8 +239,12 @@ PI_THREAD(ButtonTerminalWatch)
 					emptyRFIDCardSensor = 0;
 				}
 			}
-			currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
-			setPinModeMy(currentPin, PIN_INPUT);
+			if (emptyRFIDCardSensor == 0)
+			{
+				emptyLightCounter = 0;
+				currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
+				setPinModeMy(currentPin, PIN_INPUT);
+			}
 			if ((emptyRFIDCardSensor == 0) && (getGPIOState(currentPin)))
 			{
 				int btnError = 0;
@@ -154,7 +290,7 @@ PI_THREAD(ButtonTerminalWatch)
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Out RFID card\n");
 						db->Log(DB_EVENT_TYPE_CARD_OUT, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
-						payRFIDCardCounter = 20;
+						payRFIDCardCounter = 50;
 					}
 					else
 					{
@@ -167,7 +303,15 @@ PI_THREAD(ButtonTerminalWatch)
 			}
 		}
 
-		// Ждем 20 тиков до покупки еще одной карты
+		// Моргаем кнопкой если НЕТ КАРТ
+		if ((settings->getEnabledDevice(DVC_BUTTON_OUT_RFID_CARD)) && (emptyRFIDCardSensor == 1))
+		{
+			currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
+			setPinModeMy(currentPin, PIN_OUTPUT);
+			setGPIOState( currentPin, (int)(((int)(emptyLightCounter++/10))%2 == 1));
+		}
+
+		// Ждем 50 тиков до покупки еще одной карты
 		if (payRFIDCardCounter > 0) payRFIDCardCounter--;
 		if (status.intDeviceInfo.money_currentBalance <= 0) payRFIDCardCounter = 0;
 
@@ -180,7 +324,7 @@ PI_THREAD(ButtonTerminalWatch)
 		/// progPrice[15] - Стоимость 1 жетона
 		///
 		if (
-			// Текущий балан больше стоимости жетона 
+			// Текущий балан больше стоимости жетона
 			(settings->progPrice[15] <= status.intDeviceInfo.money_currentBalance) &&
 			// Кнопка выдачи жетона определена
 			((settings->getEnabledDevice(DVC_BUTTON_OUT_COIN)) && (settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1) != 0xFF)) &&
@@ -296,10 +440,223 @@ PI_THREAD(ButtonTerminalWatch)
 		/// Если устройство эквайринга активно
 		/// и активны режимы работы
 		///
-/*		if (visaDevice->Work)
+		if (settings->threadFlag.VisaDeviceThread)
 		{
+			if (settings->visaParam.workMode == 0)
+			{
+				// РЕЖИМ ПРЕДОПЛАЧЕНЫХ КНОПОК
+				int pinNum = settings->visaParam.cancelBtn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:CANCEL button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:CANCEL button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							if (payInfo.inUse == 1)
+								Ibox_PaymentController_CancelGetCardData();
+							delay_ms(2000);
+							payInfo.inUse = 0;
+						}
+					}
+				}
+				pinNum = settings->visaParam.pay50Btn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_50 button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_50 button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							paymentSumm = 50;
+						}
+					}
+				}
+				pinNum = settings->visaParam.pay100Btn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_100 button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_100 button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							paymentSumm = 100;
+						}
+					}
+				}
+				pinNum = settings->visaParam.pay150Btn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_150 button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_150 button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							paymentSumm = 150;
+						}
+					}
+				}
+				pinNum = settings->visaParam.pay200Btn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_200 button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_200 button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							paymentSumm = 200;
+						}
+					}
+				}
+				pinNum = settings->visaParam.pay500Btn.pinNum;
+				if (pinNum > 0)
+				{
+					setPinModeMy(pinNum, PIN_INPUT);
+					if (getGPIOState(pinNum))
+					{
+						int timeout = 30;
+						if (settings->debugFlag.ButtonTerminalThread)
+							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_500 button [PIN: %03d]\n", pinNum);
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_500 button pressed");
+						// Press minimal 50ms
+						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						if ((timeout <= 0))
+						{
+							thread_timeout -= 50;
+							paymentSumm = 500;
+						}
+					}
+				}
+				if (paymentSumm > 0)
+				{
+					delay_ms(1000);
+					pinNum = settings->visaParam.pay50Btn.pinNum;
+					if (pinNum > 0)
+					{
+						setPinModeMy(pinNum, PIN_OUTPUT);
+						setGPIOState(pinNum, 1);
+					}
+					pinNum = settings->visaParam.pay100Btn.pinNum;
+					if (pinNum > 0)
+					{
+						setPinModeMy(pinNum, PIN_OUTPUT);
+						setGPIOState(pinNum, 1);
+					}
+					pinNum = settings->visaParam.pay150Btn.pinNum;
+					if (pinNum > 0)
+					{
+						setPinModeMy(pinNum, PIN_OUTPUT);
+						setGPIOState(pinNum, 1);
+					}
+					pinNum = settings->visaParam.pay200Btn.pinNum;
+					if (pinNum > 0)
+					{
+						setPinModeMy(pinNum, PIN_OUTPUT);
+						setGPIOState(pinNum, 1);
+					}
+					pinNum = settings->visaParam.pay500Btn.pinNum;
+					if (pinNum > 0)
+					{
+						setPinModeMy(pinNum, PIN_OUTPUT);
+						setGPIOState(pinNum, 1);
+					}
+
+					if (payInfo.inUse == 1)
+					{
+						Ibox_PaymentController_CancelGetCardData();
+						payInfo.inUse = 0;
+						delay_ms(2000);
+					}
+					payInfo.summ = paymentSumm;
+					payInfo.deviceNum = trId++;
+					cp2utf("Оплата картой за услуги автомойки", payInfo.note);
+					sprintf(payInfo.r_phone, "");
+					sprintf(payInfo.r_email, "test@test.email");
+					payInfo.inUse = 1;
+					waitSumm = paymentSumm;
+					paymentSumm = 0;
+					delay_ms(3000);
+					pinNum = settings->visaParam.pay50Btn.pinNum;
+					if (pinNum > 0)
+						setPinModeMy(pinNum, PIN_INPUT);
+					pinNum = settings->visaParam.pay100Btn.pinNum;
+					if (pinNum > 0)
+						setPinModeMy(pinNum, PIN_INPUT);
+					pinNum = settings->visaParam.pay150Btn.pinNum;
+					if (pinNum > 0)
+						setPinModeMy(pinNum, PIN_INPUT);
+					pinNum = settings->visaParam.pay200Btn.pinNum;
+					if (pinNum > 0)
+						setPinModeMy(pinNum, PIN_INPUT);
+					pinNum = settings->visaParam.pay500Btn.pinNum;
+					if (pinNum > 0)
+						setPinModeMy(pinNum, PIN_INPUT);
+				}
+				if (waitSumm > 0)
+				{
+					if (payInfo.inUse == 0)
+					{
+						//DB_EVENT_TYPE_VISA_PAY_DOC_OK
+						if (payInfo.result == 0)
+						{
+							status.intDeviceInfo.money_currentBalance += waitSumm;
+							char strTmp256[1024];
+							int devId = settings->commonParams.deviceId;
+							if (devId > 100) devId -= 100;
+							sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
+							queueKkm->QueuePut(0, waitSumm, 1, strTmp256);
+							//!!! NEED print in DB payInfo.transactionId;
+							db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_OK, waitSumm, payInfo.result, payInfo.note);
+						}
+						else
+						{
+							db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_ERROR, waitSumm, payInfo.result, payInfo.note);
+						}
+						waitSumm = 0;
+					}
+				}
+			}
+			if (settings->visaParam.workMode == 1)
+			{
+				// РЕЖИМ БОЛЬШЕ МЕНЬШЕ
+			}
 		}
-*/
+
 		if (thread_timeout < 0) thread_timeout = 0;
 	}
 

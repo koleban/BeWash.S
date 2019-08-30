@@ -13,13 +13,15 @@ PI_THREAD(VisaDeviceWatch)
 	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] VISA Device: VISA thread init");
 	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "VISA (card terminal) device thread opened");
 
+	VisaDevice* visaDevice = new VisaDevice();
+
 	visaDevice->Init(settings);
 
 	if (settings->debugFlag.VisaDeviceThread)
 		printf("[DEBUG] ButtonTerminalThread: Debug information is showed\n");
 
 	while (settings->threadFlag.VisaDeviceThread)
-	{	
+	{
 		if (visaDevice->IsOpened())
 		{
 			visaDevice->Update();
@@ -28,7 +30,7 @@ PI_THREAD(VisaDeviceWatch)
 		{
 			if (!visaDevice->OpenDevice()) {delay(5);}
 		}
-		delay_ms(500);
+		delay_ms(1000);
 	}
 	visaDevice->CloseDevice();
 	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "VISA (card terminal) device thread is closed");
