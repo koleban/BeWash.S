@@ -28,7 +28,24 @@ int blinkBtn(unsigned char mask)
 int sendBalanceToRemoteDevice(int deviceNumber)
 {
 	int t = deviceNumber * deviceNumber;
-	delay_ms(5000);
+
+	if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); printf("[Net Client]: ERROR Interface %s: link down ...\n", settings->ethName); return 2;}
+	netClient->Init(settings);
+	char panelAddr[100] = {0};
+	sprintf(panelAddr, "%s%d", settings->terminalParam.deviceSubnet, deviceNumber);
+	if (settings->debugFlag.ButtonTerminalThread)
+		printf("NetClient: Remote server: %s\n", panelAddr);
+	strcpy(netClient->hostAddr, panelAddr);
+	netClient->OpenConnection();
+	if (netClient->isConnected)
+		printf("NetClient: Remote server - connected [OK]\n");
+	else
+		return 1;
+	int timeout = 2;
+	while ((!netClient->cmdSendBalance()) && (timeout-- > 0)) { delay_ms(100); }
+	if (timeout == 0) { printf("[netClient]: Error cmdSendBalance()\n"); return 1; }
+	netClient->CloseConnection();
+
 	return 0;
 }
 
@@ -176,16 +193,16 @@ PI_THREAD(ButtonTerminalWatch)
 					if (settings->debugFlag.ButtonTerminalThread)
 						printf("[DEBUG] ButtonTerminalThread: Sending balance %d to device %d\n", status.intDeviceInfo.money_currentBalance, i);
 
-					if (sendBalanceToRemoteDevice(i))
+					if (sendBalanceToRemoteDevice(i) == 0)
 					{
 						if (settings->debugFlag.ButtonTerminalThread)
-							printf("[DEBUG] ButtonTerminalThread: Sended OK\n");
+							printf("[DEBUG] ButtonTerminalThread: Send OK\n");
 						status.intDeviceInfo.money_currentBalance = 0;
 					}
 					else
 					{
 						if (settings->debugFlag.ButtonTerminalThread)
-							printf("[DEBUG] ButtonTerminalThread: Sended ERROR\n");
+							printf("[DEBUG] ButtonTerminalThread: Send ERROR\n");
 					}
 
 					setGPIOState(currentPin, 0);
@@ -460,8 +477,10 @@ PI_THREAD(ButtonTerminalWatch)
 						if ((timeout <= 0))
 						{
 							thread_timeout -= 50;
+							#ifdef _VISA_PAY_DEVICE__
 							if (payInfo.inUse == 1)
 								Ibox_PaymentController_CancelGetCardData();
+							#endif
 							delay_ms(2000);
 							payInfo.inUse = 0;
 						}
@@ -598,7 +617,9 @@ PI_THREAD(ButtonTerminalWatch)
 
 					if (payInfo.inUse == 1)
 					{
+						#ifdef _VISA_PAY_DEVICE__
 						Ibox_PaymentController_CancelGetCardData();
+						#endif
 						payInfo.inUse = 0;
 						delay_ms(2000);
 					}

@@ -133,12 +133,12 @@ bool NetClient::cmdSetExtPrg()
 	return 1;
 }
 
-bool NetClient::cmdSendBalance(int balance, int* currentBalance)
+bool NetClient::cmdSendBalance()
 {
 	Settings* settings 	= Settings::getInstance();		// Параметры приложения
 	if (!isConnected) OpenConnection();
 
-	ssize_t result = netSendData(sock, CMD_SET_EXT_PRG, (BYTE*)&status, sizeof(status));
+	ssize_t result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&status.intDeviceInfo.money_currentBalance, sizeof(status.intDeviceInfo.money_currentBalance));
 	if (result < 0) { CloseConnection(); return 0; }
 
 	BYTE in_buff[0xFFFF];
@@ -158,7 +158,9 @@ bool NetClient::cmdSendBalance(int balance, int* currentBalance)
 
 		if ((*SYNC != 0x02) || (*ADR != 0xFF)) return 0;
 		if (settings->debugFlag.NetClient)
-			printf("[NETCTRL] Setting new external prg >>> \n");
+			printf("[NETCTRL] Sending balance >>> \n");
+		if (deviceInfo)
+			printf("Sending balance OK. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
     }
 
 	return 1;

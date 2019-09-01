@@ -129,30 +129,30 @@ PI_THREAD(Lcd20x4)
 	lcdDisplay(lcdHandle, 1);
 
 	sprintf(tmp_buff_string, "    beWash v 2.05   ");
-	lcdPosition (lcdHandle, 0, 0) ;
+	lcdPosition (lcdHandle, 0, settings->lcd24Param.balStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 
 	sprintf(tmp_buff_string, "Self services system");
-	lcdPosition (lcdHandle, 0, 1) ;
+	lcdPosition (lcdHandle, 0, settings->lcd24Param.prgStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 
 	sprintf(tmp_buff_string, "     3A_P_3KA       ");
 	tmp_buff_string[7] = 0x04;
 	tmp_buff_string[9] = 0x03;
-	lcdPosition (lcdHandle, 0, 3) ;
+	lcdPosition (lcdHandle, 0, settings->lcd24Param.adsStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 
 	sprintf(tmp_buff_string, "                    ");
 	for(int ind=0; ind < 16; ind++)
 	{
 		tmp_buff_string[2+ind] = '#';
-		lcdPosition (lcdHandle, 0, 2) ;
+		lcdPosition (lcdHandle, 0, settings->lcd24Param.lineStrNum) ;
 		lcdPuts( lcdHandle, tmp_buff_string);
 		usleep(50000);
 	}
 	usleep(1000000);
 	sprintf(tmp_buff_string, "         OK         ");
-	lcdPosition (lcdHandle, 0, 3) ;
+	lcdPosition (lcdHandle, 0, settings->lcd24Param.adsStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 	usleep(1000000);
 
@@ -187,7 +187,7 @@ PI_THREAD(Lcd20x4)
 		lcdCharDef( lcdHandle, 7, &newChar[32]);	// Ä
 		lcdCharDef( lcdHandle, 8, &newChar[64]);	// È
 
-		scrollMessage (3, cols) ;
+		scrollMessage (settings->lcd24Param.adsStrNum, cols) ;
 
 		sprintf(tmp_dig, "%6d", status.intDeviceInfo.money_currentBalance);
 		memcpy(tmp_buff_string, bal_str, sizeof(bal_str));
@@ -196,7 +196,7 @@ PI_THREAD(Lcd20x4)
 
 		if (status.extDeviceInfo.collectionButton)
 		{
-			lcdPosition (lcdHandle, 0, 0) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.balStrNum) ;
 			char warning_str[] = "   BH_MAH_E !!!     ";
 			warning_str[5] = 0x08;
 			warning_str[9] = 0x08;
@@ -206,14 +206,14 @@ PI_THREAD(Lcd20x4)
 			memcpy(tmp_buff_string, bal_str, sizeof(bal_str));
 			memcpy(&tmp_buff_string[8], tmp_dig, 7);
 			memcpy(&tmp_buff_string[15], rub_str, 5);
-			lcdPosition (lcdHandle, 0, 1) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.prgStrNum) ;
 			lcdPuts( lcdHandle, tmp_buff_string);
-			lcdPosition (lcdHandle, 0, 2) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.lineStrNum) ;
 			lcdPuts( lcdHandle, lin_str_warn);
 		}
 		else
 		{
-			lcdPosition (lcdHandle, 0, 0) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.balStrNum) ;
 			lcdPuts( lcdHandle, tmp_buff_string);
 
 			memset(tmp_buff_string, 0, sizeof(tmp_buff_string));
@@ -225,9 +225,9 @@ PI_THREAD(Lcd20x4)
 			if (status.intDeviceInfo.program_currentProgram > 2)
 				memcpy(&tmp_buff_string[11], voz_str, 9);
 
-			lcdPosition (lcdHandle, 0, 1) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.prgStrNum) ;
 			lcdPuts( lcdHandle, tmp_buff_string);
-			lcdPosition (lcdHandle, 0, 2) ;
+			lcdPosition (lcdHandle, 0, settings->lcd24Param.lineStrNum) ;
 			lcdPuts( lcdHandle, lin_str);
 		}
 

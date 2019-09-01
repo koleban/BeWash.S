@@ -26,6 +26,8 @@ Settings::Settings()
 	memset(&databaseSettings, 0x00, sizeof(databaseSettings));
 	memset(&gdatabaseSettings, 0x00, sizeof(gdatabaseSettings));
 	memset(&workTimeDevice, 0x00, sizeof(workTimeDevice));
+	memset(&terminalParam, 0x00, sizeof(terminalParam));
+	memset(&lcd24Param, 0x00, sizeof(lcd24Param));
 
 	memset(&modbus, 0x00, sizeof(modbus));
 	memset(&winterMode, 0, sizeof(winterMode));
@@ -159,10 +161,10 @@ bool Settings::loadConfig (char* fileName)
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
 	showAppLabel						= iniparser_getuint(ini, "Common:ShowAppLabel",			0);
 	useStoreBalance						= iniparser_getuint(ini, "Common:UseStoreBalance",		0);
+	sprintf(ethName, "%s", iniparser_getstring(ini, "Common:EthName", "eth0"));
 
 
 	netServerConfig.PortNumber 			= iniparser_getuint(ini, "NetServer:PortNumber", 		3355);
-
 	memset(extPanelNetConfig.netServerAddr, 0, sizeof(extPanelNetConfig.netServerAddr));
 	extPanelNetConfig.PortNumber 		= iniparser_getuint(ini, "NetClient:PortNumber", 		3355);
 	sprintf(extPanelNetConfig.netServerAddr, "%s", iniparser_getstring(ini, "NetClient:ServerAddr", "127.0.0.1"));
@@ -298,8 +300,13 @@ bool Settings::loadConfig (char* fileName)
 	workTimeDevice.StopTimeHour		= iniparser_getint(ini, 	"WorkTime:StopTimeHour",		0);
 	workTimeDevice.StopTimeMinute	= iniparser_getint(ini, 	"WorkTime:StopTimeMinute",		0);
 
+	lcd24Param.balStrNum = iniparser_getint(ini, 	"LCD24:BalStrNum",		0);
+	lcd24Param.prgStrNum = iniparser_getint(ini, 	"LCD24:PrgStrNum",		1);
+	lcd24Param.lineStrNum = iniparser_getint(ini, 	"LCD24:LineStrNum",		2);
+	lcd24Param.adsStrNum = iniparser_getint(ini, 	"LCD24:AdsStrNum",		3);
+
 	serviceCards.prgNumber = iniparser_getuint(ini, "ServiceCards:PrgNumber", 0);
-	serviceCards.washBalance = iniparser_getuint(ini, "ServiceCards:WashBalance", 333);
+	serviceCards.washBalance = iniparser_getuint(ini, "ServiceCards:WashBalance", 100);
 	for (index=0; index < 5; index++)
 	{
 		sprintf(paramName, 	"ServiceCards:CardID_%d", index+1);
@@ -410,6 +417,8 @@ bool Settings::loadConfig (char* fileName)
 	visaParam.pay200Btn.pinEnable			= (BYTE)(visaParam.pay200Btn.pinNum > 0);
 	visaParam.pay500Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Pay500Btn_PIN",	0);
 	visaParam.pay500Btn.pinEnable			= (BYTE)(visaParam.pay500Btn.pinNum > 0);
+
+	sprintf(terminalParam.deviceSubnet, "%s", iniparser_getstring(ini,	"TerminalParam:DeviceSubnet", "192.168.254."));
 
 /*
 [VISA]

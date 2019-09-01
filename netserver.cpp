@@ -128,6 +128,17 @@ PI_THREAD(NetServerClientThread)
 		{
 			default:
 			break;
+			case CMD_SEND_BALANCE:
+				status.intDeviceInfo.money_currentBalance += *addMoneyParam;
+				status.intDeviceInfo.allMoney += *addMoneyParam;
+				DataLen = sizeof(status) + 5;
+				answer[0] = 0x02;
+				answer[1] = 0xFF;
+				*((WORD*)&answer[2]) = DataLen;
+				answer[4] = CMD;
+				memcpy(&answer[5], &status, sizeof(status));
+				send(myClient, answer, DataLen, 0);
+				break;
 			case CMD_SRV_GET_SERIAL_NUMBER:
 				serial = getDeviceSerialNumber();
 				answer[0] = 0x02;

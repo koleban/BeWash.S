@@ -21,6 +21,7 @@ void VisaDevice::Init(Settings* setting)
 	sprintf(user_password, setting->visaParam.password);
 	debug_enabled = setting->visaParam.debug;
 
+#ifdef _VISA_PAY_DEVICE__
 	Ibox_PaymentController_SetSendWebRequestAction(&sendWebRequest);
 	Ibox_PaymentController_SetSendReaderRequestAction(&sendReaderRequest);
 	Ibox_PaymentController_SetStartTransactionAction(&startTransactionAction);
@@ -72,14 +73,17 @@ void VisaDevice::Init(Settings* setting)
 		errorCode = 3;
 		return;
 	}
+#endif
 	errorCode = 4;
 }
 
 bool VisaDevice::IsOpened()
 {
+#ifdef _VISA_PAY_DEVICE__
 	readerIdResult = Ibox_PaymentController_ReaderId();
 	if (readerIdResult->errorCode)
 		return 0;
+#endif
 	return 1;
 }
 
@@ -95,6 +99,7 @@ bool VisaDevice::CloseDevice()
 
 bool VisaDevice::Update()
 {
+#ifdef _VISA_PAY_DEVICE__
 	if (payInfo.inUse == 1)
 	{
 		if (IsOpened() == 0)
@@ -113,11 +118,13 @@ bool VisaDevice::Update()
 						return 1;
 					}
 	}
+#endif
 	return 1;
 }
 
 bool VisaDevice::DoPayment(PayInfo* payInfo)
 {
+#ifdef _VISA_PAY_DEVICE__
 	if (payInfo == NULL) return 0;
 	Ibox_PaymentContext* paymentContext = (Ibox_PaymentContext*)calloc(1, sizeof(Ibox_PaymentContext));
 	paymentContext->inputType = Ibox_PaymentController_InputType_CARD;
@@ -171,6 +178,7 @@ bool VisaDevice::DoPayment(PayInfo* payInfo)
 	free(paymentContext);
 	fprintf(stderr, "\n");
 	printf("%s\n", payInfo->note);
+#endif
 	return 1;
 }
 

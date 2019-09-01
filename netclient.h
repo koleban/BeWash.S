@@ -4,12 +4,11 @@ class Settings;
 
 class NetClient
 {
-	private:
+	public:
 		int port;
 		char hostAddr[20];
 		int sock;
 		struct sockaddr_in addr;
-	public:
 		bool isConnected;
 		NetClient();
 	  	void Init(Settings* settings);
@@ -17,7 +16,7 @@ class NetClient
 		void CloseConnection();
 		bool cmdGetExtDeviceInfo();
 		bool cmdSetExtPrg();
-		bool cmdSendBalance(int balance, int* currentBalance);
+		bool cmdSendBalance();
 };
 
 #endif

@@ -6,6 +6,7 @@ PI_THREAD(ConsoleThread)
 	Settings* settings = Settings::getInstance();
 	if (!settings->threadFlag.ConsoleWatch) return (void*)0;
 	char command[1024];
+	NetClient* 		netClient	= new NetClient();
 	while (settings->threadFlag.ConsoleWatch)
 	{
 		bool cmdYes = 0;
@@ -25,6 +26,7 @@ PI_THREAD(ConsoleThread)
 		{
 		if (strlen(command) < 4) continue;
 
+		int timeout = 0;
 		int bal = 0;
 		int myNewPrg = 0;
 		int chPointer = 0;

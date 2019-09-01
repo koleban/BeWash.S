@@ -424,6 +424,19 @@ struct ServiceCards
 	DWORD cardId[5];
 };
 
+struct TerminalParam
+{
+	char deviceSubnet[255];
+};
+
+struct LCD24Param
+{
+	int balStrNum;
+	int prgStrNum;
+	int lineStrNum;
+	int adsStrNum;
+};
+
 class Settings
 {
 private:
@@ -465,6 +478,7 @@ public:
 	unsigned int		LightTimeOff;			// Время в сек. перед выключением света
 	unsigned int		useHWClock;				// Используется RTC и время мы не контролируем
 	unsigned int		useStoreBalance;		// Сохранять баланс в EEPROM
+	char				ethName[40];			// Имя сетевого интерфейса (default: eth0)
 	// ***********************************************************************************************************
   	bool 				getEnabledDevice	(int deviceID);								// Усттройство разрешено ?
   	bool 				setEnabledDevice	(int deviceID, bool state);				// Установить статус устройства
@@ -530,6 +544,13 @@ public:
 	// Параметры эквайринга
 	VISAParam visaParam;
 
+	//
+	// Параметры терминала
+	TerminalParam terminalParam;
+
+	//
+	// Параметры LCD24x4
+	LCD24Param lcd24Param;
 	//
 	// Сервисные карты
 	// [ServiceCards]

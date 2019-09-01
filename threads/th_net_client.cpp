@@ -28,7 +28,7 @@ PI_THREAD(NetClientThread)
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	while (settings->threadFlag.NetClient)
 	{
-		if (!CheckLink("eth0")) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); db->Log(DB_EVENT_TYPE_NET_LINKDOWN, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR Interface eth0: link down ..."); break;}
+		if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); db->Log(DB_EVENT_TYPE_NET_LINKDOWN, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR Interface eth0: link down ..."); break;}
 		result = (int)netClient->OpenConnection();
 		if (!netClient->isConnected)
 			settings->intErrorCode.NetClient = 101;
@@ -41,7 +41,7 @@ PI_THREAD(NetClientThread)
 		while ((settings->threadFlag.NetClient) && (netClient->isConnected))
 		{
 			if (iter++ > 20)
-				{ iter = 0; if (!CheckLink("eth0")) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); continue;}}
+				{ iter = 0; if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); continue;}}
 			try{
 			int timeout = 2000;
 			int delayTime = 200;

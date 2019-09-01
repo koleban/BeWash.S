@@ -13,6 +13,7 @@ char *sendData(char *buf, int size, uint16_t *retsize)
 
 	char *retbuf = 0;
 
+#ifdef _VISA_PAY_DEVICE__
 	if (serial_open(&serial, "/dev/ttyACM0", 115200) < 0)
 	{
 		fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
@@ -44,6 +45,7 @@ char *sendData(char *buf, int size, uint16_t *retsize)
 	}
 
 	serial_close(&serial);
+#endif
 	return retbuf;
 }
 
@@ -54,6 +56,7 @@ char *sendData(char *buf, int size, uint16_t *retsize)
  *
  */
 
+#ifdef _VISA_PAY_DEVICE__
 CURL *curl;
 CURLcode res;
 
@@ -150,3 +153,4 @@ Ibox_MemoryStruct *sendReaderRequest(char *request, int length)
 
 	return response;
 }
+#endif
