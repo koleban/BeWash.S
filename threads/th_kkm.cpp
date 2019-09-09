@@ -597,8 +597,8 @@ PI_THREAD(KKMWatch)
 						drv->FNGetStatus();
 						CheckDevice(drv);
 						drv->Password = 30;
-						if (drv->FNReadFiscalDocumentTLV() == 1)
-							showTLVStruct(drv);
+//						if (drv->FNReadFiscalDocumentTLV() == 1)
+//							showTLVStruct(drv);
 						delay_ms(settings->kkmParam.QueryTime);
 					}
 				}

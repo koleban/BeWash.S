@@ -25,14 +25,14 @@ int blinkBtn(unsigned char mask)
 	return l;
 }
 
-int sendBalanceToRemoteDevice(int deviceNumber)
+int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber)
 {
-	int t = deviceNumber * deviceNumber;
+	int deviceNumberCalc = deviceNumber + 101;
 
 	if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); printf("[Net Client]: ERROR Interface %s: link down ...\n", settings->ethName); return 2;}
 	netClient->Init(settings);
 	char panelAddr[100] = {0};
-	sprintf(panelAddr, "%s%d", settings->terminalParam.deviceSubnet, deviceNumber);
+	sprintf(panelAddr, "%s%d", settings->terminalParam.deviceSubnet, deviceNumberCalc);
 	if (settings->debugFlag.ButtonTerminalThread)
 		printf("NetClient: Remote server: %s\n", panelAddr);
 	strcpy(netClient->hostAddr, panelAddr);
@@ -56,6 +56,7 @@ PI_THREAD(ButtonTerminalWatch)
 	/// Если ПОТОК запрещен, то завершаемся
 	if (!(settings->threadFlag.ButtonTerminalThread)) return (void*)0;
 	Database* db = new Database();
+	NetClient* 		netClient	= new NetClient();
 	db->Init(settings);
 	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (terminal mode): Button thread init");
 	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (terminal mode) panel device opened");
@@ -193,7 +194,7 @@ PI_THREAD(ButtonTerminalWatch)
 					if (settings->debugFlag.ButtonTerminalThread)
 						printf("[DEBUG] ButtonTerminalThread: Sending balance %d to device %d\n", status.intDeviceInfo.money_currentBalance, i);
 
-					if (sendBalanceToRemoteDevice(i) == 0)
+					if (sendBalanceToRemoteDevice(netClient, i) == 0)
 					{
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Send OK\n");

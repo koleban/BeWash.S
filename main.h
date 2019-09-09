@@ -7,9 +7,9 @@
 //#define CRYPTOPP
 //#define __SECURITY_DEBUG_
 
-#ifndef _RFID_DEVICE_CRT288K_
-#define _RFID_DEVICE_CRT288K_
-#endif
+//#ifndef _RFID_DEVICE_CRT288K_
+//#define _RFID_DEVICE_CRT288K_
+//#endif
 
 //#ifndef _VISA_PAY_DEVICE__
 //#define _VISA_PAY_DEVICE__
