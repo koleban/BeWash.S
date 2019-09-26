@@ -145,7 +145,7 @@ bool NetClient::cmdSendBalance()
 	WORD index = 0;
 	index = netReadData(sock, &in_buff[0], 0xFFF0);
 
-	if (index <= 0) { CloseConnection(); return 0; }
+	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[0], 0xFFF0); CloseConnection(); return 0; }
 
 	if (index > 5)
 	{
