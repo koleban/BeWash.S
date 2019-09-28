@@ -25,7 +25,7 @@ int blinkBtn(unsigned char mask)
 	return l;
 }
 
-int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber)
+int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber, int sendedBalance)
 {
 	int deviceNumberCalc = deviceNumber + 101;
 
@@ -42,7 +42,7 @@ int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber)
 	else
 		return 1;
 	int timeout = 2;
-	while ((!netClient->cmdSendBalance()) && (timeout-- > 0)) { delay_ms(1000); }
+	while ((!netClient->cmdSendBalance(sendedBalance)) && (timeout-- > 0)) { delay_ms(500); }
 	if (timeout == 0) { printf("[netClient]: Error cmdSendBalance()\n"); return 1; }
 	netClient->CloseConnection();
 
@@ -83,7 +83,7 @@ PI_THREAD(ButtonTerminalWatch)
 		if ((btnPins[i] == 0) || (btnPins[i] > 0x7F)) continue;
 	}
 
-	for (int i=0; i < sizeof(btnPins); i++)
+	for (int i=0; i < 12; i++)
 	{
 		int currentPin = btnPins[i];
 		if ((currentPin == 0) || (currentPin > 0x7F)) continue;
@@ -194,11 +194,12 @@ PI_THREAD(ButtonTerminalWatch)
 					if (settings->debugFlag.ButtonTerminalThread)
 						printf("[DEBUG] ButtonTerminalThread: Sending balance %d to device %d\n", status.intDeviceInfo.money_currentBalance, i);
 
-					if (sendBalanceToRemoteDevice(netClient, i) == 0)
+					int sendedBalance = status.intDeviceInfo.money_currentBalance;
+					if (sendBalanceToRemoteDevice(netClient, i, sendedBalance) == 0)
 					{
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Send OK\n");
-						status.intDeviceInfo.money_currentBalance = 0;
+						status.intDeviceInfo.money_currentBalance -= sendedBalance;
 					}
 					else
 					{
@@ -478,11 +479,21 @@ PI_THREAD(ButtonTerminalWatch)
 						if ((timeout <= 0))
 						{
 							thread_timeout -= 50;
-							#ifdef _VISA_PAY_DEVICE__
-							if (payInfo.inUse == 1)
-								Ibox_PaymentController_CancelGetCardData();
-							#endif
+							char strTmp256[256];
+							int proc_id = proc_find("./bwpay");
+							if (proc_id != -1)
+							{
+								sprintf(strTmp256, "sudo kill -s SIGUSR1 %d", proc_id);
+								system(strTmp256);
+							}
 							delay_ms(2000);
+							proc_id = proc_find("./bwpay");
+							if (proc_id != -1)
+							{
+								sprintf(strTmp256, "sudo kill %d", proc_id);
+								system(strTmp256);
+							}
+							payInfo.result = 99;
 							payInfo.inUse = 0;
 						}
 					}
@@ -618,9 +629,21 @@ PI_THREAD(ButtonTerminalWatch)
 
 					if (payInfo.inUse == 1)
 					{
-						#ifdef _VISA_PAY_DEVICE__
-						Ibox_PaymentController_CancelGetCardData();
-						#endif
+						char strTmp256[256];
+						int proc_id = proc_find("./bwpay");
+						if (proc_id != -1)
+						{
+							sprintf(strTmp256, "sudo kill -s SIGUSR1 %d", proc_id);
+							system(strTmp256);
+						}
+						delay_ms(2000);
+						proc_id = proc_find("./bwpay");
+						if (proc_id != -1)
+						{
+							sprintf(strTmp256, "sudo kill %d", proc_id);
+							system(strTmp256);
+						}
+						payInfo.result = 99;
 						payInfo.inUse = 0;
 						delay_ms(2000);
 					}

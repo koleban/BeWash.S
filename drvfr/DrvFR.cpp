@@ -20,6 +20,10 @@
 
 //#define DEBUG
 
+//**
+void cp2utf( char* str, char* res );
+//**
+
 using namespace DriverFR;
 
 DrvFR::DrvFR(int password,
@@ -55,9 +59,11 @@ int DrvFR::errhand(void *a)
 	else
 		ResultCode = ((answer*)a)->buff[2];
 	strcpy(ResultCodeDescription, errmsg[ResultCode]);
+	char tmpUTFStr[512] = {0};
+	cp2utf(ResultCodeDescription, tmpUTFStr);
 	if (ResultCode != 0)
 	{
-		printf("fn: errhand (%d) --> %s\n", ResultCode, ResultCodeDescription);
+		printf("fn: errhand (%d) --> %s\n", ResultCode, tmpUTFStr);
 		fflush(stdout);
 	}
 	return ResultCode;

@@ -7,13 +7,7 @@
 #define DWORD 	unsigned int
 #endif
 
-#include "../protocols/hw.h"
 #include "../protocols/serial.h"
-extern "C"{
-#include "../SDK/PaymentController.h"
-#include "../SDK/Result.h"
-#include "../SDK/WebObject.h"
-}
 
 struct PayInfo
 {
@@ -43,9 +37,6 @@ class VisaDevice
 	int debug_enabled = 0;
 
 	unsigned long transactionCount = 1;
-	Ibox_Result_ReaderId* readerIdResult = NULL;
-	Ibox_Result_ReaderInfo* readerInfoResult = NULL;
-	Ibox_Result_Authentication* authResult = NULL;
 	int errorCode = 0;
 
 	void Init(Settings* setting);

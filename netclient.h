@@ -16,7 +16,7 @@ class NetClient
 		void CloseConnection();
 		bool cmdGetExtDeviceInfo();
 		bool cmdSetExtPrg();
-		bool cmdSendBalance();
+		bool cmdSendBalance(int valBalance);
 };
 
 #endif

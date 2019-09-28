@@ -39,6 +39,33 @@ PI_THREAD(ConsoleThread)
 		char strTmp256[1024];
 		switch(*((DWORD*)(command)))
 		{
+			// pay1
+			case 0x31796170:
+				tmpIndex = proc_find("./bwpay");
+				if (tmpIndex != -1)
+				{
+					sprintf(strTmp256, "sudo kill -s SIGUSR1 %d", tmpIndex);
+					printf("%s\n", strTmp256);
+					system(strTmp256);
+				}
+				break;
+					payInfo.summ = 100;
+					payInfo.deviceNum = 1;
+					cp2utf("Оплата картой за услуги автомойки", payInfo.note);
+					sprintf(payInfo.r_phone, "");
+					sprintf(payInfo.r_email, "test@test.email");
+					payInfo.inUse = 1;
+				break;
+			// payk
+			case 0x6B796170:
+				tmpIndex = proc_find("./bwpay");
+				if (tmpIndex != -1)
+				{
+					sprintf(strTmp256, "sudo kill -s SIGUSR1 %d", tmpIndex);
+					printf("%s\n", strTmp256);
+					system(strTmp256);
+				}
+				break;
 			// eprg
 			case 0x67727065:
 				for(tmpIndex = 0; tmpIndex < 9; tmpIndex++)

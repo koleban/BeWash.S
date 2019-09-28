@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 		settings->workFlag.ThermalWatch++;
 		delay_ms(1000);
 
-		if (settings->workTimeDevice.UseWorkTime)
+		if (settings->workTimeDevice.UseWorkTime) 
 		{
 			time_t currTime = time(NULL);
   			struct tm* timeInfo;
@@ -397,13 +397,16 @@ int main(int argc, char *argv[])
 			}
 			else if (stopWork == 0)
 			{
-				stopWork = 1;
-  				printf ("Use WORK TIME!!!\n");
-  				printf ("Stoping thread ...\n");
-				thButton = settings->threadFlag.ButtonWatch;
-				thDisplay = settings->threadFlag.MonitorWatch;
-				settings->threadFlag.ButtonWatch = 0;
-				settings->threadFlag.MonitorWatch = 0;
+				if (status.intDeviceInfo.money_currentBalance == 0)
+				{
+					stopWork = 1;
+	  				printf ("Use WORK TIME!!!\n");
+	  				printf ("Stoping thread ...\n");
+					thButton = settings->threadFlag.ButtonWatch;
+					thDisplay = settings->threadFlag.MonitorWatch;
+					settings->threadFlag.ButtonWatch = 0;
+					settings->threadFlag.MonitorWatch = 0;
+				}
 			}
 		}
 

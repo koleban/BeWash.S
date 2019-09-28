@@ -133,12 +133,14 @@ bool NetClient::cmdSetExtPrg()
 	return 1;
 }
 
-bool NetClient::cmdSendBalance()
+bool NetClient::cmdSendBalance(int valBalance)
 {
 	Settings* settings 	= Settings::getInstance();		// Параметры приложения
 	if (!isConnected) OpenConnection();
 
-	ssize_t result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&status.intDeviceInfo.money_currentBalance, sizeof(status.intDeviceInfo.money_currentBalance));
+	int recvBalance = 0;
+	int zeroBalance = 0;
+	ssize_t result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&zeroBalance, sizeof(zeroBalance));
 	if (result < 0) { CloseConnection(); return 0; }
 
 	BYTE in_buff[0xFFFF];
@@ -160,7 +162,44 @@ bool NetClient::cmdSendBalance()
 		if (settings->debugFlag.NetClient)
 			printf("[NETCTRL] Sending balance >>> \n");
 		if (deviceInfo)
+			printf("Receive remote balance. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
+		recvBalance = deviceInfo->intDeviceInfo.money_currentBalance;
+    }
+
+    int retryCount = 0;
+    while (retryCount++ < 3)
+    {
+		delay_ms(200);
+		result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&valBalance, sizeof(valBalance));
+		if (result >= 0) break;
+	}
+
+	index = netReadData(sock, &in_buff[0], 0xFFF0);
+
+	if (index <= 0) { CloseConnection(); return 0; }
+	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[index], 0xFFF0-index);}
+
+	if (index > 5)
+	{
+		BYTE* SYNC 	= (BYTE*)&in_buff[0];
+		BYTE* ADR 	= (BYTE*)&in_buff[1];
+		WORD* LEN 	= (WORD*)&in_buff[2];
+		BYTE* CMD 	= (BYTE*)&in_buff[4];
+		BYTE* DATA 	= (BYTE*)&in_buff[5];
+		DeviceInfo* deviceInfo = (DeviceInfo*)&in_buff[5];
+
+		if ((*SYNC != 0x02) || (*ADR != 0xFF)) return 0;
+		if (settings->debugFlag.NetClient)
+			printf("[NETCTRL] Sending balance >>> \n");
+		if ((deviceInfo->intDeviceInfo.money_currentBalance - valBalance) == recvBalance)
 			printf("Sending balance OK. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
+		else
+		{
+			printf("Sending balance ERROR. RecvB: %d SendB: %d CurrB: %d\n", recvBalance, valBalance, deviceInfo->intDeviceInfo.money_currentBalance);
+			int corrBal = (valBalance + recvBalance) - deviceInfo->intDeviceInfo.money_currentBalance;
+			delay_ms(100);
+			netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&corrBal, sizeof(corrBal));
+		}
     }
 
 	return 1;

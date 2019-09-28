@@ -11,10 +11,6 @@
 //#define _RFID_DEVICE_CRT288K_
 //#endif
 
-//#ifndef _VISA_PAY_DEVICE__
-//#define _VISA_PAY_DEVICE__
-//#endif
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,14 +88,6 @@
 #include "tlv/tlv_box.h"
 
 #include "drvfr/DrvFR_Conn.h"
-
-#ifdef _VISA_PAY_DEVICE__
-extern "C"{
-#include "SDK/PaymentController.h"
-#include "SDK/Result.h"
-#include "SDK/WebObject.h"
-}
-#endif
 
 #define ERROR(fmt, ...) do { printf(fmt, __VA_ARGS__); return -1; } while(0)
 
