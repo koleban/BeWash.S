@@ -186,7 +186,7 @@ bool Settings::loadConfig (char* fileName)
 	if (threadFlag.DebugThread == 0)
 		threadFlag.DebugThread				= iniparser_getuint(ini, "ThreadFlag:DebugThread", 		1);
 	threadFlag.ThermalWatch				= iniparser_getuint(ini, "ThreadFlag:ThermalWatch", 	0);
-	threadFlag.GPIOExtWatch				= iniparser_getuint(ini, "ThreadFlag:GPIOExtWatch", 	useMCPWatch);
+	threadFlag.GPIOExtWatch				= iniparser_getuint(ini, "ThreadFlag:GPIOExtWatch", 	useMCPWatch & useMCP);
 	threadFlag.Lcd20x4Watch				= iniparser_getuint(ini, "ThreadFlag:Lcd20x4Watch", 	0);
 	threadFlag.RemoteCtrlThread			= iniparser_getuint(ini, "ThreadFlag:RemoteCtrlThread", 	0);
 	threadFlag.RemoteSenderThread		= iniparser_getuint(ini, "ThreadFlag:RemoteSenderThread", 	0);
