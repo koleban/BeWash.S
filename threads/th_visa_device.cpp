@@ -23,14 +23,10 @@ PI_THREAD(VisaDeviceWatch)
 	while (settings->threadFlag.VisaDeviceThread)
 	{
 		if (visaDevice->IsOpened())
-		{
 			visaDevice->Update();
-		}
 		else
-		{
 			if (!visaDevice->OpenDevice()) {delay(5);}
-		}
-		delay_ms(1000);
+		delay_ms(500);
 	}
 	visaDevice->CloseDevice();
 	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "VISA (card terminal) device thread is closed");

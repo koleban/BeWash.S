@@ -1,5 +1,8 @@
 #include "../main.h"
 
+int waitSumm = 0;
+int paymentSumm = 0;
+
 int blinkBtn(unsigned char mask)
 {
 	int l = 0;
@@ -131,8 +134,6 @@ PI_THREAD(ButtonTerminalWatch)
 	int emptyCoinSensor = 0;
 	int emptyLightCounter = 0;
 	int payRFIDCardCounter = 5;
-	int paymentSumm = 0;
-	int waitSumm = 0;
 	int trId = 0;
 	int firstBtnInit = 0;
 	int counterBtnLight = 0;
@@ -473,11 +474,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:CANCEL button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:CANCEL button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
+						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:CANCEL button pressed");
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
 							thread_timeout -= 50;
 							char strTmp256[256];
 							int proc_id = proc_find("./bwpay");
@@ -493,8 +496,10 @@ PI_THREAD(ButtonTerminalWatch)
 								sprintf(strTmp256, "sudo kill %d", proc_id);
 								system(strTmp256);
 							}
-							payInfo.result = 99;
+							payInfo.result = PAY_RESULT_ERROR;
 							payInfo.inUse = 0;
+							setGPIOState(pinNum, 0);
+							setPinModeMy(pinNum, PIN_INPUT);
 						}
 					}
 				}
@@ -507,11 +512,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_50 button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_50 button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
+							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_50 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 50;
 						}
@@ -526,11 +533,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_100 button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_100 button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
+							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_100 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 100;
 						}
@@ -545,11 +554,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_150 button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_150 button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
+							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_150 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 150;
 						}
@@ -564,11 +575,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_200 button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_200 button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
+							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_200 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 200;
 						}
@@ -583,50 +596,21 @@ PI_THREAD(ButtonTerminalWatch)
 						int timeout = 30;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:PAY_500 button [PIN: %03d]\n", pinNum);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_500 button pressed");
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
 						if ((timeout <= 0))
 						{
+							setPinModeMy(pinNum, PIN_OUTPUT);
+							setGPIOState(pinNum, 1);
+							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_500 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 500;
 						}
 					}
 				}
-				if (paymentSumm > 0)
+				if ((waitSumm == 0) && (paymentSumm > 0))
 				{
-					delay_ms(1000);
-					pinNum = settings->visaParam.pay50Btn.pinNum;
-					if (pinNum > 0)
-					{
-						setPinModeMy(pinNum, PIN_OUTPUT);
-						setGPIOState(pinNum, 1);
-					}
-					pinNum = settings->visaParam.pay100Btn.pinNum;
-					if (pinNum > 0)
-					{
-						setPinModeMy(pinNum, PIN_OUTPUT);
-						setGPIOState(pinNum, 1);
-					}
-					pinNum = settings->visaParam.pay150Btn.pinNum;
-					if (pinNum > 0)
-					{
-						setPinModeMy(pinNum, PIN_OUTPUT);
-						setGPIOState(pinNum, 1);
-					}
-					pinNum = settings->visaParam.pay200Btn.pinNum;
-					if (pinNum > 0)
-					{
-						setPinModeMy(pinNum, PIN_OUTPUT);
-						setGPIOState(pinNum, 1);
-					}
-					pinNum = settings->visaParam.pay500Btn.pinNum;
-					if (pinNum > 0)
-					{
-						setPinModeMy(pinNum, PIN_OUTPUT);
-						setGPIOState(pinNum, 1);
-					}
-
+					printf("Kill payment operation\n");
 					if (payInfo.inUse == 1)
 					{
 						char strTmp256[256];
@@ -636,64 +620,77 @@ PI_THREAD(ButtonTerminalWatch)
 							sprintf(strTmp256, "sudo kill -s SIGUSR1 %d", proc_id);
 							system(strTmp256);
 						}
-						delay_ms(2000);
+						delay_ms(1000);
 						proc_id = proc_find("./bwpay");
 						if (proc_id != -1)
 						{
-							sprintf(strTmp256, "sudo kill %d", proc_id);
+							sprintf(strTmp256, "sudo kill %d -9", proc_id);
 							system(strTmp256);
 						}
-						payInfo.result = 99;
+						payInfo.result = PAY_RESULT_ERROR;
 						payInfo.inUse = 0;
 						delay_ms(2000);
 					}
+					waitSumm = paymentSumm;
 					payInfo.summ = paymentSumm;
 					payInfo.deviceNum = trId++;
+					paymentSumm = 0;
 					cp2utf("Оплата картой за услуги автомойки", payInfo.note);
 					sprintf(payInfo.r_phone, "");
 					sprintf(payInfo.r_email, "test@test.email");
 					payInfo.inUse = 1;
-					waitSumm = paymentSumm;
-					paymentSumm = 0;
-					delay_ms(3000);
+					delay_ms(5000);
 					pinNum = settings->visaParam.pay50Btn.pinNum;
 					if (pinNum > 0)
+					{
+						setGPIOState(pinNum, 0);
 						setPinModeMy(pinNum, PIN_INPUT);
+					}
 					pinNum = settings->visaParam.pay100Btn.pinNum;
 					if (pinNum > 0)
+					{
+						setGPIOState(pinNum, 0);
 						setPinModeMy(pinNum, PIN_INPUT);
+					}
 					pinNum = settings->visaParam.pay150Btn.pinNum;
 					if (pinNum > 0)
+					{
+						setGPIOState(pinNum, 0);
 						setPinModeMy(pinNum, PIN_INPUT);
+					}
 					pinNum = settings->visaParam.pay200Btn.pinNum;
 					if (pinNum > 0)
+					{
+						setGPIOState(pinNum, 0);
 						setPinModeMy(pinNum, PIN_INPUT);
+					}
 					pinNum = settings->visaParam.pay500Btn.pinNum;
 					if (pinNum > 0)
-						setPinModeMy(pinNum, PIN_INPUT);
-				}
-				if (waitSumm > 0)
-				{
-					if (payInfo.inUse == 0)
 					{
-						//DB_EVENT_TYPE_VISA_PAY_DOC_OK
-						if (payInfo.result == 0)
-						{
-							status.intDeviceInfo.money_currentBalance += waitSumm;
-							char strTmp256[1024];
-							int devId = settings->commonParams.deviceId;
-							if (devId > 100) devId -= 100;
-							sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
-							queueKkm->QueuePut(0, waitSumm, 1, strTmp256);
-							//!!! NEED print in DB payInfo.transactionId;
-							db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_OK, waitSumm, payInfo.result, payInfo.note);
-						}
-						else
-						{
-							db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_ERROR, waitSumm, payInfo.result, payInfo.note);
-						}
-						waitSumm = 0;
+						setGPIOState(pinNum, 0);
+						setPinModeMy(pinNum, PIN_INPUT);
 					}
+				}
+				if ((payInfo.inUse == 0) && (waitSumm > 0))
+				{
+					printf("[Terminal] waitSumm = %d Operation result = %d\n", waitSumm, payInfo.result);
+					//DB_EVENT_TYPE_VISA_PAY_DOC_OK
+					if (payInfo.result == PAY_RESULT_OK)
+					{
+						status.intDeviceInfo.money_currentBalance += waitSumm;
+						char strTmp256[1024];
+						int devId = settings->commonParams.deviceId;
+						if (devId > 100) devId -= 100;
+						sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
+						queueKkm->QueuePut(0, waitSumm, 1, strTmp256);
+						//!!! NEED print in DB payInfo.transactionId;
+						db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_OK, waitSumm, payInfo.result, payInfo.note);
+					}
+					else
+					{
+						db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_ERROR, waitSumm, payInfo.result, payInfo.note);
+					}
+					waitSumm = 0;
 				}
 			}
 			if (settings->visaParam.workMode == 1)

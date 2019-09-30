@@ -9,6 +9,16 @@
 #endif
 
 //***************************************
+// bwPay Application ERROR CODE
+//***************************************
+#define BWPAY_ERROR						0x00		// Адрес устройства
+#define BWPAY_NO_ERROR					0x01		// Адрес устройства
+
+#define PAY_RESULT_OK					0x00		// Адрес устройства
+#define PAY_RESULT_ERROR				0x01		// Адрес устройства
+
+
+//***************************************
 // MODBUS SLAVE DEVICE REGISTERS MAP
 //***************************************
 #define SLAVE_REG_DEVICE_ADDR			0x00		// Адрес устройства

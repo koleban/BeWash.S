@@ -548,7 +548,7 @@ PI_THREAD(KKMWatch)
 						}
 						CheckDevice(drv);
 						delay_ms(1000);
-						result = OpenPaymentDocument(drv);
+						OpenPaymentDocument(drv);
 						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
 						db->Log(DB_EVENT_TYPE_KKM_FN_OPEN_DOC, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
@@ -563,6 +563,7 @@ PI_THREAD(KKMWatch)
 							cp2utf(tmpCPStr, tmpUTFStr);
 							printf("%s", tmpUTFStr);
 							term_setattr(37);
+							queueKkm->QueuePut(valueKkm);
 							break;
 						}
 						sprintf(tmpCPStr, "[THREAD] KKM: Продажа : %s - 1 шт\n", valueKkm.note);

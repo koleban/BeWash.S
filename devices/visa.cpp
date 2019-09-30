@@ -41,35 +41,23 @@ bool VisaDevice::CloseDevice()
 
 bool VisaDevice::Update()
 {
-	if (payInfo.inUse == 1)
-	{
-		if (DoPayment(&payInfo) == 0)
-		{
-			payInfo.inUse = 0;
-			return 0;
-		}
-		else
-		{
-			payInfo.inUse = 0;
-			return 1;
-		}
-	}
-	return 1;
+	if (payInfo.inUse == 0) return 1;
+	return DoPayment(&payInfo);
 }
 
 bool VisaDevice::DoPayment(PayInfo* payInfo)
 {
-	payInfo->result = 1;
-	char command[4096] = {0};
+	payInfo->result = PAY_RESULT_ERROR;
+	char command[1024];
+	memset(command, 0, sizeof(command));
 	sprintf(command, "./bwpay \"%s\" \"%s\" %d %4.2f \"%s\" \"%s\"", user_name, user_password, 1, payInfo->summ, "Услуги автомойки", payInfo->note);
 	printf("Run: %s\n", command);
 	int res = system(command);
-	if (res == 0)
-	{
-		payInfo->result = 0;
-		return 1;
-	}
-	return 0;
+	printf("payCmd result: %d %d\n", res, WEXITSTATUS(res));
+	payInfo->inUse = 0;
+	if (res == -1 || WEXITSTATUS(res) != 0)
+		payInfo->result = PAY_RESULT_OK;
+	return payInfo->result;
 }
 
 

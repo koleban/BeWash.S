@@ -1,5 +1,8 @@
 #include "../main.h"
 
+extern int waitSumm;
+extern int paymentSumm;
+
 //#pragma region Подсистема управления "КОНСОЛЬ УПРАВЛЕНИЯ"
 PI_THREAD(ConsoleThread)
 {
@@ -43,7 +46,7 @@ PI_THREAD(ConsoleThread)
 		{
 				printf("Console command list\n");
 				printf("  clear eeprom price                         - Clear prg price in EEPROM\n");
-				printf("  pay [summ] [devNum]                        - Start VISA payment on [summ] for [devNum] device\n");
+				printf("  pay [summ]                                 - Start VISA payment on [summ]\n");
 				printf("  pay kill                                   - Kill VISA payment thread\n");
 				printf("  coll                                       - Turn on collection button on 2 second\n");
 				printf("  chk [devNum]                               - New KKM doc on 1 rur for [devNum] device\n");
@@ -55,6 +58,9 @@ PI_THREAD(ConsoleThread)
 
 		if (strstr(command, "pay") == command)
 		{
+			waitSumm = 0;
+			paymentSumm = atoi(param[0]);
+			/*
 			tmpIndex = proc_find("./bwpay");
 			if (tmpIndex != -1)
 			{
@@ -70,6 +76,8 @@ PI_THREAD(ConsoleThread)
 			sprintf(payInfo.r_phone, "");
 			sprintf(payInfo.r_email, "test@test.email");
 			payInfo.inUse = 1;
+			waitSumm = atoi(param[0]);
+			*/
 		}
 		if (strstr(command, "clear eeprom price") == command)
 		{
