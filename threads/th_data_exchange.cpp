@@ -145,6 +145,22 @@ PI_THREAD(DataExchangeThread)
 			}
 		}
 
+		//
+		// Автоматическая перезагрузка по времени
+		//
+		if ((settings->autoRebootParam.AutoReboot) && (status.intDeviceInfo.money_currentBalance == 0))
+		{
+			time_t arTime;
+			time(&arTime);
+			struct tm localTime = *localtime(&arTime);
+			struct sysinfo info;
+			sysinfo(&info);
+			if ((info.uptime >= 3600) && (settings->autoRebootParam.AutoRebootHour == localTime.tm_hour))
+			{
+				system("sudo reboot now");
+			}
+		}
+
 		delay_ms(2000);
 	}
 	db->Close();

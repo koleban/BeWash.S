@@ -375,6 +375,12 @@ struct KKMParam
 	int SharedMode;			// Режим разделенного доступа (Присоединился, пробил чек, отвалил)
 };
 
+struct AutoRebootParam
+{
+	int AutoReboot;
+	int AutoRebootHour;
+};
+
 struct WorkTimeDevice		// Рабочее время объекта
 {
 	int 	UseWorkTime;
@@ -569,6 +575,10 @@ public:
 	// CardID_1 = xxxxxx
 	// WashBalance = 123
 	ServiceCards serviceCards;
+
+	//
+	// Параметры автоматической перезагрузки
+	AutoRebootParam autoRebootParam;
 
 	//
 	// СКИДКИ

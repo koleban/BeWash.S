@@ -40,6 +40,8 @@
 #include <errno.h>        // errno
 #include <linux/usbdevice_fs.h>
 #include <stdint.h>
+#include <sys/sysinfo.h>
+#include <sys/resource.h>
 
 #ifdef CRYPTOPP
 #include "rsa.h"

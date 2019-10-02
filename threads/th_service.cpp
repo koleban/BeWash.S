@@ -9,7 +9,7 @@ extern int dayLightWork;
 PI_THREAD(DiscountWatch)
 {
 	Settings* 		settings 	= Settings::getInstance();
-	if (!settings->threadFlag.TimeTickThread) return (void*)0;
+	if (!settings->threadFlag.TimeTickThread) { 	pthread_detach(pthread_self()); return (void*)0;}
 	while (settings->threadFlag.TimeTickThread)
 	{
 		int indext = 0;
@@ -48,6 +48,7 @@ PI_THREAD(DiscountWatch)
   			settings->discountSize = dateDiscount;
   		delay(5);
 	}
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
@@ -56,16 +57,16 @@ PI_THREAD(TurnLightWatch)
 	lightThreadActive = 1;
 	Settings* 		settings 	= Settings::getInstance();
 	if (!settings->getEnabledDevice(DVC_RELAY_LIGHT))
-		{lightThreadActive = 1; return (void*)0;}
+		{lightThreadActive = 1; {	pthread_detach(pthread_self()); return (void*)0;}}
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
-	if ((pinNum == 0xFF) || (pinNum == 0x00)) {lightThreadActive = 1; return (void*)0;}
+	if ((pinNum == 0xFF) || (pinNum == 0x00)) {lightThreadActive = 1; 	pthread_detach(pthread_self()); return (void*)0;}
 
 	int delaySize = settings->LightTimeOff*10;
 	printf("[DEBUG] Turn light thread. Wait %d sec\n", (int)(delaySize/10));
 
 	while (delaySize-- > 0)
 	{
-		if (status.intDeviceInfo.money_currentBalance > 0) { lightThreadActive = 0; return (void*)0;}
+		if (status.intDeviceInfo.money_currentBalance > 0) { lightThreadActive = 0; 	pthread_detach(pthread_self()); return (void*)0;}
 		if (dayLightWork)
 			setGPIOState(pinNum, 1);
 		delay_ms(100);
@@ -76,6 +77,7 @@ PI_THREAD(TurnLightWatch)
 	pullUpDnControl (pinNum, PUD_DOWN) ;
 	setGPIOState(pinNum, 0);
 	lightThreadActive = 0;
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
@@ -83,43 +85,43 @@ int thServiceSetupSystemDateTime(Settings* settings)
 {
 	if (!settings->useDatabase) return 1;
 
-		printf ("   >> Init GLOBAL database ... \n");
-		Database* gDb = new Database();
-		gDb->Init(&settings->gdatabaseSettings);
-		if (gDb->Open())
-		{
-			printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
-			return 0;
-		}
+	printf ("   >> Init GLOBAL database ... \n");
+	Database* gDb = new Database();
+	gDb->Init(&settings->gdatabaseSettings);
+	if (gDb->Open())
+	{
+		printf("  ===> GLOBAL IB ERROR: %s\n", gDb->lastErrorMessage);
+		return 0;
+	}
+	else
+	{
+		IBPP::Timestamp sysEmptyTime;
+		IBPP::Timestamp sysTime;
+		if (gDb->Query(DB_QUERY_TYPE_SYSTIME, NULL, &sysTime))
+			{ printf("  ===> IB ERROR: %s\n", gDb->lastErrorMessage); return 0;}
 		else
 		{
-			IBPP::Timestamp sysEmptyTime;
-			IBPP::Timestamp sysTime;
-			if (gDb->Query(DB_QUERY_TYPE_SYSTIME, NULL, &sysTime))
-				{ printf("  ===> IB ERROR: %s\n", gDb->lastErrorMessage); return 0;}
-			else
+			if (sysEmptyTime != sysTime)
 			{
-				if (sysEmptyTime != sysTime)
-				{
-					IBPP::Date sysdate = sysTime;
-					IBPP::Time systime = sysTime;
-					int sy = 0, sm = 0, sd = 0;
-					sysdate.GetDate(sy, sm, sd);
-					int sh = 0, si = 0, ss = 0;
-					systime.GetTime(sh, si, ss);
-					char serverDateTime[100];
-					sprintf(serverDateTime, "%02d/%02d/%04d %02d:%02d:%02d", sm, sd, sy, sh, si, ss);
-					printf("[Database server]: Server time %s\n", serverDateTime);
-					sprintf(serverDateTime, "sudo date -s\"%02d/%02d/%04d %02d:%02d:%02d\"", sm, sd, sy, sh, si, ss);
-					if ((settings->useDatabaseDateTime)  && (!settings->useHWClock)) {printf("DateTime service: [DEBUG] Setting date and time from Database server"); system(serverDateTime);}
-					// Инициализация переменных времени
-	   				prgStartTimer = time(NULL);							// Время запуска программы
-	    			winterCurrTime = prgStartTimer;						// Зимний режим, время последней операции для отсчета простоя
-				}
-				printf("done.");
+				IBPP::Date sysdate = sysTime;
+				IBPP::Time systime = sysTime;
+				int sy = 0, sm = 0, sd = 0;
+				sysdate.GetDate(sy, sm, sd);
+				int sh = 0, si = 0, ss = 0;
+				systime.GetTime(sh, si, ss);
+				char serverDateTime[100];
+				sprintf(serverDateTime, "%02d/%02d/%04d %02d:%02d:%02d", sm, sd, sy, sh, si, ss);
+				printf("[Database server]: Server time %s\n", serverDateTime);
+				sprintf(serverDateTime, "sudo date -s\"%02d/%02d/%04d %02d:%02d:%02d\"", sm, sd, sy, sh, si, ss);
+				if ((settings->useDatabaseDateTime)  && (!settings->useHWClock)) {printf("DateTime service: [DEBUG] Setting date and time from Database server"); system(serverDateTime);}
+				// Инициализация переменных времени
+   				prgStartTimer = time(NULL);							// Время запуска программы
+    			winterCurrTime = prgStartTimer;						// Зимний режим, время последней операции для отсчета простоя
 			}
-			gDb->Close();
+			printf("done.");
 		}
+		gDb->Close();
+	}
 	return 1;
 }
 
@@ -442,6 +444,7 @@ PI_THREAD(load_params_from_db)
 		printf(" loading params from DB ... done\n");
 		sleep(60);
 	}
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
@@ -479,6 +482,7 @@ PI_THREAD(ClearQueueLog)
 			{ delay_ms(10000); db->Open(); }
 		delay_ms(10000);
 	}
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
@@ -557,5 +561,6 @@ PI_THREAD(gpioext_wd)
 		}
 		delay_ms(500);
 	}
+	pthread_detach(pthread_self());
 	return (void*)0;
 }

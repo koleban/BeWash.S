@@ -28,6 +28,7 @@ Settings::Settings()
 	memset(&workTimeDevice, 0x00, sizeof(workTimeDevice));
 	memset(&terminalParam, 0x00, sizeof(terminalParam));
 	memset(&lcd24Param, 0x00, sizeof(lcd24Param));
+	memset(&autoRebootParam, 0x00, sizeof(autoRebootParam));
 
 	memset(&modbus, 0x00, sizeof(modbus));
 	memset(&winterMode, 0, sizeof(winterMode));
@@ -419,6 +420,9 @@ bool Settings::loadConfig (char* fileName)
 	visaParam.pay500Btn.pinEnable			= (BYTE)(visaParam.pay500Btn.pinNum > 0);
 
 	sprintf(terminalParam.deviceSubnet, "%s", iniparser_getstring(ini,	"TerminalParam:DeviceSubnet", "192.168.254."));
+
+	autoRebootParam.AutoReboot				= iniparser_getuint(ini, 	"AutoReboot:AutoReboot",	0);
+	autoRebootParam.AutoRebootHour			= iniparser_getuint(ini, 	"AutoReboot:AutoRebootHour",	3);
 
 /*
 [VISA]

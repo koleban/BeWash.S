@@ -44,9 +44,7 @@ int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber, int sended
 		printf("NetClient: Remote server - connected [OK]\n");
 	else
 		return 1;
-	int timeout = 2;
-	while ((!netClient->cmdSendBalance(sendedBalance)) && (timeout-- > 0)) { delay_ms(500); }
-	if (timeout == 0) { printf("[netClient]: Error cmdSendBalance()\n"); return 1; }
+	if (netClient->cmdSendBalance(sendedBalance) == 0) { printf("[netClient]: Error cmdSendBalance()\n"); netClient->CloseConnection(); return 1; }
 	netClient->CloseConnection();
 
 	return 0;

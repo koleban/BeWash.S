@@ -336,6 +336,7 @@ PI_THREAD(NetServerClientThread)
 	externalCtrl = 0;
 	printf("Connection closed [%d] ...\n", --globalThreadId);
 	close(myClient);
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
@@ -363,6 +364,7 @@ PI_THREAD(NetServerThread)
 	{
 		printf("Error: Bind error\n");
 		settings->threadFlag.NetServer = 0;
+		pthread_detach(pthread_self());
 		return (void*)0;
 	}
 
@@ -382,6 +384,7 @@ PI_THREAD(NetServerThread)
 		{printf("[NETSERVER] Catch exception ....\n");}
 		delay_ms(100);
 	}
+	pthread_detach(pthread_self());
 	return (void*)0;
 }
 
