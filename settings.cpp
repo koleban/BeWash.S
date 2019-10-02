@@ -262,7 +262,7 @@ bool Settings::loadConfig (char* fileName)
 
 	winterMode.winterMode				= iniparser_getuint(ini, "WinterMode:WinterMode", 		0);
 	winterMode.winterDelay				= iniparser_getuint(ini, "WinterMode:WinterDelay", 		0);
-	winterMode.winterWaitTime			= iniparser_getuint(ini, "WinterMode:WinterWaitTime", 	600);
+	winterMode.winterWaitTime			= iniparser_getuint(ini, "WinterMode:WinterWaitTime", 	600);	// ќжидание в секундах до активации зимнего режима
 	winterMode.winterOnTemperature		= iniparser_getint(ini, "WinterMode:WinterOnTemp", 	-2);
 	winterMode.winterEngineWork 		= iniparser_getuint(ini, "WinterMode:WinterEngineWork", 0);
 	winterMode.winterEngineWorkTime 	= iniparser_getuint(ini, "WinterMode:WinterEngineWorkTime", 10);
