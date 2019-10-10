@@ -307,6 +307,7 @@ bool Settings::loadConfig (char* fileName)
 	lcd24Param.adsStrNum = iniparser_getint(ini, 	"LCD24:AdsStrNum",		3);
 
 	serviceCards.prgNumber = iniparser_getuint(ini, "ServiceCards:PrgNumber", 0);
+	serviceCards.pinNum = iniparser_getuint(ini, "ServiceCards:pinNum", 0);
 	serviceCards.washBalance = iniparser_getuint(ini, "ServiceCards:WashBalance", 100);
 	for (index=0; index < 5; index++)
 	{

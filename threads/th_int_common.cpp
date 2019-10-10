@@ -20,6 +20,8 @@ double dsSize = 0;
 double discSummAdd = 0;
 extern int dayLightWork;
 
+bool status_crd = false; // Service card and Service Key status
+
 ///////////////////////////////////////////////////////////////////////////////////
 /// Âûêëþ÷àåì ðåëå
 /// program - íîìåð ïðîãðàììà, êîòîðûé îïðåäåëÿåò êàêèå ðåëå âûêëþ÷àòü
@@ -163,10 +165,7 @@ PI_THREAD(IntCommonThread)
 
 	int pinNumLight = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((dvcLightIfBalance) && (pinNumLight != 0xFF) && (pinNumLight != 0x00))
-	{
 		setPinModeMy(pinNumLight, 0);
-		pullUpDnControl (pinNumLight, PUD_DOWN) ;
-	}
 
 	printf ("[DEBUG] IntThread:Param discount with client card [min_sum: %d proc: %d]\n", settings->progPrice[12], settings->progPrice[16]);
 
@@ -384,11 +383,41 @@ PI_THREAD(IntCommonThread)
 		}
 
 		///
-		/// Îáðàáîòêà ÑÅÐÂÈÑÍÛÕ ÊÀÐÒ
+		/// Îáðàáîòêà ÑÅÐÂÈÑÍÛÕ ÊÀÐÒ è ÑÅÐÂÈÑÍÎÃÎ ÊËÞ×À
 		///
+		if ((settings->serviceCards.pinNum > 0) && (settings->serviceCards.pinNum < 117))
+		{
+			setPinModeMy(settings->serviceCards.pinNum, PIN_INPUT);
+			if (getGPIOState(settings->serviceCards.pinNum) == 1)
+			{
+				status_crd = true;
+				status.intDeviceInfo.money_currentBalance = 5;
+				if (status.intDeviceInfo.program_currentProgram != settings->serviceCards.prgNumber)
+				{
+					printf("[DEBUG] IntThread: SERVICE CARD or KEY. Only prg number %d\n", settings->serviceCards.prgNumber);
+					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
+					status.intDeviceInfo.extPrgNeedUpdate = 1;
+				}
+			}
+			else
+			{
+				if (status_crd)
+				{
+					status.intDeviceInfo.money_currentBalance = 0;
+					if (status.intDeviceInfo.program_currentProgram != 0)
+					{
+						printf("[DEBUG] IntThread: SERVICE CARD or KEY. STOP PRG\n");
+						status.intDeviceInfo.program_currentProgram = 0;
+						status.intDeviceInfo.extPrgNeedUpdate = 1;
+					}
+				}
+			}
+
+		}
+		
 		if (status.extDeviceInfo.rfid_cardPresent)
 		{
-			bool status_crd = false;
+			status_crd = false;
 			for (int indexcrd=0; indexcrd < 5; indexcrd++)
 				status_crd |= (getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber) == settings->serviceCards.cardId[indexcrd]);
 			if (status_crd)

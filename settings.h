@@ -437,6 +437,7 @@ struct MenuDescriptor
 struct ServiceCards
 {
 	int prgNumber;
+	int pinNum;
 	int washBalance;
 	DWORD cardId[5];
 };

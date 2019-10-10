@@ -47,7 +47,7 @@ DWORD remoteCounter[30][2];
 DWORD remoteCounterSumm[30][3];
 
 int externalCmd_collectionButton;
-int dayLightWork = 1;
+int dayLightWork = 0;
 
 TDeviceWorkMode deviceWorkMode;
 
@@ -431,7 +431,7 @@ void commonDevice_TurnLight(bool flag)
 	Settings* 		settings 	= Settings::getInstance();
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((pinNum == 0xFF) || (pinNum == 0x00)) return;
-	if (settings->dayLightSaving)
+	if (settings->dayLightSaving == 1)
 	{
 		time_t currentTime;
 		struct tm localTime;
@@ -455,7 +455,7 @@ void commonDevice_TurnLight(bool flag)
 	if (flag)
 	{
 		if (dayLightWork)
-			setGPIOState(pinNum, (BYTE)flag);
+			setGPIOState(pinNum, 1);
 	}
 	else
 	{

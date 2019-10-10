@@ -57,7 +57,7 @@ PI_THREAD(TurnLightWatch)
 	lightThreadActive = 1;
 	Settings* 		settings 	= Settings::getInstance();
 	if (!settings->getEnabledDevice(DVC_RELAY_LIGHT))
-		{lightThreadActive = 1; {	pthread_detach(pthread_self()); return (void*)0;}}
+		{lightThreadActive = 1; pthread_detach(pthread_self()); return (void*)0;}
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((pinNum == 0xFF) || (pinNum == 0x00)) {lightThreadActive = 1; 	pthread_detach(pthread_self()); return (void*)0;}
 
