@@ -403,6 +403,7 @@ PI_THREAD(IntCommonThread)
 			{
 				if (status_crd)
 				{
+					printf("[DEBUG] IntThread: SERVICE CARD or KEY. Clear balance\n");
 					status.intDeviceInfo.money_currentBalance = 0;
 					if (status.intDeviceInfo.program_currentProgram != 0)
 					{
@@ -410,6 +411,7 @@ PI_THREAD(IntCommonThread)
 						status.intDeviceInfo.program_currentProgram = 0;
 						status.intDeviceInfo.extPrgNeedUpdate = 1;
 					}
+					status_crd = false;
 				}
 			}
 
