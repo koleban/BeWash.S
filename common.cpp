@@ -431,6 +431,7 @@ void commonDevice_TurnLight(bool flag)
 	Settings* 		settings 	= Settings::getInstance();
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((pinNum == 0xFF) || (pinNum == 0x00)) return;
+	setPinModeMy(pinNum, PIN_OUTPUT);
 	if (settings->dayLightSaving == 1)
 	{
 		time_t currentTime;
@@ -460,7 +461,7 @@ void commonDevice_TurnLight(bool flag)
 	else
 	{
 //		printf("[DEBUG] Start thread -> Turn light OFF\n");
-		if (lightThreadActive == 0)
+		if ((lightThreadActive == 0) && (dayLightWork == 1))
 		{
 			lightThreadActive  = 1;
 			piThreadCreate(TurnLightWatch);

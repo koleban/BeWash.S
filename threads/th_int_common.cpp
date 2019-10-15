@@ -545,7 +545,7 @@ PI_THREAD(IntCommonThread)
 		///
 		if (dvcLightIfBalance)
 		{
-			lightTurnedOn = (status.intDeviceInfo.money_currentBalance>0);
+			lightTurnedOn = (status.intDeviceInfo.money_currentBalance > 0);
 			turnedLight |= lightTurnedOn;
 			if (lightTurnedOn)
 				commonDevice_TurnLight(1);
