@@ -140,6 +140,16 @@ PI_THREAD(ButtonWatch)
 				{
 					currentPrgPriceIndex = 0;
 					deviceWorkMode = TDeviceWorkMode::SettingsMode;
+					for (index = 0; index < 13; index++)
+					{
+						if (!settings->getEnabledDevice(DVC_BUTTON01 + index))
+							continue;
+						currentPin = settings->getPinConfig(DVC_BUTTON01 + index, 1);
+						if (currentPin == 0xFF) continue;
+						setGPIOState(currentPin, 0);
+						setPinModeMy(currentPin, PIN_INPUT);
+				  		pullUpDnControl (currentPin, PUD_DOWN) ;
+					}
 				}
 			}
 			else

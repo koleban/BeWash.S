@@ -382,6 +382,11 @@ PI_THREAD(IntCommonThread)
 		}
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/// End MONEY Segment
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		///
 		/// Îáðàáîòêà ÑÅÐÂÈÑÍÛÕ ÊÀÐÒ è ÑÅÐÂÈÑÍÎÃÎ ÊËÞ×À
 		///
@@ -450,7 +455,10 @@ PI_THREAD(IntCommonThread)
 			if ((status.intDeviceInfo.program_currentProgram > 0) && (status.intDeviceInfo.program_currentProgram < 16))
 			{
 				if (status.intDeviceInfo.money_currentBalance > 0)
+				{
+					engine->needFreq 							= settings->progRPM[status.intDeviceInfo.program_currentProgram];
 					status.intDeviceInfo.engine_currentRpm 		= settings->progRPM[status.intDeviceInfo.program_currentProgram];
+				}
 				else
 					status.intDeviceInfo.engine_currentRpm 		= 0;
 			}
@@ -515,17 +523,7 @@ PI_THREAD(IntCommonThread)
 		///
 		if ((engine->currFreq == 0) && (engine->workTimeSec > 0))
 		{
-			if (db->Log(DB_EVENT_TYPE_DVC_ENGINE_WORK_TIME, engine->workTimeSec, 0, "Engine worktime value") == DB_OK)
-			{
-				if (settings->debugFlag.IntCommonThread || settings->debugFlag.EngineWatch)
-					printf("[INT] Engine worktime save (%d sec)\n", engine->workTimeSec);
-			}
-			else
-			{
-				printf("[INT] Database error! Reconnect ....\n");
-				db->Close();
-				db->Open();
-			}
+			db->Log(DB_EVENT_TYPE_DVC_ENGINE_WORK_TIME, engine->workTimeSec, 0, "Engine worktime value");
 			gEngineFullWorkTime += engine->workTimeSec;
 			engine->workTimeSec = 0;
 		}

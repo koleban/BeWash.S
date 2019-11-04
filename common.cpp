@@ -482,16 +482,16 @@ void commonDevice_TurnAntiFrost()
 	///
 
 	Settings* 		settings 	= Settings::getInstance();
-	if (settings->getEnabledDevice(DVC_RELAY_ANTIFROST) == 0) return;
 	int pinNum = settings->getPinConfig(DVC_RELAY_ANTIFROST, 1);
-	if (pinNum >= 0x7F) return;
-	if (pinNum == 0x00)
+	if ((settings->getEnabledDevice(DVC_RELAY_ANTIFROST) == 0) || (pinNum == 0x00))
 	{
 		settings->progRelay[0] = settings->progRelay[1];
 		settings->progRelayBp[0] = settings->progRelayBp[1];
+		return;
 	}
-	else
+	if (settings->getEnabledDevice(DVC_RELAY_ANTIFROST) != 0)
 	{
+		if (pinNum >= 0x7F) return;
 		setPinModeMy(pinNum, PIN_OUTPUT);
 		setGPIOState(pinNum, winterModeActive);
 	}
