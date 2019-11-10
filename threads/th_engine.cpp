@@ -120,17 +120,23 @@ PI_THREAD(EngineWatch)
 				lastPower = engine->powerA;
 				// calc time for bypass turn ON
 				int checkTime = 0;
+				int errTimeCount = 0;
 				if (getGPIOState(bypassPinNum) == 0)
-					for (int itmp=0; itmp<100; itmp++)
+					for (int itmp=0; itmp<settings->bypassTimeMs; itmp++)
 					{
 						if (getGPIOState(bypassPinNum) == 0)
 						{
 							checkTime++;
 							delay_ms(1);
 						}
+						else
+						{
+							if (errTimeCount++ > 10)
+								break;
+						}
 					}
 				// if bypass turn ON and is it not NOISE
-				if ((checkTime > 80) && (getGPIOState(bypassPinNum) == 0))
+				if ((checkTime > ((int)(settings->bypassTimeMs*0.9))) && (getGPIOState(bypassPinNum) == 0))
 				{
 					engineStatus = false;
 					timeout = requestCount;

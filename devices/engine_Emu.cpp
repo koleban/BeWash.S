@@ -103,7 +103,7 @@ bool EngineEmu::engineUpdate()
 				bypassCounter ++;
 			else
 				bypassCounter = 0;
-			bypassMode = (bypassCounter > 1);
+			bypassMode = (bypassCounter > settings->bypassCounter);
 		}
 	}
 

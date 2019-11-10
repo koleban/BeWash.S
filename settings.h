@@ -602,6 +602,8 @@ public:
 	int					countAutoStop;
 	int					valveTimeOff;
 	DWORD				engine_relay;
+	int 				bypassCounter;
+	int					bypassTimeMs;
 
 	int 				dayLightSaving;
 	int 				dayLightSavingOnHour;
