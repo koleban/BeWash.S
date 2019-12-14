@@ -300,13 +300,14 @@ bool Settings::loadConfig (char* fileName)
 	workTimeDevice.UseWorkTime		= iniparser_getint(ini, 	"WorkTime:UseWorkTime",		0);
 	workTimeDevice.StartTimeHour	= iniparser_getint(ini, 	"WorkTime:StartTimeHour",		0);
 	workTimeDevice.StartTimeMinute	= iniparser_getint(ini, 	"WorkTime:StartTimeMinute",		0);
-	workTimeDevice.StopTimeHour		= iniparser_getint(ini, 	"WorkTime:StopTimeHour",		0);
-	workTimeDevice.StopTimeMinute	= iniparser_getint(ini, 	"WorkTime:StopTimeMinute",		0);
+	workTimeDevice.StopTimeHour		= iniparser_getint(ini, 	"WorkTime:StopTimeHour",		23);
+	workTimeDevice.StopTimeMinute	= iniparser_getint(ini, 	"WorkTime:StopTimeMinute",		59);
 
 	lcd24Param.balStrNum = iniparser_getint(ini, 	"LCD24:BalStrNum",		0);
 	lcd24Param.prgStrNum = iniparser_getint(ini, 	"LCD24:PrgStrNum",		1);
 	lcd24Param.lineStrNum = iniparser_getint(ini, 	"LCD24:LineStrNum",		2);
 	lcd24Param.adsStrNum = iniparser_getint(ini, 	"LCD24:AdsStrNum",		3);
+	sprintf(lcd24Param.adsMessage, "%s", iniparser_getstring(ini,	"LCD24:AdsMessage", ""));
 
 	serviceCards.prgNumber = iniparser_getuint(ini, "ServiceCards:PrgNumber", 0);
 	serviceCards.pinNum = iniparser_getuint(ini, "ServiceCards:pinNum", 0);

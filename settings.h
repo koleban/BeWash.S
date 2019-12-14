@@ -102,11 +102,12 @@
 #define DVC_VALVE10								80		//Клапан 10
 #define DVC_LED_DISPLAY_EXT						81		//Дисплей внешний
 #define DVC_COIN_PULSE_ACCEPTOR					82		//Монетоприемник в пульсовом режиме
-#define DVC_COIN_PULSE_ACCEPTOR_INHIBIT			83		//ЗАПРЕТ ПРОБРОСА
-#define DVC_ERROR_LED_1							84
-#define DVC_ERROR_LED_2							85
-#define DVC_ERROR_LED_3							86
-#define DVC_ERROR_LED_4							87
+#define DVC_COIN_PULSE_ACCEPTOR_VISA            83
+#define DVC_COIN_PULSE_ACCEPTOR_INHIBIT			84		//ЗАПРЕТ ПРОБРОСА
+#define DVC_ERROR_LED_1							12
+#define DVC_ERROR_LED_2							13
+#define DVC_ERROR_LED_3							14
+#define DVC_ERROR_LED_4							15
 
 #define DVC_OSMOS_BANK_FULL						88
 #define DVC_OSMOS_LOW_PRESSURE					89
@@ -453,6 +454,7 @@ struct LCD24Param
 	int prgStrNum;
 	int lineStrNum;
 	int adsStrNum;
+	char adsMessage[512];
 };
 
 class Settings

@@ -98,13 +98,15 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("Pulse coin error cnt.   ");
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		printf("C[4] = %10lu [%4lu]", warningPulseCount[0], warningPulseLength[0]);
+		printf("C[1] = %10lu [%4lu]", warningPulseCount[0], warningPulseLength[0]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		printf("C[3] = %10lu [%4lu]", warningPulseCount[1], warningPulseLength[1]);
+		printf("C[2] = %10lu [%4lu]", warningPulseCount[1], warningPulseLength[1]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		printf("C[2] = %10lu [%4lu]", warningPulseCount[2], warningPulseLength[2]);
+		printf("C[3] = %10lu [%4lu]", warningPulseCount[2], warningPulseLength[2]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
-		printf("C[1] = %10lu [%4lu]", warningPulseCount[3], warningPulseLength[3]);
+		printf("C[4] = %10lu [%4lu]", warningPulseCount[3], warningPulseLength[3]);
+		cur_gotoxy(scr_x-23, dbg_pos++);
+		printf("C[V] = %10lu [%4lu]", warningPulseCount[4], warningPulseLength[4]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("----------------------");
 

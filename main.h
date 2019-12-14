@@ -255,8 +255,8 @@ extern int externalCmd_collectionButton;
 // Количество помех по ИМПУЛЬСНЫМ ВХОДАМ
 // Для отображения в режиме отладки
 //
-extern unsigned long warningPulseCount[4];
-extern unsigned long warningPulseLength[4];
+extern unsigned long warningPulseCount[5];
+extern unsigned long warningPulseLength[5];
 
 extern PayInfo payInfo;
 

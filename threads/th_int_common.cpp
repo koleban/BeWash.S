@@ -265,8 +265,16 @@ PI_THREAD(IntCommonThread)
 					status.intDeviceInfo.money_currentBalance += subVal*settings->coinWeight.Weight[index];
 					summWithCard += subVal*settings->coinWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->coinWeight.Weight[index];
-					amountCash += subVal*settings->coinWeight.Weight[index];
-					printf("[DEBUG] IntThread: Coin [%d] (%d * %d) = %d\n", inCoinInfo.Count[index], subVal, settings->coinWeight.Weight[index], subVal*settings->coinWeight.Weight[index]);
+					if (index < (MONEY_COIN_TYPE_COUNT-1))
+					{
+						amountCash += subVal*settings->coinWeight.Weight[index];
+						printf("[DEBUG] IntThread: Coin [%d] (%d * %d) = %d\n", inCoinInfo.Count[index], subVal, settings->coinWeight.Weight[index], subVal*settings->coinWeight.Weight[index]);
+					}
+					else
+					{
+						amountCard += subVal*settings->coinWeight.Weight[index];
+						printf("[DEBUG] IntThread: VISA Coin [%d] (%d * %d) = %d\n", inCoinInfo.Count[index], subVal, settings->coinWeight.Weight[index], subVal*settings->coinWeight.Weight[index]);
+					}
 					nextCoin(settings->coinWeight.Weight[index]);
 
 					if (!strcmp(iddqd, iddqd_etalon))

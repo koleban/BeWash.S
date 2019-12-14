@@ -54,6 +54,7 @@ PI_THREAD(ConsoleThread)
 				printf("  prg [val]                                  - Turn on program number [val]\n");
 				printf("  engw [val]                                 - Add [val] to full engine work time\n");
 				printf("  engz                                       - Clear engne full work time. Set time to 0\n");
+				printf("  reload config                              - Reload config file\n");
 		}
 
 		if (strstr(command, "pay") == command)
@@ -78,6 +79,13 @@ PI_THREAD(ConsoleThread)
 			payInfo.inUse = 1;
 			waitSumm = atoi(param[0]);
 			*/
+		}
+		if (strstr(command, "reload config") == command)
+		{
+			char cfgFile[256];
+			sprintf(cfgFile, "/home/pi/bewash/bewash.cfg");
+			printf("   >>> load %s\n", cfgFile);
+			settings->loadConfig(cfgFile);
 		}
 		if (strstr(command, "clear eeprom price") == command)
 		{
@@ -106,6 +114,7 @@ PI_THREAD(ConsoleThread)
 		{
 				printf ("prg %d\n", atoi(param[0]));
 				myNewPrg = atoi(param[0]);
+				if (myNewPrg > 31) myNewPrg = 0;
 				if (settings->progEnabled[myNewPrg])
 				{
 					int mytimeout = 2000;

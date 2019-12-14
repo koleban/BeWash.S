@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	/////////////////////////
 	///
 	///
-    prgVer = 2.09;
+    prgVer = 2.10;
     prgBuild = 2;
     ///
     ///

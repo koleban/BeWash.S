@@ -41,7 +41,7 @@ static unsigned char newChar [] =
 
 static int lcdHandle ;
 
-static const char *message =
+static char message[512] =
   "                       "
   "beWash: Self service carwash technology. http://www.bewash.ru    email: sale@bewash.ru    tel.: +7 (928) 937-16-78"
   "                    ";
@@ -73,6 +73,9 @@ PI_THREAD(Lcd20x4)
 	Settings* settings = Settings::getInstance();
 	if (!settings->threadFlag.Lcd20x4Watch) return (void*)0;
 	if (!settings->useMCP) return (void*)0;
+
+	if ((strlen(settings->lcd24Param.adsMessage) > 0) && (strlen(settings->lcd24Param.adsMessage) < 500))
+		strcpy( message, settings->lcd24Param.adsMessage);
 
 	usleep(3000000);
 	int i ;
@@ -128,7 +131,7 @@ PI_THREAD(Lcd20x4)
 	delay_ms(50);
 	lcdDisplay(lcdHandle, 1);
 
-	sprintf(tmp_buff_string, "    beWash v 2.05   ");
+	sprintf(tmp_buff_string, "   beWash v 2.09.3  ");
 	lcdPosition (lcdHandle, 0, settings->lcd24Param.balStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 
@@ -136,7 +139,7 @@ PI_THREAD(Lcd20x4)
 	lcdPosition (lcdHandle, 0, settings->lcd24Param.prgStrNum) ;
 	lcdPuts( lcdHandle, tmp_buff_string);
 
-	sprintf(tmp_buff_string, "     3A_P_3KA       ");
+	sprintf(tmp_buff_string, "     3A_P_3KA [%3d] ", settings->commonParams.deviceId);
 	tmp_buff_string[7] = 0x04;
 	tmp_buff_string[9] = 0x03;
 	lcdPosition (lcdHandle, 0, settings->lcd24Param.adsStrNum) ;

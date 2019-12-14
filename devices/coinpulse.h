@@ -26,6 +26,7 @@ public:
     BYTE pinCoinType2;
     BYTE pinCoinType3;
     BYTE pinCoinType4;
+    BYTE pinCoinTypeVisa;
     BYTE pinCoinLock;
     int  sigWidth;
 	MoneyCoinInfo moneyCoinInfo;

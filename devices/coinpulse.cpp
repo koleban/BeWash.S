@@ -3,8 +3,8 @@
 CoinPulseDevice* exchangeDevice = 0;
 
 int globalCounter = 0;
-unsigned long warningPulseCount[4];
-unsigned long warningPulseLength[4];
+unsigned long warningPulseCount[5];
+unsigned long warningPulseLength[5];
 
 void intCoin1()
 {
@@ -107,6 +107,30 @@ void intCoin4()
 	}
 }
 
+void intCoinVISA()
+{
+	int sigTime = 0;
+	BYTE coinNum = MONEY_COIN_TYPE_COUNT-1;
+	int fallCount = 0;
+	while ((fallCount < 10) && (sigTime++ < 1000))
+	{
+		if (digitalRead(exchangeDevice->pinCoinTypeVisa)) fallCount++;
+		delay_ms(1);
+	}
+	if (sigTime < 5) return;
+	if (sigTime >= exchangeDevice->sigWidth)
+	{
+		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
+		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;
+		printf("[DEBUG] CoinPulseDevice: interrupt VISA handle: TIME: COIN_ID: %d [time: %d] [glblCounter: %d]\n", coinNum, sigTime, globalCounter++);
+	}
+	else
+	{
+		warningPulseCount[4]++;
+		warningPulseLength[4] = sigTime;
+	}
+}
+
 CoinPulseDevice* CoinPulseDevice::p_instance = 0;
 
 CoinPulseDevice::CoinPulseDevice()
@@ -115,6 +139,7 @@ CoinPulseDevice::CoinPulseDevice()
     pinCoinType2 = 0xFF;
     pinCoinType3 = 0xFF;
     pinCoinType4 = 0xFF;
+    pinCoinTypeVisa = 0xFF;
     pinCoinLock  = 0xFF;
     sigWidth = settings->coinPulseWidth;
 	memset(&moneyCoinInfo, 0, sizeof(moneyCoinInfo));
@@ -131,6 +156,7 @@ void CoinPulseDevice::Init(Settings* settings)
 	printf("[CoinPulse Device] PIN[3] CoinWeigth[ 6] = %d rur \n", settings->coinWeight.Weight[6]);
 	printf("[CoinPulse Device] PIN[2] CoinWeigth[ 8] = %d rur \n", settings->coinWeight.Weight[8]);
 	printf("[CoinPulse Device] PIN[1] CoinWeigth[10] = %d rur \n", settings->coinWeight.Weight[10]);
+	printf("[VISAPulse Device] PIN[1] CoinWeigth[%2d] = %d rur \n", (MONEY_COIN_TYPE_COUNT-1), settings->coinWeight.Weight[MONEY_COIN_TYPE_COUNT-1]);
 
 	bool deviceStatus = settings->getEnabledDevice(currentDeviceID) | settings->getEnabledDevice(currentDeviceIDAdd);
 
@@ -143,6 +169,8 @@ void CoinPulseDevice::Init(Settings* settings)
 	pinCoinType2 = settings->getPinConfig(currentDeviceID, 2);		// 2 RUR
 	pinCoinType3 = settings->getPinConfig(currentDeviceID, 3);		// 5 RUR
 	pinCoinType4 = settings->getPinConfig(currentDeviceID, 4);		// 10 RUR
+	pinCoinTypeVisa = settings->getPinConfig(DVC_COIN_PULSE_ACCEPTOR_VISA, 1);
+
 	pinCoinLock  = settings->getPinConfig(currentDeviceIDAdd, 4);	// CoinLock
 	if (pinCoinLock >= 0x5F) settings->getPinConfig(currentDeviceIDAdd, 1);
 
@@ -154,6 +182,8 @@ void CoinPulseDevice::Init(Settings* settings)
 		{ pullUpDnControl (pinCoinType3, PUD_UP); setPinModeMy(pinCoinType3, 1); wiringPiISR( pinCoinType3, INT_EDGE_FALLING, &intCoin3);}
 	if ((pinCoinType4 != 0xFF) && (pinCoinType4 != 0x00))
 		{ pullUpDnControl (pinCoinType4, PUD_UP); setPinModeMy(pinCoinType4, 1); wiringPiISR( pinCoinType4, INT_EDGE_FALLING, &intCoin4);}
+	if ((pinCoinTypeVisa != 0xFF) && (pinCoinTypeVisa!= 0x00) && (settings->getEnabledDevice(DVC_COIN_PULSE_ACCEPTOR_VISA)))
+		{ pullUpDnControl (pinCoinTypeVisa, PUD_UP); setPinModeMy(pinCoinTypeVisa, 1); wiringPiISR( pinCoinTypeVisa, INT_EDGE_FALLING, &intCoinVISA);}
 	if (pinCoinLock != 0xFF)  { setPinModeMy(pinCoinLock, 0); }
 
 	setGPIOState(pinCoinLock, 1);
