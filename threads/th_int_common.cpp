@@ -440,6 +440,10 @@ PI_THREAD(IntCommonThread)
 				if (status.intDeviceInfo.program_currentProgram != settings->serviceCards.prgNumber)
 				{
 					printf("[DEBUG] IntThread: SERVICE CARD. Only prg number %d\n", settings->serviceCards.prgNumber);
+					status.intDeviceInfo.program_currentProgram = 0;
+					status.intDeviceInfo.extPrgNeedUpdate = 1;
+					delay_ms(2000);
+
 					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
 					status.intDeviceInfo.extPrgNeedUpdate = 1;
 				}
