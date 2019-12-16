@@ -108,7 +108,7 @@ PI_THREAD(EngineWatch)
 			term_setattr(0);
 		}
 
-        if ((engine->currFreq != engine->needFreq) || (getGPIOState(bypassPinNum) == 0) || (lastPower != engine->powerA))
+        if ((engine->currFreq != engine->needFreq) || (getGPIOState(bypassPinNum) == 0) || (lastPower != engine->powerA) || (engine->currFreq == 0))
 		{
 			if (engine->needFreq > 0)
 			{
