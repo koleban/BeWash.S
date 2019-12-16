@@ -18,6 +18,7 @@ PI_THREAD(TimeTickThread)
 		prgDelay = 60000;
 	int bypassCount;
 	int lastProgramm = status.intDeviceInfo.program_currentProgram;
+	int lastBalance = status.intDeviceInfo.money_currentBalance;
 	while (settings->threadFlag.TimeTickThread)
 	{
 		settings->workFlag.TimeTickThread = 0;
@@ -76,17 +77,16 @@ PI_THREAD(TimeTickThread)
 			}
 			else
 			{
-				printf("[DEBUG] TIMER: Not count time [%d] [%d] [%d]\n", settings->winterMode.winterDelay, winterDelay, settings->progWinterDelay[status.intDeviceInfo.program_currentProgram]);
+				printf("[DEBUG] TIMER: Not count time [Active: %d] [WinterDelayCounter: %d] [WinterDelay: %d]\n", settings->winterMode.winterDelay, winterDelay, settings->progWinterDelay[status.intDeviceInfo.program_currentProgram]);
 			}
 
-			if (
-				(winterDelay == 1) &&
-				(winterDelay++ >= settings->progWinterDelay[status.intDeviceInfo.program_currentProgram])
-			   )
-				printf("[DEBUG] TIMER: Start Winter time for engine work [%d]\n", settings->progWinterDelay[status.intDeviceInfo.program_currentProgram]);
+			if ((winterDelay == 1) && (settings->progWinterDelay[status.intDeviceInfo.program_currentProgram] > 0))
+				printf("[DEBUG] TIMER: Start Winter time for engine work [WinterDelay: %d]\n", settings->progWinterDelay[status.intDeviceInfo.program_currentProgram]);
+
 			/// ************************************************************
 			//  напюанрйю юбрнярною он аюиоюяс
 			/// ************************************************************
+			
 			if (settings->useAutoStop)
 			{
 				if ((engine->bypassMode) && (engine->needFreq > 100)) bypassCount++;
@@ -115,6 +115,19 @@ PI_THREAD(TimeTickThread)
 				}
 			}
 		}
+		//  Balance == 0 OR PrgPrice == 0
+		else
+		{
+			winterDelay = 0;
+		}
+
+		/// ************************************************************
+		//  напюанрйю яапняю явервхйю WinterDelay ОПХ ОНОНКМЕМХХ АЮКЮМЯЮ
+		/// ************************************************************
+		if (lastBalance < status.intDeviceInfo.money_currentBalance)
+			winterDelay = 0;
+		if (lastBalance != status.intDeviceInfo.money_currentBalance)
+			lastBalance = status.intDeviceInfo.money_currentBalance;
 
 
 		/// ************************************************************
@@ -138,6 +151,7 @@ PI_THREAD(TimeTickThread)
 		/// ************************************************************
 		if ((status.intDeviceInfo.program_currentProgram != 0) && (status.intDeviceInfo.money_currentBalance <= 0))
 		{
+			winterDelay = 0;
 			status.intDeviceInfo.program_currentProgram = 0;
 			status.intDeviceInfo.extPrgNeedUpdate = 1;
 		}
