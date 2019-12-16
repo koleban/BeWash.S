@@ -108,6 +108,8 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("C[V] = %10lu [%4lu]", warningPulseCount[4], warningPulseLength[4]);
 		cur_gotoxy(scr_x-23, dbg_pos++);
+		printf("C[V] = %10lu [%4lu]", warningPulseCount[4], warningPulseLength[4]);
+		cur_gotoxy(scr_x-23, dbg_pos++);
 		printf("----------------------");
 
 		//
