@@ -516,7 +516,7 @@ PI_THREAD(IntCommonThread)
 		// Если баланс положительный
 		if (status.intDeviceInfo.money_currentBalance > 0)
 		{
-			engine->needFreq = status.intDeviceInfo.engine_currentRpm;
+//			engine->needFreq 	= settings->progRPM[status.intDeviceInfo.program_currentProgram];
 			if (!status.intDeviceInfo.engine_bypassMode)
 				helper_TurnRelaysOnProgramm(status.intDeviceInfo.program_currentProgram);
 			else
