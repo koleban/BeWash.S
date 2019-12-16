@@ -288,7 +288,7 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("EngState:   %04X|", engine->regState);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Power:    %2d.%02dA|", (int)(engine->powerA/10), (int)(engine->powerA%10));	// 17 chars
+		printf("Power:    %2d.%dA|", (int)(engine->powerA/10), (int)(engine->powerA%10));	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
 			printf("wrkTime:%8d|", (unsigned long)((gEngineFullWorkTime+engine->workTimeSec)));	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
