@@ -357,7 +357,7 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 		case DB_QUERY_TYPE_WORKSPACE_CLOSE:
 			if (!useDatabase) { lastError = DB_OK; return lastError;}
 			if (queryParam == NULL) { lastError = DB_QUERY_ERROR; sprintf(lastErrorMessage, "%s", "NULL PARAM EXCEPTION"); 				this->Close(); return lastError;}
-			sprintf( queryStr, "%s", "UPDATE WRKSPACE SET CLOSE_DATE=CURRENT_TIMESTAMP, DATA1 = ?, DATA2 = ?, NOTE = 'Closed workspace' WHERE (CLOSE_DATE>'31.12.2019 00:00:00') AND (DEV_ID = ?) AND (OBJ_ID = ?)");
+			sprintf( queryStr, "%s", "UPDATE WRKSPACE SET CLOSE_DATE=CURRENT_TIMESTAMP, DATA1 = ?, DATA2 = ?, NOTE = 'Closed workspace' WHERE (CLOSE_DATE>'31.12.2029 00:00:00') AND (DEV_ID = ?) AND (OBJ_ID = ?)");
 			try
 			{
 				double* dataParams = (double*)queryParam;
