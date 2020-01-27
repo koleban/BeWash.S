@@ -23,6 +23,8 @@ Settings::Settings()
 	memset(&progDepends,	0x00, sizeof(progDepends));
 	memset(&progLimitSumm,	0x00, sizeof(progLimitSumm));
 	memset(&progLimitRelay,	0x00, sizeof(progLimitRelay));
+	memset(&progNoiseRelay,	0x00, sizeof(progNoiseRelay));
+	memset(&progNoiseTime,	0x00, sizeof(progNoiseTime));
 	memset(&databaseSettings, 0x00, sizeof(databaseSettings));
 	memset(&gdatabaseSettings, 0x00, sizeof(gdatabaseSettings));
 	memset(&workTimeDevice, 0x00, sizeof(workTimeDevice));
@@ -355,6 +357,12 @@ bool Settings::loadConfig (char* fileName)
 
 		sprintf(paramName, 	"PrgConfig:PRG%02d_LIMIT_RELAY", index);
 		progLimitRelay[index]						= (DWORD)iniparser_getuint(ini, paramName, 0xFFFFFFFF);
+		
+		sprintf(paramName, 	"PrgConfig:PRG%02d_NOISE_RELAY", index);
+		progNoiseRelay[index]						= (DWORD)iniparser_getuint(ini, paramName, 0xFFFFFFFF);
+
+		sprintf(paramName, 	"PrgConfig:PRG%02d_NOISE_TIME", index);
+		progNoiseTime[index]						= (DWORD)iniparser_getuint(ini, paramName, 0);
 
 
 	}

@@ -97,7 +97,7 @@ bool EngineEmu::engineUpdate()
 	engineRotates = (currFreq > 1);
 	if (settings->getEnabledDevice(DVC_SENSOR_BYPASS))
 	{
-		if (bypassValve != 0xFF)
+		if (bypassValve < 0x70)
 		{
 			if (getGPIOState(bypassValve) == 0)
 				bypassCounter ++;

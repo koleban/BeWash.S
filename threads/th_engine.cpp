@@ -51,6 +51,7 @@ PI_THREAD(EngineWatch)
 	int bypassPinNum = settings->getPinConfig(DVC_SENSOR_BYPASS, 1);
 	if (!settings->getEnabledDevice(DVC_SENSOR_BYPASS)) bypassPinNum = 0xFF;
 	int lastPower = 0;
+	int wmaCounter = 0;
 	while (settings->threadFlag.EngineWatch)
 	{
 		requestCount = 3;
@@ -65,8 +66,25 @@ PI_THREAD(EngineWatch)
 			engineStatus = engine->engineUpdate();
 		settings->intErrorCode.EngineWatch = (engine->errorCode == 0)?0:201;
 
+		if (settings->engine_relay > 0)
+		if (
+			(getGPIOState(settings->engine_relay) != 0) &&
+			((status.intDeviceInfo.money_currentBalance < 1) ||	(status.intDeviceInfo.program_currentProgram < 1))
+			)
+		{
+			if (winterModeEngineActive != 0)
+				wmaCounter++;
+			if ((winterModeEngineActive == 0) || (wmaCounter > 500))
+			{
+				wmaCounter = 0;
+				setGPIOState(settings->engine_relay, 0);
+				printf("[ENG] [WARNING] ENGINE RELAY TURN OFF [ERROR RELAY STATE]\n");
+			}
+		}
+
 		if (
 			(engine->currFreq > 0) &&
+		
 			(
 				(engine->needFreq < 1) ||
 				(

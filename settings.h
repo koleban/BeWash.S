@@ -517,8 +517,14 @@ public:
 	DWORD		 		progRPM[32];			//
 	DWORD		 		progDepends[32];		//
 	DWORD		 		progWinterDelay[32];	// В зимнем режиме есть пауза на прокачку
-	DWORD		 		progLimitSumm[32];			//
-	DWORD		 		progLimitRelay[32];			//
+	
+	DWORD		 		progLimitSumm[32];		// Лимитированые реле, включаются в замен основных
+	DWORD		 		progLimitRelay[32];		// при сумме больше чем указанна в progLimitSumm[prgNum]
+
+	DWORD		 		progNoiseRelay[32];		// Переодичиские реле, включаются с интервалом progNoiseTime/progNoiseTime
+	DWORD		 		progNoiseTime[32];		// для подмешивания в состав доп. содержимого !!! Не работает на программах
+												// на которых используется Лимитированные реле
+
 	//
 	// Отображать или нет версию программы
 	// при отображении затерается предыдущий лог в консоле

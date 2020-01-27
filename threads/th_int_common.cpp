@@ -20,7 +20,10 @@ double dsSize = 0;
 double discSummAdd = 0;
 extern int dayLightWork;
 
+long noiseRelayTime = 0;
+
 bool status_crd = false; // Service card and Service Key status
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 /// Выключаем реле
@@ -47,6 +50,11 @@ void helper_TurnRelaysOffProgramm(unsigned int program)
 				if (((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF) < 16)
 					status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
 			}
+
+			relNum = ((settings->progNoiseRelay[newPrgNumber] >> (index*8)) & 0xFF);
+
+			if (relNum < 16)
+				status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
 		}
 	}
 	else if ((program >= 50) && (program < 66))
@@ -57,6 +65,10 @@ void helper_TurnRelaysOffProgramm(unsigned int program)
 			int relNum = ((settings->progRelayBp[newPrgNumber] >> (index*8)) & 0xFF);
 			if (relNum < 16)
 				status.intDeviceInfo.relay_currentVal[relNum] 	= 0x00;
+			relNum = ((settings->progNoiseRelay[newPrgNumber] >> (index*8)) & 0xFF);
+
+			if (relNum < 16)
+				status.intDeviceInfo.relay_currentVal[relNum] = 0x00;
 		}
 	}
 }
@@ -102,10 +114,29 @@ void helper_TurnRelaysOnProgramm(int program)
 			else
 			{
 				if (relNum < 16)
+				{
 					status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+				}
+
 				if (((((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)) < 16)
 					&& (relNum != ((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)))
 					status.intDeviceInfo.relay_currentVal[((settings->progLimitRelay[newPrgNumber] >> (index*8)) & 0xFF)] = 0x00;
+			
+				relNum = ((settings->progNoiseRelay[newPrgNumber] >> (index*8)) & 0xFF);
+
+				if (
+					(relNum < 16) && (settings->progNoiseTime[newPrgNumber] > 0) &&
+					((get_prguptime() - noiseRelayTime) > settings->progNoiseTime[newPrgNumber])
+					)
+				{
+					noiseRelayTime = get_prguptime();
+					if (status.intDeviceInfo.relay_currentVal[relNum] == 0)
+						status.intDeviceInfo.relay_currentVal[relNum] = 1;
+					else
+						status.intDeviceInfo.relay_currentVal[relNum] = 0;
+					if (settings->debugFlag.IntCommonThread)
+						printf("[DEBUG] IntThread: [%d] NoiseRelay [%d] = %d\n", get_prguptime()%60, relNum, status.intDeviceInfo.relay_currentVal[relNum]);
+				}
 			}
 		}
 	}
@@ -118,6 +149,9 @@ void helper_TurnRelaysOnProgramm(int program)
 			int relNum = ((settings->progRelayBp[newPrgNumber] >> (index*8)) & 0xFF);
 			if (relNum < 16)
 				status.intDeviceInfo.relay_currentVal[relNum] 	= 0x01;
+			relNum = ((settings->progNoiseRelay[newPrgNumber] >> (index*8)) & 0xFF);
+			if (relNum < 16)
+				status.intDeviceInfo.relay_currentVal[relNum] 	= 0x00;
 		}
 	}
 }
@@ -229,7 +263,7 @@ PI_THREAD(IntCommonThread)
 		// Если счетчики монет/купюр отличаются
 		if (mciChanged)
 		{
-			printf("[DEBUG] IntThread: Money coin index changed ...\n");
+/*			printf("[DEBUG] IntThread: Money coin index changed ...\n");
 			for (int index=1; index<MONEY_COIN_TYPE_COUNT; index++)
 			{
 				if ((inCoinInfo.Count[index] != status.extDeviceInfo.coin_incomeInfo.Count[index])
@@ -237,6 +271,7 @@ PI_THREAD(IntCommonThread)
 					printf("                   MC: M[%d] = %d <- %d   C[%d] = %d <- %d\n", index, inMoneyInfo.Count[index], status.extDeviceInfo.bill_incomeInfo.Count[index],
 							index, inCoinInfo.Count[index], status.extDeviceInfo.coin_incomeInfo.Count[index]);
 			}
+*/
 			timeout = 1000;
 			while((settings->busyFlag.NetClient) && (timeout--)) {delay_ms(1);}
 			if (timeout <= 0)
