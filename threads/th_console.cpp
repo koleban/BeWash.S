@@ -55,6 +55,7 @@ PI_THREAD(ConsoleThread)
 				printf("  engw [val]                                 - Add [val] to full engine work time\n");
 				printf("  engz                                       - Clear engne full work time. Set time to 0\n");
 				printf("  reload config                              - Reload config file\n");
+				printf("  block/unblock                              - Lock or unlock device\n");
 		}
 
 		if (strstr(command, "pay") == command)
@@ -97,6 +98,15 @@ PI_THREAD(ConsoleThread)
 		{
 			sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, atoi(param[0]));
 			queueKkm->QueuePut(1, 0, 0, strTmp256);
+		}
+		// Block
+		if (strstr(command, "block") == command)
+		{
+			blockWork = 1;
+		}
+		if (strstr(command, "unblock") == command)
+		{
+			blockWork = 0;
 		}
 		if (strstr(command, "coll") == command)
 		{
