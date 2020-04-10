@@ -128,6 +128,36 @@ PI_THREAD(NetServerClientThread)
 		{
 			default:
 			break;
+			case CMD_BLOCK:
+				DataLen = sizeof(status) + 5;
+				answer[0] = 0x02;
+				answer[1] = 0xFF;
+				*((WORD*)&answer[2]) = DataLen;
+				answer[4] = CMD;
+				memcpy(&answer[5], &status, sizeof(status));
+				send(myClient, answer, DataLen, 0);
+				blockWork = 1;
+				break;
+			case CMD_UNBLOCK:
+				DataLen = sizeof(status) + 5;
+				answer[0] = 0x02;
+				answer[1] = 0xFF;
+				*((WORD*)&answer[2]) = DataLen;
+				answer[4] = CMD;
+				memcpy(&answer[5], &status, sizeof(status));
+				send(myClient, answer, DataLen, 0);
+				blockWork = 0;
+				break;
+			case CMD_RESTART_SERVICE:
+				DataLen = sizeof(status) + 5;
+				answer[0] = 0x02;
+				answer[1] = 0xFF;
+				*((WORD*)&answer[2]) = DataLen;
+				answer[4] = CMD;
+				memcpy(&answer[5], &status, sizeof(status));
+				send(myClient, answer, DataLen, 0);
+				system("sudo systemctl restart bewash");
+				break;
 			case CMD_SEND_BALANCE:
 				status.intDeviceInfo.money_currentBalance += *addMoneyParam;
 				status.intDeviceInfo.allMoney += *addMoneyParam;
