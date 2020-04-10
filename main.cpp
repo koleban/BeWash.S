@@ -15,6 +15,9 @@ time_t wrkOpenedDateTime = (time_t)0;
 QueueArray* queueLog = new QueueArray(10000);
 QueueArray* queueKkm = new QueueArray(1000);
 int stopWork = 0;
+int stopWorkPrev = 0;
+int blockWork = 0;
+int blockWorkPrev = 0;
 bool thButton = 0;
 bool thDisplay = 0;
 
@@ -27,7 +30,7 @@ int main(int argc, char *argv[])
 	///
 	///
     prgVer = 2.10;
-    prgBuild = 2;
+    prgBuild = 915;
     ///
     ///
     /////////////////////////
@@ -338,6 +341,8 @@ int main(int argc, char *argv[])
 	delay_ms(2000);
 
 	int detect_timeout = 0;
+	thButton = settings->threadFlag.ButtonWatch;
+	thDisplay = settings->threadFlag.MonitorWatch;
 	while (settings->threadFlag.MainWatch)
 	{
 		sigIntHandler.sa_handler = signal_handler;
@@ -381,7 +386,7 @@ int main(int argc, char *argv[])
 			time_t currTime = time(NULL);
   			struct tm* timeInfo;
   			timeInfo = localtime(&currTime);
-  			if 	(  ((timeInfo->tm_hour*60+timeInfo->tm_min)	>= (settings->workTimeDevice.StartTimeHour*60+settings->workTimeDevice.StartTimeMinute))
+  			if 	(((timeInfo->tm_hour*60+timeInfo->tm_min)	>= (settings->workTimeDevice.StartTimeHour*60+settings->workTimeDevice.StartTimeMinute))
   				&& ((timeInfo->tm_hour*60+timeInfo->tm_min) <= (settings->workTimeDevice.StopTimeHour*60+settings->workTimeDevice.StopTimeMinute)))
   			{
   				if (stopWork != 0)
@@ -395,21 +400,42 @@ int main(int argc, char *argv[])
 					piThreadCreate(ButtonWatch);
 				}
 			}
-			else if (stopWork == 0)
+			else 
 			{
-				if (status.intDeviceInfo.money_currentBalance == 0)
+				if (stopWork == 0)
 				{
-					stopWork = 1;
-	  				printf ("Use WORK TIME!!!\n");
-	  				printf ("Stoping thread ...\n");
-					thButton = settings->threadFlag.ButtonWatch;
-					thDisplay = settings->threadFlag.MonitorWatch;
-					settings->threadFlag.ButtonWatch = 0;
-					settings->threadFlag.MonitorWatch = 0;
+					if (status.intDeviceInfo.money_currentBalance == 0)
+					{
+						stopWork = 1;
+	  					printf ("Use WORK TIME!!!\n");
+	  					printf ("Stoping thread ...\n");
+						settings->threadFlag.ButtonWatch = 0;
+						settings->threadFlag.MonitorWatch = 0;
+					}
 				}
 			}
 		}
 
+		if (blockWorkPrev != blockWork)
+		{
+			if (blockWork == 0)
+			{
+		  		printf ("Use UNBLOCK WORK!!!\n");
+		  		printf ("Starting thread ...\n");
+				settings->threadFlag.ButtonWatch = thButton;
+				settings->threadFlag.MonitorWatch = thDisplay;
+				piThreadCreate(MonitorWatch);
+				piThreadCreate(ButtonWatch);
+			}
+			else
+			{
+  				printf ("Use BLOCK WORK!!!\n");
+  				printf ("Stoping thread ...\n");
+				settings->threadFlag.ButtonWatch = 0;
+				settings->threadFlag.MonitorWatch = 0;
+			}
+			blockWorkPrev = blockWork;
+		}
 		///
 		/// Auto reload configuration after changing ...
 		/// >>>>>>>>>>>>>>>

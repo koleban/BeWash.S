@@ -211,6 +211,8 @@ extern int 				winterModeActive;
 extern int 				winterModeEngineActive;
 extern int 				exitStatus;
 
+extern int blockWork;
+
 extern DBParam_DiscountDate		DiscountDates[MAX_PARAM_ARRAY_ITEM + 1];
 extern DBParam_DiscountParam	DiscountParams[MAX_PARAM_ARRAY_ITEM + 1];
 
