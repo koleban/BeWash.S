@@ -12,7 +12,7 @@ PI_THREAD(MonitorWatch)
 	Settings* settings = Settings::getInstance();
 	///
 	/// Если ПОТОК запрещен, то завершаемся
-	if (!settings->threadFlag.MonitorWatch) return (void*)0;
+	if (!settings->threadFlag.MonitorWatch) { printf("[MonitorWatch] Thread is disabled\n"); return (void*)0;}
 
 	/// Устройство МОНИТОР
 	Monitor* monitor = Monitor::getInstance();
