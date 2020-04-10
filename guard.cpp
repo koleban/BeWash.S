@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include "qrcode/qrcode.h"
 #include "iniparser/iniparser.h"
 #include "iniparser/dictionary.h"
 
@@ -75,6 +76,39 @@ int main()
 	char process_name[1024];
 	char command_name[1024];
 	char devaddr[256];
+
+    unsigned char qrData[254];
+    memset(qrData, 0, sizeof(qrData));
+    QRCode qrcode;
+    uint8_t qrcodeData[qrcode_getBufferSize(7)];
+    qrcode_initText(&qrcode, qrcodeData, 7, 0, "beWash: Self car wash applicaton. http://www.bewash.ru/ Instagram: @self.carwash Copyright (c) 2017-2020");
+
+    for (int y = 0; y < qrcode.size; y++) 
+    	for (int x = 0; x < qrcode.size; x++) 
+    	{
+    		int bitPos = y * 45 + x;
+    		int index = (int)(bitPos / 8);
+        	if (qrcode_getModule(&qrcode, x, y)) 
+	    		qrData[index] |= 1 << 7-(bitPos % 8);
+    	}
+	
+	for (int x=0; x < 254; x++)
+		printf("%02X", qrData[x]);
+	printf("\n");
+
+    for (int y = 0; y < 45; y++) 
+    {
+    	for (int x = 0; x < 45; x++) 
+    	{
+    		int bitPos = y * 45 + x;
+    		int index = (int)(bitPos / 8);
+        	if ((qrData[index] >> (7-(bitPos % 8)))&0x01 == 1)
+	            printf("%c%c", 219, 219);
+        	else
+            	printf("  ");
+    	}
+    	printf("\n");
+	}
 
 	char settingFileName[] = "/home/pi/bewash/bewash.cfg\x0";
 	ini = iniparser_load(settingFileName);
