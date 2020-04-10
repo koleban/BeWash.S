@@ -252,7 +252,7 @@ bool getCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 		printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 	}
 
-	printf("[%lu]: ID: %08X Money: %4d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney);
+	printf("[%lu]: ID: %08X Money: %4d Blocked: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked);
 
 //	gDbCard->Close();
 
