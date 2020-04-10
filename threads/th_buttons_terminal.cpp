@@ -1,3 +1,7 @@
+// DVC_BUTTON_OUT_COIN						41		//Кнопка выдачи жетонов
+// DVC_SENSOR_COIN_OUT						42		//Датчик отсутсвия жетонов в хоппере
+// DVC_RELAY_OUT_COIN						43		//Сигнал на выдачу жетонов
+
 #include "../main.h"
 
 int waitSumm = 0;
@@ -144,7 +148,7 @@ PI_THREAD(ButtonTerminalWatch)
 
 		///
 		/// Обработка КНОПОК ПЕРЕЧИСЛЕНИЯ НА БОКСЫ
-		/// в проуцессе простоя поморгаем кнопками
+		/// в процессе простоя поморгаем кнопками
 		///
 
 		if (status.intDeviceInfo.money_currentBalance == 0)
@@ -227,23 +231,25 @@ PI_THREAD(ButtonTerminalWatch)
 
 
 		if (
+			(status.intDeviceInfo.money_currentBalance > 0) &&
 			// Счетчик ожидания повторной покупки карты
 			(payRFIDCardCounter <= 0) &&
 			// Нет активной карты и Текущий баланс больше стоиомсти карты
 			((status.extDeviceInfo.rfid_cardPresent == 0) && (settings->progPrice[14] <= status.intDeviceInfo.money_currentBalance)) &&
 			// Активна кнопка выдачи карты
-			((settings->getEnabledDevice(DVC_BUTTON_OUT_RFID_CARD)) && (settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1) != 0xFF)) &&
+			((settings->getEnabledDevice(DVC_BUTTON_OUT_RFID_CARD)) && (settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1) != 0xFF) && (settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1) != 0x00)) &&
 			// Активно реле выдачи карты
-			((settings->getEnabledDevice(DVC_RELAY_OUT_RFID_CARD)) && (settings->getPinConfig(DVC_RELAY_OUT_RFID_CARD, 1) != 0xFF) ) &&
-			// Стоиомсть карты больше 0
+			((settings->getEnabledDevice(DVC_RELAY_OUT_RFID_CARD)) && (settings->getPinConfig(DVC_RELAY_OUT_RFID_CARD, 1) != 0xFF) && (settings->getPinConfig(DVC_RELAY_OUT_RFID_CARD, 1) != 0x00)) &&
+			// Стоимость карты больше 0
 			(settings->progPrice[14] > 0)
 			)
 		{
-			if ((settings->getEnabledDevice(DVC_SENSOR_EMPTY_RFID_CARD)) && (settings->getPinConfig(DVC_SENSOR_EMPTY_RFID_CARD, 1) != 0xFF))
+			// Если подключен сенсор пустого бункера карт клиента
+			if ((settings->getEnabledDevice(DVC_SENSOR_EMPTY_RFID_CARD)) && (settings->getPinConfig(DVC_SENSOR_EMPTY_RFID_CARD, 1) != 0xFF) && (settings->getPinConfig(DVC_SENSOR_EMPTY_RFID_CARD, 1) != 0x00))
 			{
 				currentPin = settings->getPinConfig(DVC_SENSOR_EMPTY_RFID_CARD, 1);
 				setPinModeMy(currentPin, PIN_INPUT);
-				delay_ms(5);
+				delay_ms(1);
 				int timeout = 30;
 				while((timeout-- > 0) && getGPIOState(currentPin)) { delay_ms(1); }
 				if (timeout > 0)
@@ -257,23 +263,28 @@ PI_THREAD(ButtonTerminalWatch)
 					emptyRFIDCardSensor = 0;
 				}
 			}
+			// Есть карты клиента для выдачи
 			if (emptyRFIDCardSensor == 0)
 			{
 				emptyLightCounter = 0;
-				currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
-				setPinModeMy(currentPin, PIN_INPUT);
 			}
+
 			if ((emptyRFIDCardSensor == 0) && (getGPIOState(currentPin)))
 			{
-				int btnError = 0;
+				unsigned int btnError = 0;
 				int timeout = 50;
 				if (settings->debugFlag.ButtonTerminalThread)
 					printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY CARD button [PIN: %03d]\n", currentPin);
 				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY CARD button pressed");
+				//
+				currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
+				setPinModeMy(currentPin, PIN_INPUT);
+				delay_ms(1);
 				// Press minimal 50ms
 				while ((timeout-- > 0) && getGPIOState(currentPin)) { delay_ms(1); }
 				// If btn pressed gream 2 sec - ERROR
 				while ((btnError++ < 2000) && getGPIOState(currentPin)) { delay_ms(1); }
+
 				if (btnError < 1990)
 				{
 					if (timeout <= 0)
@@ -281,10 +292,11 @@ PI_THREAD(ButtonTerminalWatch)
 						int bkpBal = status.intDeviceInfo.money_currentBalance;
 						// Текущий баланс БОЛЬШЕ чем минимальная стоиомсть карты
 						// ЦЕНА карты берется из progPrice[13]
-						if (status.intDeviceInfo.money_currentBalance >= settings->progPrice[12])
+						if ((settings->progPrice[12] > 0) && (status.intDeviceInfo.money_currentBalance >= settings->progPrice[12]))
+						{
 							status.intDeviceInfo.money_currentBalance -= settings->progPrice[13];
-
-						// Текущий баланс МЕНЬШЕ чем минимальная стоиомсть карты
+						}
+						// Текущий баланс МЕНЬШЕ чем минимальная стоимость карты
 						// ЦЕНА карты берется из progPrice[14]
 						else
 							status.intDeviceInfo.money_currentBalance -= settings->progPrice[14];
@@ -342,26 +354,29 @@ PI_THREAD(ButtonTerminalWatch)
 		/// progPrice[15] - Стоимость 1 жетона
 		///
 		if (
+			(status.intDeviceInfo.money_currentBalance > 0) &&
 			// Текущий балан больше стоимости жетона
 			(settings->progPrice[15] <= status.intDeviceInfo.money_currentBalance) &&
 			// Кнопка выдачи жетона определена
-			((settings->getEnabledDevice(DVC_BUTTON_OUT_COIN)) && (settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1) != 0xFF)) &&
+			((settings->getEnabledDevice(DVC_BUTTON_OUT_COIN)) && (settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1) != 0xFF) && (settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1) != 0x00)) &&
 			// Контроль выдачи жетона активен
-			((settings->getEnabledDevice(DVC_RELAY_OUT_COIN)) && (settings->getPinConfig(DVC_RELAY_OUT_COIN, 1) != 0xFF) )
+			((settings->getEnabledDevice(DVC_RELAY_OUT_COIN)) && (settings->getPinConfig(DVC_RELAY_OUT_COIN, 1) != 0xFF) && (settings->getPinConfig(DVC_RELAY_OUT_COIN, 1) != 0x00)) &&
+			// Стоимость жетона установлена
+			(settings->progPrice[15] > 0)
 			)
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_OUT_COIN, 1);
 			setPinModeMy(currentPin, PIN_INPUT);
 			if (getGPIOState(currentPin))
 			{
-				int btnError = 0;
+				unsigned int btnError = 0;
 				int timeout = 30;
 				if (settings->debugFlag.ButtonTerminalThread)
 					printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY COIN button [PIN: %03d]\n", currentPin);
 				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY COIN button pressed");
 				// Press minimal 50ms
 				while ((timeout-- > 0) && getGPIOState(currentPin)) { delay_ms(1); }
-				// If btn pressed gream 2 sec - ERROR
+				// If btn pressed great 2 sec - ERROR
 				while ((btnError++ < 2000) && getGPIOState(currentPin)) { delay_ms(1); }
 				if ((btnError < 1990) && (timeout <= 0))
 				{
@@ -369,7 +384,7 @@ PI_THREAD(ButtonTerminalWatch)
 					currentPin = settings->getPinConfig(DVC_RELAY_OUT_COIN, 1);
 					setPinModeMy(currentPin, PIN_OUTPUT);
 					int discPrice = settings->progPrice[15];
-					if (status.intDeviceInfo.money_currentBalance >= settings->coinDiscount.coinAfterSumm)
+					if ((status.intDeviceInfo.money_currentBalance >= settings->coinDiscount.coinAfterSumm) && (settings->coinDiscount.coinAfterSumm > 0))
 					{
 						discPrice = settings->progPrice[15] - (int)(((double)settings->progPrice[15]) * (((double)settings->coinDiscount.coinDiscountSize)/100));
 					}
@@ -378,69 +393,88 @@ PI_THREAD(ButtonTerminalWatch)
 						printf("[DEBUG] ButtonTerminalThread: BONUS COIN %d\n", bonusCoinCount);
 					// Запускаем выдачу жетонов
 					int outCoinSensorPin = settings->getPinConfig(DVC_SENSOR_COIN_OUT, 1);
-					setPinModeMy(outCoinSensorPin, PIN_INPUT);
+					if (settings->getEnabledDevice(DVC_SENSOR_COIN_OUT))
+						setPinModeMy(outCoinSensorPin, PIN_INPUT);
 					int errorCoinCount = 0;
 					while ((status.intDeviceInfo.money_currentBalance >= settings->progPrice[15]) && (errorCoinCount < 3))
 					{
 						//	ВЫДАЧА ЖЕТОНОВ
 						setGPIOState(currentPin, 1);
-						delay_ms(100);
-						setGPIOState(currentPin, 0);
-						int ctrlTime = 0;
-						int ctrlTimeout = 5000;
-						while (ctrlTimeout-- > 0)
+						if (settings->getEnabledDevice(DVC_SENSOR_COIN_OUT))
 						{
-							while (getGPIOState(outCoinSensorPin) == 0)
-								ctrlTime++;
-							if ((ctrlTime > 25) && (getGPIOState(outCoinSensorPin))) break;
-							delay_ms(1);
-						}
-						//
-						if ((ctrlTime > 25) && (ctrlTimeout > 0))
-						{
-							status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
-							if (settings->debugFlag.ButtonTerminalThread)
-								printf("[DEBUG] ButtonTerminalThread: Out COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
-							db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
+							delay_ms(100);
+							setGPIOState(currentPin, 0);
+							int ctrlTime = 0;
+							int ctrlTimeout = 5000;
+							while (ctrlTimeout-- > 0)
+							{
+								while (getGPIOState(outCoinSensorPin) == 0)
+									ctrlTime++;
+								if ((ctrlTime > 25) && (getGPIOState(outCoinSensorPin))) break;
+								delay_ms(1);
+							}
+							//
+							if ((ctrlTime > 25) && (ctrlTimeout > 0))
+							{
+								status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
+								if (settings->debugFlag.ButtonTerminalThread)
+									printf("[DEBUG] ButtonTerminalThread: Out COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
+								db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
+							}
+							else
+							{
+								errorCoinCount++;
+								printf ("Out coin error: elapsed ctrlTimeout: %d count ctrlTime: %d errCount: \n", 5000-ctrlTimeout, ctrlTime, errorCoinCount);
+							}
 						}
 						else
 						{
-							errorCoinCount++;
-							printf ("Out coin error: elapsed ctrlTimeout: %d count ctrlTime: %d errCount: \n", ctrlTimeout, ctrlTime, errorCoinCount);
+							delay_ms(100);
+							status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
+							setGPIOState(currentPin, 0);
+							delay_ms(1000);
+							break;
 						}
+						setGPIOState(currentPin, 0);
 					}
-
 					while ((bonusCoinCount > 0)  && (errorCoinCount < 3))
 					{
 
 						//	ВЫДАЧА ЖЕТОНОВ
 						setGPIOState(currentPin, 1);
-						delay_ms(100);
-						setGPIOState(currentPin, 0);
-						int ctrlTime = 0;
-						int ctrlTimeout = 5000;
-						while (ctrlTimeout-- > 0)
+						if (settings->getEnabledDevice(DVC_SENSOR_COIN_OUT))
 						{
-							while (getGPIOState(outCoinSensorPin) == 0)
-								ctrlTime++;
-							if ((ctrlTime > 25) && (getGPIOState(outCoinSensorPin))) break;
-							delay_ms(1);
-						}
-						//
-						if ((ctrlTime > 25) && (ctrlTimeout > 0))
-						{
-							if (settings->debugFlag.ButtonTerminalThread)
-								printf("[DEBUG] ButtonTerminalThread: Out BONUS COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
-							db->Log(DB_EVENT_TYPE_COIN_OUT, bonusCoinCount, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out BONUS COIN [price, balance]");
-							bonusCoinCount--;
+							delay_ms(100);
+							setGPIOState(currentPin, 0);
+							int ctrlTime = 0;
+							int ctrlTimeout = 5000;
+							while (ctrlTimeout-- > 0)
+							{
+								while (getGPIOState(outCoinSensorPin) == 0)
+									ctrlTime++;
+								if ((ctrlTime > 25) && (getGPIOState(outCoinSensorPin))) break;
+								delay_ms(1);
+							}
+							//
+							if ((ctrlTime > 25) && (ctrlTimeout > 0))
+							{
+								if (settings->debugFlag.ButtonTerminalThread)
+									printf("[DEBUG] ButtonTerminalThread: Out BONUS COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
+								db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
+							}
+							else
+							{
+								errorCoinCount++;
+								printf ("Out coin error: elapsed ctrlTimeout: %d count ctrlTime: %d errCount: \n", 5000-ctrlTimeout, ctrlTime, errorCoinCount);
+							}
 						}
 						else
 						{
-							errorCoinCount++;
-							printf ("Out coin error: elapsed ctrlTimeout: %d count ctrlTime: %d errCount: \n", ctrlTimeout, ctrlTime, errorCoinCount);
+							delay_ms(100);
 						}
-					}
+						setGPIOState(currentPin, 0);
 					// Останавливаем выдачу жетонов
+					}
 				}
 				// Кнопка нажата менее 30 мсек или более 2000 мсек
 				else
