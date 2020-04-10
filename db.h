@@ -140,6 +140,7 @@ struct DB_RFIDCardInfo
 	char		cardNumber[12];
 	char		cardOwner[102];
 	SDWORD		cardMoney;
+	SDWORD		cardBlocked;
 };
 
 
