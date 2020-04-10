@@ -14,6 +14,9 @@
 #define CMD_SRV_GET_DEV_TYPE		0x25
 #define CMD_SRV_GET_SERIAL_NUMBER	0x26	// Вернуть идентификатор
 #define CMD_ADD_MONEY				0x27
+#define CMD_RESTART_SERVICE			0x28
+#define CMD_BLOCK					0x29
+#define CMD_UNBLOCK					0x2A
 		// 0xFF	-	Error
 		// 0x01 -	threadFlag.ExtCommonThread
 		// 0x02 -	threadFlag.IntCommonThread
