@@ -164,6 +164,7 @@ bool Settings::loadConfig (char* fileName)
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
 	showAppLabel						= iniparser_getuint(ini, "Common:ShowAppLabel",			0);
 	useStoreBalance						= iniparser_getuint(ini, "Common:UseStoreBalance",		0);
+	useRFID2Mobile						= iniparser_getuint(ini, "Common:useRFID2Mobile",		0);
 	sprintf(ethName, "%s", iniparser_getstring(ini, "Common:EthName", "eth0"));
 
 

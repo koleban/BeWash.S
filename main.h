@@ -276,6 +276,8 @@ extern TDeviceWorkMode deviceWorkMode;
 //
 //--------------------------------------------------
 //
+int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber, int sendedBalance);
+
 int usbreset(char *argv);
 
 int CheckLink(char *ifname);

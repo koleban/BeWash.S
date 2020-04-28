@@ -16,7 +16,7 @@ RFIDDevice::RFIDDevice()
 	comPortBaundRate = 9600;
 	cardPresent = 0;
 	errorCount = 0;
-	digCardNumber = 0;
+	digCardNumber = 0xFFFFFFFF;
 }
 
 void RFIDDevice::Init(Settings* settings)
@@ -143,6 +143,7 @@ DWORD RFIDDevice::cmdPoll()
 		errorCount = 0;
 		newCardNumber = strtoul((const char*)buffer, NULL, 16);
 
+		if (newCardNumber = 0x32383820) newCardNumber = 0;
 		cardPresent = (newCardNumber != 0);
 		if (newCardNumber != 0)
 		{
@@ -152,7 +153,10 @@ DWORD RFIDDevice::cmdPoll()
 			cardNumber[2] = getByteByNum(newCardNumber, 3);
 			cardNumber[1] = getByteByNum(newCardNumber, 4);
 			cardNumber[0] = getByteByNum(newCardNumber, 5);
-			digCardNumber = newCardNumber;
+			if (digCardNumber == 0xFFFFFFFF)
+				digCardNumber = 0;
+			else
+				digCardNumber = newCardNumber;
 		}
 		else
 		{

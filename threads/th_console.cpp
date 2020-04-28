@@ -163,6 +163,16 @@ PI_THREAD(ConsoleThread)
 			status.intDeviceInfo.money_currentBalance += bal;
 			status.extDeviceInfo.remote_currentBalance += bal;
 		}
+		if (strstr(command, "send") == command)
+		{
+			bal = atoi(param[0]);
+			printf("Send money 10 rur on %4d device\n", bal);
+			for (int tmp=0; tmp < 100; tmp++)
+			{
+				delay_ms(300);
+				if (sendBalanceToRemoteDevice( netClient, bal, 1) != 0) {tmp--; delay_ms(1000);}
+			}
+		}
 	}
 	printf("[CONSOLE]: Thread ended.\n");
 	return (void*)0;

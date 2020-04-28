@@ -498,6 +498,7 @@ public:
 	unsigned int		LightTimeOff;			// Время в сек. перед выключением света
 	unsigned int		useHWClock;				// Используется RTC и время мы не контролируем
 	unsigned int		useStoreBalance;		// Сохранять баланс в EEPROM
+	unsigned int		useRFID2Mobile;			// Использовать прикладываемый считыватель
 	char				ethName[40];			// Имя сетевого интерфейса (default: eth0)
 	// ***********************************************************************************************************
   	bool 				getEnabledDevice	(int deviceID);								// Усттройство разрешено ?

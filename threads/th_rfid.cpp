@@ -54,47 +54,89 @@ PI_THREAD(RFIDWatch)
 					if (resultCardID == 0xFFFFFFFF) {status.extDeviceInfo.rfid_errorNum++; settings->workFlag.RFIDWatch = 0; delay_ms(250);}
 					if ((resultCardID < 0xFFFFFFFF) && (resultCardID > 0xFF)) break;
 				}
-				//if (tryCount == 0) { printf("RFID Error: %d\n", status.extDeviceInfo.rfid_errorNum); settings->busyFlag.RFIDWatch--; delay_ms(250); continue;}
+				
 				///
-				/// Проверим чтоб присутствие карты "установилось постоянным"
-				if (prevCardPresent != rfidDevice->cardPresent)
+				/// Если используется прикладной считыватель или двухфакторная работа с картами
+				if (settings->useRFID2Mobile == 1)
 				{
-					prevCardPresent = rfidDevice->cardPresent;
-					settings->busyFlag.RFIDWatch--;
-				}
-				///
-				/// Проверим чтоб номер карты "установился постоянный"
-				else
-				{
-					if (prevCard != rfidDevice->digCardNumber)
+					BYTE zeroCrdNum[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+					if ((rfidDevice->cardPresent) && (!emptyCardNumber(rfidDevice->cardNumber)))
 					{
-						if (settings->debugFlag.RFIDWatch)
-							printf("[RFID Thread]: Detect new card: curr: %08X prev: (%08X)\n", rfidDevice->digCardNumber, prevCard);
-						prevCard = rfidDevice->digCardNumber;
-						settings->busyFlag.RFIDWatch--;
+						if (memcmp(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6) == 0)
+						{
+							// текущая карта 0 новая карта вставленна
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
+							status.extDeviceInfo.rfid_cardPresent = 1;
+							prevCard = 1;
+						}
+						if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) == 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
+						{
+							// активная карта вставленна
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
+							status.extDeviceInfo.rfid_cardPresent = 0;
+						}
+						if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) != 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
+						{
+							// активная карта изменена
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
+							prevCard = 1;
+						}
 					}
 					else
 					{
-						///
-						/// Установился постоянный номер карты
-						memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
-						status.extDeviceInfo.rfid_cardPresent = rfidDevice->cardPresent;
-						#ifndef _RFID_DEVICE_CRT288K_
-						if (status.extDeviceInfo.rfid_cardPresent)
-							rfidDevice->Lock(0);
-						else
-							rfidDevice->OKBlink();
-						settings->busyFlag.RFIDWatch--;
-						delay_ms(250);
-						#endif
-
-						#ifdef _RFID_DEVICE_CRT288K_
-						delay_ms(100);
-						#endif
+						if (status.extDeviceInfo.rfid_cardPresent == 0)
+						{
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
+							int tmp22 = 0;
+							while ((rfidDevice->cardPresent) && (tmp22++ < 10)) { rfidDevice->cmdPoll(); delay_ms(250);}
+						}
+						prevCard = 0;
 					}
 				}
-				// TODO!!! Delay ???
-			}
+				///
+				/// Стандартная работа с картами
+				else
+				{
+					///
+					/// Проверим чтоб присутствие карты "установилось постоянным"
+					if (prevCardPresent != rfidDevice->cardPresent)
+					{
+						prevCardPresent = rfidDevice->cardPresent;
+						settings->busyFlag.RFIDWatch--;
+					}
+					///
+					/// Проверим чтоб номер карты "установился постоянный"
+					else
+					{
+						if (prevCard != rfidDevice->digCardNumber)
+						{
+							if (settings->debugFlag.RFIDWatch)
+								printf("[RFID Thread]: Detect new card: curr: %08X prev: (%08X)\n", rfidDevice->digCardNumber, prevCard);
+							prevCard = rfidDevice->digCardNumber;
+							settings->busyFlag.RFIDWatch--;
+						}
+						else
+						{
+							///
+							/// Установился постоянный номер карты
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
+							status.extDeviceInfo.rfid_cardPresent = rfidDevice->cardPresent;
+							#ifndef _RFID_DEVICE_CRT288K_
+							if (status.extDeviceInfo.rfid_cardPresent)
+								rfidDevice->Lock(0);
+							else
+								rfidDevice->OKBlink();
+							settings->busyFlag.RFIDWatch--;
+							delay_ms(250);
+							#endif
+	
+							#ifdef _RFID_DEVICE_CRT288K_
+							delay_ms(100);
+							#endif
+						}
+					}
+				}
+			}	
 		}
 		else
 			connErrorCouter++;

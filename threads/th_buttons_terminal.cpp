@@ -210,6 +210,8 @@ PI_THREAD(ButtonTerminalWatch)
 							printf("[DEBUG] ButtonTerminalThread: Send ERROR\n");
 					}
 
+					delay_ms(1000);
+
 					setGPIOState(currentPin, 0);
 					setPinModeMy(currentPin, PIN_INPUT);
 				}

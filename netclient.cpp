@@ -143,13 +143,13 @@ bool NetClient::cmdSendBalance(int valBalance)
 	int nTimeout = 1000;
 	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&nTimeout,sizeof(int));
 	ssize_t result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&zeroBalance, sizeof(zeroBalance));
-	if (result < 0) { CloseConnection(); return 0; }
+	if (result < 0) { CloseConnection(); printf("[NetClient::cmdSendBalance] Error 0x01\n"); return 0; }
 
 	BYTE in_buff[0xFFFF];
 	WORD index = 0;
 	index = netReadData(sock, &in_buff[0], 0xFFF0);
 
-	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[0], 0xFFF0); CloseConnection(); return 0; }
+	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[0], 0xFFF0); CloseConnection(); printf("[NetClient::cmdSendBalance] Error 0x02\n"); return 0; }
 
 	if (index > 5)
 	{
@@ -162,24 +162,30 @@ bool NetClient::cmdSendBalance(int valBalance)
 
 		if ((*SYNC != 0x02) || (*ADR != 0xFF)) return 0;
 		if (settings->debugFlag.NetClient)
-			printf("[NETCTRL] Sending balance >>> \n");
+			printf("[NetClient::cmdSendBalance] Sending balance >>> \n");
 		if (deviceInfo)
-			printf("Receive remote balance. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
+			printf("[NetClient::cmdSendBalance] Receive remote balance. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
 		recvBalance = deviceInfo->intDeviceInfo.money_currentBalance;
     }
 
-    int retryCount = 0;
-    while (retryCount++ < 3)
-    {
-		delay_ms(200);
-		result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&valBalance, sizeof(valBalance));
-		if (result >= 0) break;
-	}
+	netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&valBalance, sizeof(valBalance));
 
+	delay_ms(20);
 	index = netReadData(sock, &in_buff[0], 0xFFF0);
 
-	if (index <= 0) { CloseConnection(); return 0; }
-	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[index], 0xFFF0-index); CloseConnection(); return 0; }
+	if (index <= 5) 
+	{ 
+		delay_ms(20); 
+		netReadData(sock, &in_buff[index], 0xFFF0-index); 
+		CloseConnection(); 
+		printf("[NetClient::cmdSendBalance] Error in connection. Reconnect ...\n");
+		delay_ms(20); 
+		OpenConnection();
+		result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&zeroBalance, sizeof(zeroBalance));
+		index = netReadData(sock, &in_buff[0], 0xFFF0);
+
+    	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[0], 0xFFF0); CloseConnection(); printf("[NetClient::cmdSendBalance] Error 0x03\n"); return 0; }
+	}
 
 	if (index > 5)
 	{
@@ -190,12 +196,12 @@ bool NetClient::cmdSendBalance(int valBalance)
 		BYTE* DATA 	= (BYTE*)&in_buff[5];
 		DeviceInfo* deviceInfo = (DeviceInfo*)&in_buff[5];
 
-		if ((*SYNC != 0x02) || (*ADR != 0xFF)) return 0;
+		if ((*SYNC != 0x02) || (*ADR != 0xFF)) {printf("[NetClient::cmdSendBalance] Error 0xFF\n"); return 0; }
 		if (settings->debugFlag.NetClient)
 			printf("[NETCTRL] Sending balance >>> \n");
 		if ((deviceInfo->intDeviceInfo.money_currentBalance - valBalance) == recvBalance)
 		{
-			printf("Sending balance OK. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
+			printf("[NetClient::cmdSendBalance] Sending balance OK. Remote balance: %d rur\n", deviceInfo->intDeviceInfo.money_currentBalance);
 			return 1;
 		}
 		else
