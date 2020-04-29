@@ -7,11 +7,14 @@ PI_THREAD(RFIDWatch)
 {
 	Settings* settings = Settings::getInstance();
 	if (!settings->threadFlag.RFIDWatch) return (void*)0;
-#ifndef _RFID_DEVICE_CRT288K_
+#ifdef _RFID_DEVICE_SHS_
 	RFIDDevice* rfidDevice = RFIDDevice::getInstance();
 #endif
 #ifdef _RFID_DEVICE_CRT288K_
 	Crt288KDevice* rfidDevice = Crt288KDevice::getInstance();
+#endif
+#ifdef _RFID_DEVICE_CP_Z_
+	RFID_CPZDevice* rfidDevice = RFID_CPZDevice::getInstance();
 #endif
 
 	Database* db = new Database();
@@ -22,6 +25,7 @@ PI_THREAD(RFIDWatch)
 	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
+	rfidDevice->Init(settings);
 	rfidDevice->Lock(1);
 	delay(2);
 	DWORD prevCard = 0;

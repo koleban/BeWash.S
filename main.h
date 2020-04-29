@@ -77,6 +77,7 @@
 #include "devices/coin.h"
 #include "devices/coinpulse.h"
 #include "devices/crt288.h"
+#include "devices/cp-z.h"
 #include "devices/lcd.h"
 #include "devices/remoteCtrl.h"
 #include "devices/visa.h"

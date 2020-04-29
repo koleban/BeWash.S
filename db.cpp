@@ -530,19 +530,23 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 			if (queryOutput == NULL) { lastError = DB_QUERY_ERROR; sprintf(lastErrorMessage, "%s", "NULL PARAM EXCEPTION"); 				this->Close();return lastError;}
 			try
 			{
+				IBPP::Statement st;
 				DB_RFIDCardInfo* outParams = (DB_RFIDCardInfo*)queryOutput;
 				DWORD* dataParams = (DWORD*)queryParam;
 				outParams->cardId = *dataParams;
 				// Get card information
+/*
 				sprintf( queryStr, "SELECT OBJ_ID AS BLOCKED FROM rfid_info WHERE CARD_ID = %lu", outParams->cardId);
+				printf("[1] queryStr: %s\n", queryStr);
 				tr->Start();
-				IBPP::Statement st = IBPP::StatementFactory(db, tr);
+				st = IBPP::StatementFactory(db, tr);
 				st->Prepare(queryStr);
 				st->Execute();
 
-				outParams->cardBlocked = 1;
+				printf("[2] queryStr: %s\n", queryStr);
 				while (st->Fetch())
 				{
+					printf("[3] queryStr: %s\n", queryStr);
 		    		st->Get(1, outParams->cardBlocked);
 		    		break;
 				}
@@ -551,6 +555,8 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 				lastError = DB_OK;
 				if (outParams->cardBlocked == 1)
 					{ outParams->cardMoney = 0; this->Close(); return lastError; }
+*/
+				outParams->cardBlocked = 0;
 				// Get card money
 				sprintf( queryStr, "SELECT SUM(MONEY) FROM rfid_money where card_id = %lu", outParams->cardId);
 				printf("[DEBUG] DB: Get card info [%lu]\n %s\n", outParams->cardId, queryStr);

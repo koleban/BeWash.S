@@ -457,6 +457,12 @@ struct LCD24Param
 	char adsMessage[512];
 };
 
+struct RFIDParam
+{
+	int D0;
+	int D1;
+};
+
 class Settings
 {
 private:
@@ -578,6 +584,8 @@ public:
 	//
 	// Параметры LCD24x4
 	LCD24Param lcd24Param;
+
+	RFIDParam	rfidParam;
 	//
 	// Сервисные карты
 	// [ServiceCards]

@@ -92,6 +92,10 @@ DWORD Crt288KDevice::cmdMultiplePoll(BYTE pollCount)
 	cardNumber[1] = getByteByNum(crcVal, 4);
 	cardNumber[0] = getByteByNum(crcVal, 5);
 
+	if (digCardNumber >= 0xFFFFFFFF)
+		digCardNumber = 0;
+	else
+		digCardNumber = crcVal;
 	return crcVal;
 }
 
@@ -107,6 +111,10 @@ DWORD Crt288KDevice::cmdPoll()
 	cardNumber[1] = getByteByNum(crcVal, 4);
 	cardNumber[0] = getByteByNum(crcVal, 5);
 
+	if (digCardNumber >= 0xFFFFFFFF)
+		digCardNumber = 0;
+	else
+		digCardNumber = crcVal;
 	return crcVal;
 }
 

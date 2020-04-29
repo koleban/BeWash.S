@@ -164,9 +164,16 @@ bool Settings::loadConfig (char* fileName)
 	moneyBonus							= iniparser_getuint(ini, "Common:MoneyBonus",			0);
 	showAppLabel						= iniparser_getuint(ini, "Common:ShowAppLabel",			0);
 	useStoreBalance						= iniparser_getuint(ini, "Common:UseStoreBalance",		0);
+#ifndef _RFID_DEVICE_CP_Z_
 	useRFID2Mobile						= iniparser_getuint(ini, "Common:useRFID2Mobile",		0);
+#endif
+#ifdef _RFID_DEVICE_CP_Z_
+	useRFID2Mobile						= iniparser_getuint(ini, "Common:useRFID2Mobile",		1);
+#endif
 	sprintf(ethName, "%s", iniparser_getstring(ini, "Common:EthName", "eth0"));
 
+	rfidParam.D0 						= iniparser_getuint(ini, "RFID:D0",						5);
+	rfidParam.D1 						= iniparser_getuint(ini, "RFID:D1",						6);
 
 	netServerConfig.PortNumber 			= iniparser_getuint(ini, "NetServer:PortNumber", 		3355);
 	memset(extPanelNetConfig.netServerAddr, 0, sizeof(extPanelNetConfig.netServerAddr));

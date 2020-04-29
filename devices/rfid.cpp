@@ -143,7 +143,6 @@ DWORD RFIDDevice::cmdPoll()
 		errorCount = 0;
 		newCardNumber = strtoul((const char*)buffer, NULL, 16);
 
-		if (newCardNumber = 0x32383820) newCardNumber = 0;
 		cardPresent = (newCardNumber != 0);
 		if (newCardNumber != 0)
 		{
