@@ -141,6 +141,21 @@ struct MoneyCoinWeight
 	WORD Weight[MONEY_COIN_TYPE_COUNT];
 };
 
+struct DB_RFIDCardInfo
+{
+	DWORD		cardId;
+	char		cardNumber[12];
+	char		cardOwner[102];
+	SDWORD		cardMoney;
+	SDWORD		cardBlocked;
+	SDWORD		cardDiscount;
+};
+
+struct AddDeviceInfo
+{
+	DB_RFIDCardInfo db_RFIDCardInfo;
+};
+
 struct ExtDeviceInfo
 {
     DWORD				objectId;                   // ИД Объекта - Мойка
@@ -463,6 +478,12 @@ struct RFIDParam
 	int D1;
 };
 
+struct BlockDeviceParam
+{
+	DWORD BlockDate;
+	DWORD BlockSumm;
+};
+
 class Settings
 {
 private:
@@ -585,7 +606,10 @@ public:
 	// Параметры LCD24x4
 	LCD24Param lcd24Param;
 
+	//
+	// Параметры считывателя по протоколу Wiegand D0 D1 pins
 	RFIDParam	rfidParam;
+	
 	//
 	// Сервисные карты
 	// [ServiceCards]
@@ -593,6 +617,16 @@ public:
 	// CardID_1 = xxxxxx
 	// WashBalance = 123
 	ServiceCards serviceCards;
+
+	//
+	// Параметры блокировки усройства (по дате, по сумме)
+	// BlockDate - ДатаБлокировки 0x00.DD.M.YYY 
+	// DD  - 1 - 31
+	// M   - 1 - 12
+	// YYY - 0 - ...
+	//
+	// BlockSumm - Накопительная сумма из EEPROM
+	BlockDeviceParam blockDeviceParam;
 
 	//
 	// Параметры автоматической перезагрузки
@@ -604,6 +638,7 @@ public:
 	int 				discountCardDeposit;	// Скидка на пополнение при активной карте из БД
 	int 				cardBonus;				// Скидка на пополнение при активной карте из Конф файла
 	int 				moneyBonus;				// Скидка на пополнение наличными
+	int					noStoreCardBalance;
 	//
 	// Работа с БД
 	DatabaseSettings	gdatabaseSettings;

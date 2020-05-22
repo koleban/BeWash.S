@@ -173,6 +173,12 @@ PI_THREAD(ConsoleThread)
 				if (sendBalanceToRemoteDevice( netClient, bal, 1) != 0) {tmp--; delay_ms(1000);}
 			}
 		}
+		if (strstr(command, "glock") == command)
+		{
+			bal = atoi(param[0]);
+			printf("Global lock device: %d\n", bal);
+			globalLockDevice = (BYTE)bal;
+		}
 	}
 	printf("[CONSOLE]: Thread ended.\n");
 	return (void*)0;

@@ -24,6 +24,7 @@ long noiseRelayTime = 0;
 
 bool status_crd = false; // Service card and Service Key status
 
+DWORD globalMoneyCounter = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////
 /// Выключаем реле
@@ -300,6 +301,7 @@ PI_THREAD(IntCommonThread)
 					status.intDeviceInfo.money_currentBalance += subVal*settings->coinWeight.Weight[index];
 					summWithCard += subVal*settings->coinWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->coinWeight.Weight[index];
+					globalMoneyCounter += subVal*settings->coinWeight.Weight[index];
 					if (index < (MONEY_COIN_TYPE_COUNT-1))
 					{
 						amountCash += subVal*settings->coinWeight.Weight[index];
@@ -327,10 +329,10 @@ PI_THREAD(IntCommonThread)
 					}
 
 					// Проверим: Если вставлена карта и есть скидка на пополнение
-					if ((status.extDeviceInfo.rfid_cardPresent) && ((settings->discountCardDeposit + settings->cardBonus) > 0))
+					if ((status.extDeviceInfo.rfid_cardPresent) && (maxval(settings->discountCardDeposit,settings->cardBonus) > 0))
 					{
 						// Доначислим скидку для карты
-						dsSize += ((double)(subVal * settings->coinWeight.Weight[index]) * ((double)(settings->discountCardDeposit + settings->cardBonus) / 100));
+						dsSize += ((double)(subVal * settings->coinWeight.Weight[index]) * ((double)maxval(settings->discountCardDeposit,settings->cardBonus) / 100));
 						if (dsSize >= 1)
 						{
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
@@ -361,13 +363,14 @@ PI_THREAD(IntCommonThread)
 					status.intDeviceInfo.money_currentBalance += subVal*settings->moneyWeight.Weight[index];
 					summWithCard += subVal*settings->moneyWeight.Weight[index];
 					status.intDeviceInfo.allMoney += subVal*settings->moneyWeight.Weight[index];
+					globalMoneyCounter += subVal*settings->moneyWeight.Weight[index];
 					amountCash += subVal*settings->moneyWeight.Weight[index];
 					printf("[DEBUG] IntThread: Bill index: %d [%d] (%d * %d) = %d\n", index, inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
 					// Проверим: Если вставлена карта и есть скидка на пополнение
-					if ((status.extDeviceInfo.rfid_cardPresent) && ((settings->discountCardDeposit + settings->cardBonus) > 0))
+					if ((status.extDeviceInfo.rfid_cardPresent) && (maxval(settings->discountCardDeposit,settings->cardBonus) > 0))
 					{
 						// Доначислим скидку для карты
-						dsSize += ((double)(subVal * settings->moneyWeight.Weight[index]) * ((double)(settings->discountCardDeposit + settings->cardBonus) / 100));
+						dsSize += ((double)(subVal * settings->moneyWeight.Weight[index]) * ((double)maxval(settings->discountCardDeposit,settings->cardBonus) / 100));
 						if (dsSize >= 1)
 						{
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
@@ -491,10 +494,6 @@ PI_THREAD(IntCommonThread)
 		int t_currFreq = engine->currFreq;
 		if ((lastCurrentProgram != status.intDeviceInfo.program_currentProgram) || (t_currFreq > 0))
 		{
-			// Механизм пополнение комбинацией
-			if (lastCurrentProgram != status.intDeviceInfo.program_currentProgram)
-				nextButton((char)(0x30 + status.intDeviceInfo.program_currentProgram)); // IDDQD
-
 			int timeOutCounter = 100;
 			while ((settings->busyFlag.TimeTickThread) && (timeOutCounter-- > 0)) {delayTime--; delay_ms(1);}
 			lastCurrentProgram = status.intDeviceInfo.program_currentProgram;

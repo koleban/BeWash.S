@@ -142,6 +142,11 @@ PI_THREAD(DataExchangeThread)
 			if (status.extDeviceInfo.remote_currentBalance != status.intDeviceInfo.money_currentBalance)
 			{
 				status.extDeviceInfo.remote_currentBalance = status.intDeviceInfo.money_currentBalance;
+				if (status.extDeviceInfo.remote_currentBalance < 0)
+				{
+					status.intDeviceInfo.money_currentBalance = 0;
+					status.extDeviceInfo.remote_currentBalance = 0;
+				}
 			}
 		}
 

@@ -113,6 +113,13 @@ PI_THREAD(ButtonWatch)
 
 		settings->busyFlag.ButtonWatch++;
 
+		if (MCPErrorCount > 0)
+		{
+			printf("[DEBUG] ButtonWatch: MCP23017 Error flag is SET. Check MCP device or I2C line communication!\n");
+			delay_ms(500);
+			continue;
+		}
+
 		if ((settings->getEnabledDevice(DVC_BUTTON_COLLECTION)) && (externalCmd_collectionButton == 0))
 		{
 			currentPin = settings->getPinConfig(DVC_BUTTON_COLLECTION, 1);
@@ -259,6 +266,8 @@ PI_THREAD(ButtonWatch)
 						{
 							setGPIOState(settings->getPinConfig(lightDeviceID, 1), 0);
 							setPinModeMy(settings->getPinConfig(lightDeviceID, 1), PIN_INPUT);
+
+							nextButton((char)(0x30 + index)); // IDDQD
 
 							lightDeviceID = DVC_BUTTON01 + index;
 							if (settings->debugFlag.ButtonWatch)

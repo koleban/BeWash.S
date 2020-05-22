@@ -108,6 +108,11 @@ PI_THREAD(MonitorWatch)
 			{
 				sprintf(&digit_out[0], "%s", "____");
 			}
+
+			if (globalLockDevice == 33)
+			{
+				sprintf(&digit_out[0], "%s", "o0o0");
+			}
 			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
 			monitor->showText(&digit_out[0]);
 		}

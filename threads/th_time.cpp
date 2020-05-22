@@ -46,7 +46,8 @@ PI_THREAD(TimeTickThread)
 				//	prgDelay = (int)(60000/settings->progPrice[status.intDeviceInfo.program_currentProgram]);
 				prgDelay = (int)(60000/prgPrice);
 				if (status.intDeviceInfo.program_currentProgram != currPrg_Tmp) break;
-				usleep(prgDelay*10);
+				if (globalLockDevice != 33)
+					usleep(prgDelay*10);
 			}
 		}
 

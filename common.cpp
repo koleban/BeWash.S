@@ -43,6 +43,8 @@ int lightThreadActive = 0;
 int winterModeActive;
 int winterModeEngineActive;
 
+int MCPErrorCount = 0;
+
 DWORD remoteCounter[30][2];
 DWORD remoteCounterSumm[30][3];
 
@@ -60,6 +62,7 @@ char idkfa[10] = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x00, 0x38, 0x39};
 char iddqd[50];
 
 DeviceInfo status;
+AddDeviceInfo addStatus;
 
 long winterWaitTime;
 long winterCurrTime;
@@ -252,7 +255,9 @@ bool getCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 		printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
 	}
 
-	printf("[%lu]: ID: %08X Money: %4d Blocked: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked);
+	if (settings->noStoreCardBalance != 0)
+		cardInfo->cardMoney = 0;
+	printf("[%lu]: ID: %08X Money: %4d Blocked: %d Discount: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked, cardInfo->cardDiscount);
 
 //	gDbCard->Close();
 
@@ -290,11 +295,12 @@ bool setCardMoney(BYTE* cardNumberBytes, SDWORD cardMoney)
 	cardInfo->cardId = cardNumber;
 	cardInfo->cardMoney = cardMoney;
 
-	if (cardMoney != 0)
-		if (gDbCard->Query(DB_QUERY_TYPE_SET_CARD_INFO, cardInfo, NULL))
-		{
-			printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
-		}
+	if (settings->noStoreCardBalance == 0)
+		if (cardMoney != 0)
+			if (gDbCard->Query(DB_QUERY_TYPE_SET_CARD_INFO, cardInfo, NULL))
+			{
+				printf("  ===> GLOBAL IB ERROR: %s\n", gDbCard->lastErrorMessage);
+			}
 
 	printf("[%d]: ID: %08X Money: %4d\n", cardInfo->cardId, cardInfo->cardId, cardInfo->cardMoney);
 
@@ -428,9 +434,10 @@ int mygetch( )
 
 void commonDevice_TurnLight(bool flag)
 {
-	Settings* 		settings 	= Settings::getInstance();
+	if (settings->getEnabledDevice(DVC_RELAY_LIGHT) == 0) return;
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
 	if ((pinNum == 0xFF) || (pinNum == 0x00)) return;
+	Settings* 		settings 	= Settings::getInstance();
 	setPinModeMy(pinNum, PIN_OUTPUT);
 	if (settings->dayLightSaving == 1)
 	{
@@ -452,6 +459,11 @@ void commonDevice_TurnLight(bool flag)
 	else
 		dayLightWork = 1;
 
+
+	if (dayLightWork == 0)
+	{
+		setGPIOState(pinNum, 0);
+	}
 
 	if (flag)
 	{
@@ -643,4 +655,11 @@ void cp2utf( char* str, char* res ) {
 		}
 	}
 	res[ j ] = '\0';
+}
+
+SDWORD maxval (SDWORD prm1, SDWORD prm2)
+{
+	if (prm1 >= prm2)
+		return prm1;
+	return prm2;
 }

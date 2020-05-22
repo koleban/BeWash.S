@@ -197,6 +197,9 @@ PI_THREAD(DebugThread)
 		term_setattr(37);
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		printf("$:%6d rur          |", status.intDeviceInfo.allMoney);
+		term_setattr(37);
+		cur_gotoxy(scr_x-46, dbg_pos++);
+		printf("G:%6d rur          |", globalMoneyCounter);
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		printf("BAL: %5d I: %s |", status.intDeviceInfo.money_currentBalance, &idkfa[0]);
 		cur_gotoxy(scr_x-46, dbg_pos++);
@@ -290,9 +293,15 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("EngState:   %04X|", engine->regState);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Power:    %2d.%dA|", (int)(engine->powerA/10), (int)(engine->powerA%10));	// 17 chars
+		printf("Power:    %2d.%02dA|", (int)(engine->powerA/10), (int)(engine->powerA%10));	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-			printf("wrkTime:%8d|", (unsigned long)((gEngineFullWorkTime+engine->workTimeSec)));	// 17 chars
+		printf("Eng work time:  |");	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf(" %5dh %02dm %02ds |", 
+									(unsigned long)((((gEngineFullWorkTime+engine->workTimeSec)/3600))),
+									(unsigned long)((((gEngineFullWorkTime+engine->workTimeSec)/60)%10)),
+									(unsigned long)(((gEngineFullWorkTime+engine->workTimeSec)%10))
+									);	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		if (engine->bypassMode > 0) attr1 = 42;
 		else attr1 = 40;
@@ -339,8 +348,16 @@ PI_THREAD(DebugThread)
 		cur_gotoxy(scr_x-63, dbg_pos++);
 		printf("----------------+");	// 17 chars
 		cur_gotoxy(scr_x-63, dbg_pos++);
-		printf("Serial: %08X", settings->digitalVector);	// 17 chars
-		printf("|");
+		printf("Serial: %08X|", settings->digitalVector);	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("BD:   %02d.%02d.%4d|", 
+			((settings->blockDeviceParam.BlockDate+1) >> 16) & 0xFF, 
+			((settings->blockDeviceParam.BlockDate+1) >> 12) & 0x0F, 
+			(settings->blockDeviceParam.BlockDate) & 0xFFF);	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("BS:    %9d|", (settings->blockDeviceParam.BlockSumm&0xFFFFFF));	// 17 chars
+		cur_gotoxy(scr_x-63, dbg_pos++);
+		printf("GL:    %9X|", globalLockDevice);	// 17 chars
 
 		cur_loadattr();
 		fflush(stdout);

@@ -21,6 +21,8 @@ int blockWorkPrev = 0;
 bool thButton = 0;
 bool thDisplay = 0;
 
+BYTE globalLockDevice = 0x00;
+
 volatile bool detectInProgress = false;
 
 int main(int argc, char *argv[])

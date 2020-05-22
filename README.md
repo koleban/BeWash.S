@@ -10,3 +10,7 @@ PRG14_PRICE=35
 PRG15_PRICE=50
 // % card bonus if money great [PRG12_PRICE: minimal summ for card pay]
 PRG16_PRICE=20
+
+
+UNLOCK PRG: 1413412
+STOP - 1 

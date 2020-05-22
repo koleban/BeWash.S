@@ -46,10 +46,11 @@ PI_THREAD(RFIDExchangeThread)
 							status.extDeviceInfo.rfid_incomeCardNumber[5]
 							);
 						// TODO: Запросить данные карты, владельца, баланс
-						DB_RFIDCardInfo cardInfo;
-						memset(&cardInfo, 0, sizeof(cardInfo));
-						getCardInfo(status.extDeviceInfo.rfid_incomeCardNumber, &cardInfo);
-						status.intDeviceInfo.money_currentBalance += cardInfo.cardMoney;
+						DB_RFIDCardInfo* cardInfo = &addStatus.db_RFIDCardInfo;
+						memset(cardInfo, 0, sizeof(addStatus.db_RFIDCardInfo));
+						getCardInfo(status.extDeviceInfo.rfid_incomeCardNumber, cardInfo);
+						if (settings->noStoreCardBalance == 0)
+							status.intDeviceInfo.money_currentBalance += cardInfo->cardMoney;
 						///
 						/// Loging in database ...
 						/// New card inserted
@@ -64,10 +65,11 @@ PI_THREAD(RFIDExchangeThread)
 				else
 				{
 					// TODO: КАРТА УБРАНА
-					DB_RFIDCardInfo cardInfo;
-					getCardInfo(lastCardNumber, &cardInfo);
-					if ((status.intDeviceInfo.money_currentBalance - cardInfo.cardMoney) != 0)
-						setCardMoney(lastCardNumber, status.intDeviceInfo.money_currentBalance - cardInfo.cardMoney);
+					DB_RFIDCardInfo* cardInfo = &addStatus.db_RFIDCardInfo;
+					getCardInfo(lastCardNumber, cardInfo);
+					if (settings->noStoreCardBalance == 0)
+						if ((status.intDeviceInfo.money_currentBalance - cardInfo->cardMoney) != 0)
+							setCardMoney(lastCardNumber, status.intDeviceInfo.money_currentBalance - cardInfo->cardMoney);
 
 					///
 					/// Loging in database ...
@@ -79,7 +81,8 @@ PI_THREAD(RFIDExchangeThread)
 					///
 					///
 
-					status.intDeviceInfo.money_currentBalance = 0;
+					if (settings->noStoreCardBalance == 0)
+						status.intDeviceInfo.money_currentBalance = 0;
 					memcpy(&status.extDeviceInfo.rfid_prevCardNumber[0], &lastCardNumber[0], 6);
 					printf("[RFID] Card is gone [%lu]: %02X%02X%02X%02X%02X%02X\n", getCardIDFromBytes(lastCardNumber),
 						status.extDeviceInfo.rfid_incomeCardNumber[0],
@@ -101,19 +104,22 @@ PI_THREAD(RFIDExchangeThread)
 					if ((compareCardNumber(lastCardNumber, status.extDeviceInfo.rfid_incomeCardNumber)) && (!emptyCardNumber(lastCardNumber)) && (!emptyCardNumber(status.extDeviceInfo.rfid_incomeCardNumber)))
 					{
 						// TODO:Карта заменена. Считать баланс. Обновить на карте. Обнулить. Прочитать новую карту
-						DB_RFIDCardInfo cardInfo;
-						getCardInfo(lastCardNumber, &cardInfo);
-						if ((status.intDeviceInfo.money_currentBalance - cardInfo.cardMoney) != 0)
-							setCardMoney(lastCardNumber, status.intDeviceInfo.money_currentBalance - cardInfo.cardMoney);
+						DB_RFIDCardInfo* cardInfo = &addStatus.db_RFIDCardInfo;
+						getCardInfo(lastCardNumber, cardInfo);
+						if (settings->noStoreCardBalance == 0)
+							if ((status.intDeviceInfo.money_currentBalance - cardInfo->cardMoney) != 0)
+								setCardMoney(lastCardNumber, status.intDeviceInfo.money_currentBalance - cardInfo->cardMoney);
 
 						char noteBuffer[1024];
 						sprintf(noteBuffer, "Card is gone (change) [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(lastCardNumber));
 						db->Log(DB_EVENT_TYPE_INT_CARD_GONE, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);
 
-						status.intDeviceInfo.money_currentBalance = 0;
+						if (settings->noStoreCardBalance == 0)
+							status.intDeviceInfo.money_currentBalance = 0;
 
-						getCardInfo(status.extDeviceInfo.rfid_incomeCardNumber, &cardInfo);
-						status.intDeviceInfo.money_currentBalance = cardInfo.cardMoney;
+						getCardInfo(status.extDeviceInfo.rfid_incomeCardNumber, cardInfo);
+						if (settings->noStoreCardBalance == 0)
+							status.intDeviceInfo.money_currentBalance = cardInfo->cardMoney;
 
 						sprintf(noteBuffer, "New card (change) [BAL: %2d, CRD: %lu]", status.intDeviceInfo.money_currentBalance, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
 						db->Log(DB_EVENT_TYPE_INT_CARD_INSERTED, status.intDeviceInfo.program_currentProgram, status.intDeviceInfo.money_currentBalance, noteBuffer);

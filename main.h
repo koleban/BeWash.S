@@ -207,6 +207,7 @@ extern QueueArray* queueKkm;
 extern RejectedCoinInfo rejectedCoinInfo;
 
 extern DeviceInfo 		status;
+extern AddDeviceInfo 	addStatus;
 
 extern int 				winterModeActive;
 extern int 				winterModeEngineActive;
@@ -232,6 +233,9 @@ extern long winterCurrTime;
 extern int lightThreadActive;
 
 extern unsigned long gEngineFullWorkTime;
+
+extern DWORD globalMoneyCounter;
+extern BYTE  globalLockDevice;
 
 extern int Cport[30];
 extern char comports[30][60];
@@ -268,6 +272,8 @@ extern PayInfo payInfo;
 ///
 extern DWORD eepromPrgPrice[16];
 extern int 	currentPrgPriceIndex;
+
+extern int MCPErrorCount;
 
 // GlobalDB for RFID CARD
 extern Database* gDbCard;
@@ -325,6 +331,8 @@ void term_eraseendline();
 long get_uptime();
 long get_prguptime();
 int mygetch( );
+
+SDWORD maxval (SDWORD prm1, SDWORD prm2);
 
 void commonDevice_TurnLight(bool flag);
 void commonDevice_TurnAntiFrost();

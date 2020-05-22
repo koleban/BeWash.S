@@ -134,15 +134,7 @@ struct DBParam_DiscountDate
 	unsigned char DiscountMonth;
 };
 
-struct DB_RFIDCardInfo
-{
-	DWORD		cardId;
-	char		cardNumber[12];
-	char		cardOwner[102];
-	SDWORD		cardMoney;
-	SDWORD		cardBlocked;
-};
-
+struct DB_RFIDCardInfo;
 
 class Database
 {

@@ -19,7 +19,7 @@ all: bewash-crt bewash-shs bewash-cp-z
 
 bewash:
 	$(CC49) $(CFLAGS) -o bewashs.guard guard.cpp qrcode/qrcode.c iniparser/dictionary.c iniparser/iniparser.c other/queue.cpp other/md5.c $(MFLAGS)
-	$(CC49) $(CFLAGS) -o bewashs $(SRCLIST) $(LFLAGS) -D_RFID_DEVICE_CP_Z_ 
+	$(CC49) $(CFLAGS) -o bewashs $(SRCLIST) $(LFLAGS) -D_RFID_DEVICE_CRT288K_ 
 
 bewash-crt:
 	mkdir ./bin/gcc4.9/bewashs/ -p

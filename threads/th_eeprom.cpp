@@ -7,7 +7,9 @@
 #define EP_ADDR_PRG_PRICE		0x0013	// 12x4 byte (48) 0x30 byte
 #define EP_ADDR_PRG_BP_PRICE	0x0043	// 12x4 byte (48) 0x30 byte
 #define EP_ADDR_LAST_PRG_OSMOS	0x0073	// 2
-#define EP_ADDR_STORED_BALANCE	0x0075
+#define EP_ADDR_STORED_BALANCE	0x0075	// 4
+#define EP_ADDR_MONEY_GLOBAL	0x0079	// 4 Общий счетчик денег
+#define EP_ADDR_GLOBAL_LOCK		0x007D	// 4 Флаг блокировки
 DWORD readFromEEPROM_DWORD(EEPROM* eeprom, WORD addr, BYTE* errorCode = NULL)
 {
 	BYTE errCode = 0;
@@ -92,12 +94,24 @@ PI_THREAD(EepromThread)
 	int counter = 0;
 	int balCounter = 0;
 	int osmosLastPrg = 0;
+	DWORD localLockDevice = 0;
 
 	memset (&eepromPrgPrice[0], 0, sizeof(eepromPrgPrice));
 
 	while (settings->useEeprom)
 	{
 		if (!settings->useEeprom) {delay_ms(1000); continue;}
+
+		if (firstRun)
+		{
+			globalLockDevice = readFromEEPROM_DWORD(eeprom, EP_ADDR_GLOBAL_LOCK);
+			localLockDevice = globalLockDevice;
+		}
+		if (localLockDevice != globalLockDevice)
+		{
+			localLockDevice = globalLockDevice;
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_GLOBAL_LOCK, (DWORD)localLockDevice);
+		}
 
 		//////////////
 		/// EEPROM STORE BALANCE
@@ -165,6 +179,24 @@ PI_THREAD(EepromThread)
   				sprintf(sysCmd, "sudo date -s \"%02d/%02d/%d %02d:%02d:00\"", month, day, 1900+year, hour, minute);
 				if ((settings->useEepromDateTime) && (!settings->useHWClock)) {printf("EEPROM service: [DEBUG] Setting date and time from EEPROM"); system(sysCmd);}
   			}
+		}
+
+		//////////////
+		/// EEPROM MONEY GLOBAL COUNTER
+		//////////////
+		DWORD globalMoney = readFromEEPROM_DWORD(eeprom, EP_ADDR_MONEY_GLOBAL);
+
+		if (firstRun)
+		{
+			if (globalMoney == (DWORD)0xFFFFFFFF)
+				globalMoney = 0;
+			globalMoneyCounter = globalMoney;
+		}
+
+		if (globalMoney != globalMoneyCounter)
+		{
+			globalMoney = globalMoneyCounter;
+			writeToEEPROM_DWORD(eeprom, EP_ADDR_MONEY_GLOBAL, globalMoney);
 		}
 
 		//////////////

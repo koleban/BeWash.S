@@ -539,13 +539,18 @@ PI_THREAD(gpioext_wd)
 			if (!result)
 				errorCount++;
 			else
+			{
+				MCPErrorCount = 0;
 				errorCount = 0;
+			}
+
 			if (errorCount > 10)
 			{
 				settings->busyFlag.ButtonWatch++;
-				errorCount=0;
+				errorCount=11;
 				if (errorShowed == 0)
 				{
+					MCPErrorCount++;
 					db->Log(DB_EVENT_TYPE_GPIO_EXTENDER_FAIL, errorCount, errorCount, errorNote);
 					printf("[DEBUG] mcp23017 comunication failed! Reseting device.\n");
 					errorShowed = 1;
