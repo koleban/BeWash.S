@@ -226,6 +226,11 @@ extern time_t			wrkOpenedDateTime;
 extern char idkfa[10];
 extern char iddqd[50];
 
+extern int stopWork;
+extern int stopWorkPrev;
+extern int blockWork;
+extern int blockWorkPrev;
+
 extern time_t prgStartTimer;
 extern long winterWaitTime;
 extern long winterCurrTime;

@@ -147,38 +147,41 @@ PI_THREAD(EepromThread)
 		//////////////
 		/// EEPROM DATE TIME
 		//////////////
-		DWORD date_time_eeprom = readFromEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME);	// 1111 1111 - year 1111 - month 1111 1 - date 111 11 - hour 11 1111 - minute
-
-		if ((counter > 15) && (date_time_eeprom > 0) && (date_time_eeprom < 0xFFFFFFFF))
+		if (!settings->useHWClock)
 		{
-			counter = 0;
-			int day = (date_time_eeprom >> 15) & 0x1F;
-			int month = (date_time_eeprom >> 20) & 0x0F;
-			int year = (date_time_eeprom >> 24);
-			int hour = (date_time_eeprom >> 10) & 0x1F;
-			int minute = (date_time_eeprom >> 4) & 0x3F;
-			time_t currentTime;
-			time(&currentTime);
-			struct tm localTime;
-  			localTime.tm_hour = hour; localTime.tm_min = minute; localTime.tm_sec = 0;
-			localTime.tm_mon = month-1;  localTime.tm_mday = day; localTime.tm_year = year;
-  			double df_second = difftime(currentTime,mktime(&localTime));
-  			if (df_second > 600)
-  			{
-				time(&currentTime);
-  				localTime = *localtime(&currentTime);
-//				unsigned int ddd = (118 << 24) + (3 << 20) + (10 << 15) + (1 << 10) + (20 << 4);
+			DWORD date_time_eeprom = readFromEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME);	// 1111 1111 - year 1111 - month 1111 1 - date 111 11 - hour 11 1111 - minute
 
-  				date_time_eeprom = (localTime.tm_year << 24) + ((localTime.tm_mon+1) << 20) +
-  					(localTime.tm_mday << 15) + (localTime.tm_hour << 10) + (localTime.tm_min << 4);
-				writeToEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME, date_time_eeprom);
-  			}
-  			else if (df_second < -300)
-  			{
-  				char sysCmd[255];
-  				sprintf(sysCmd, "sudo date -s \"%02d/%02d/%d %02d:%02d:00\"", month, day, 1900+year, hour, minute);
-				if ((settings->useEepromDateTime) && (!settings->useHWClock)) {printf("EEPROM service: [DEBUG] Setting date and time from EEPROM"); system(sysCmd);}
-  			}
+			if ((counter > 15) && (date_time_eeprom > 0) && (date_time_eeprom < 0xFFFFFFFF))
+			{
+				counter = 0;
+				int day = (date_time_eeprom >> 15) & 0x1F;
+				int month = (date_time_eeprom >> 20) & 0x0F;
+				int year = (date_time_eeprom >> 24);
+				int hour = (date_time_eeprom >> 10) & 0x1F;
+				int minute = (date_time_eeprom >> 4) & 0x3F;
+				time_t currentTime;
+				time(&currentTime);
+				struct tm localTime;
+	  			localTime.tm_hour = hour; localTime.tm_min = minute; localTime.tm_sec = 0;
+				localTime.tm_mon = month-1;  localTime.tm_mday = day; localTime.tm_year = year;
+	  			double df_second = difftime(currentTime,mktime(&localTime));
+	  			if (df_second > 600)
+	  			{
+					time(&currentTime);
+	  				localTime = *localtime(&currentTime);
+	//				unsigned int ddd = (118 << 24) + (3 << 20) + (10 << 15) + (1 << 10) + (20 << 4);
+	
+	  				date_time_eeprom = (localTime.tm_year << 24) + ((localTime.tm_mon+1) << 20) +
+	  					(localTime.tm_mday << 15) + (localTime.tm_hour << 10) + (localTime.tm_min << 4);
+					writeToEEPROM_DWORD(eeprom, EP_ADDR_DATE_TIME, date_time_eeprom);
+	  			}
+	  			else if (df_second < -300)
+	  			{
+	  				char sysCmd[255];
+	  				sprintf(sysCmd, "sudo date -s \"%02d/%02d/%d %02d:%02d:00\"", month, day, 1900+year, hour, minute);
+					if ((settings->useEepromDateTime) && (!settings->useHWClock)) {printf("EEPROM service: [DEBUG] Setting date and time from EEPROM"); system(sysCmd);}
+	  			}
+	  		}
 		}
 
 		//////////////

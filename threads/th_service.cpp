@@ -84,6 +84,7 @@ PI_THREAD(TurnLightWatch)
 int thServiceSetupSystemDateTime(Settings* settings)
 {
 	if (!settings->useDatabase) return 1;
+	if (settings->useHWClock) return 1;
 
 	printf ("   >> Init GLOBAL database ... \n");
 	Database* gDb = new Database();
@@ -111,14 +112,16 @@ int thServiceSetupSystemDateTime(Settings* settings)
 				systime.GetTime(sh, si, ss);
 				char serverDateTime[100];
 				sprintf(serverDateTime, "%02d/%02d/%04d %02d:%02d:%02d", sm, sd, sy, sh, si, ss);
-				printf("[Database server]: Server time %s\n", serverDateTime);
+				//printf("[Database server]: Server time %s\n", serverDateTime);
 				sprintf(serverDateTime, "sudo date -s\"%02d/%02d/%04d %02d:%02d:%02d\"", sm, sd, sy, sh, si, ss);
-				if ((settings->useDatabaseDateTime)  && (!settings->useHWClock)) {printf("DateTime service: [DEBUG] Setting date and time from Database server"); system(serverDateTime);}
+				if ((settings->useDatabaseDateTime)  && (!settings->useHWClock)) 
+					{ /*printf("DateTime service: [DEBUG] Setting date and time from Database server"); */
+					system(serverDateTime);}
 				// Инициализация переменных времени
    				prgStartTimer = time(NULL);							// Время запуска программы
-    			winterCurrTime = prgStartTimer;						// Зимний режим, время последней операции для отсчета простоя
+    			//winterCurrTime = prgStartTimer;						// Зимний режим, время последней операции для отсчета простоя
 			}
-			printf("done.");
+			//printf("done.");
 		}
 		gDb->Close();
 	}
@@ -215,9 +218,13 @@ PI_THREAD(load_params_from_db)
 	commonDb->Init(settings);
 	while (1)
 	{
-		if (dateTimeNeedSync == 0)
-			dateTimeNeedSync = thServiceSetupSystemDateTime(settings);
 		if (!settings->useDatabase) {delay_ms(60000); continue; }
+		if (dateTimeNeedSync-- <= 0)
+		{
+			thServiceSetupSystemDateTime(settings);
+			dateTimeNeedSync = 60;
+		}
+
 		if (commonDb->Open() != DB_OK) {delay_ms(5000); continue; }
 		if (!commonDb->IsOpened())
 		{

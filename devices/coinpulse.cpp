@@ -171,8 +171,7 @@ void CoinPulseDevice::Init(Settings* settings)
 	pinCoinType4 = settings->getPinConfig(currentDeviceID, 4);		// 10 RUR
 	pinCoinTypeVisa = settings->getPinConfig(DVC_COIN_PULSE_ACCEPTOR_VISA, 1);
 
-	pinCoinLock  = settings->getPinConfig(currentDeviceIDAdd, 4);	// CoinLock
-	if (pinCoinLock >= 0x5F) settings->getPinConfig(currentDeviceIDAdd, 1);
+	pinCoinLock = settings->getPinConfig(currentDeviceIDAdd, 1);	// CoinLock
 
 	if ((pinCoinType1 != 0xFF) && (pinCoinType1 != 0x00))
 		{ pullUpDnControl (pinCoinType1, PUD_UP); setPinModeMy(pinCoinType1, 1); wiringPiISR( pinCoinType1, INT_EDGE_FALLING, &intCoin1);}
@@ -184,9 +183,12 @@ void CoinPulseDevice::Init(Settings* settings)
 		{ pullUpDnControl (pinCoinType4, PUD_UP); setPinModeMy(pinCoinType4, 1); wiringPiISR( pinCoinType4, INT_EDGE_FALLING, &intCoin4);}
 	if ((pinCoinTypeVisa != 0xFF) && (pinCoinTypeVisa!= 0x00) && (settings->getEnabledDevice(DVC_COIN_PULSE_ACCEPTOR_VISA)))
 		{ pullUpDnControl (pinCoinTypeVisa, PUD_UP); setPinModeMy(pinCoinTypeVisa, 1); wiringPiISR( pinCoinTypeVisa, INT_EDGE_FALLING, &intCoinVISA);}
-	if (pinCoinLock != 0xFF)  { setPinModeMy(pinCoinLock, 0); }
 
-	setGPIOState(pinCoinLock, 1);
+	if (settings->getEnabledDevice(currentDeviceIDAdd))
+	{
+		if (pinCoinLock != 0xFF)  { setPinModeMy(pinCoinLock, 0); }// OUTPUT
+		setGPIOState(pinCoinLock, 1);
+	}
 }
 
 bool CoinPulseDevice::cmdPoll()
@@ -207,6 +209,10 @@ bool CoinPulseDevice::cmdPoll()
 bool CoinPulseDevice::Lock(bool newLockState)
 {
 	if ((settings->getEnabledDevice(DVC_COIN_PULSE_ACCEPTOR_INHIBIT)) && (pinCoinLock != 0xFF))
+	{
+		if (pinCoinLock != 0xFF)  { setPinModeMy(pinCoinLock, 0); }// OUTPUT
+		delay_ms(1);
 		setGPIOState(pinCoinLock, !newLockState);
+	}
 	return newLockState;
 }

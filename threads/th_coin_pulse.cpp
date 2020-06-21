@@ -25,7 +25,20 @@ PI_THREAD(CoinPulseWatch)
 		while (settings->threadFlag.CoinPulseWatch)
 		{
 			settings->workFlag.CoinPulseWatch = 0;
-			coinDevice->Lock(0);
+			if (settings->workTimeDevice.UseWorkTime)
+			{
+				if (stopWork == 0)
+				{
+					coinDevice->Lock(1);
+					delay_ms(200);
+				}
+				else
+					coinDevice->Lock(0);
+			}
+			else
+			{
+				coinDevice->Lock(0);
+			}
 			coinDevice->cmdPoll();
 			delay_ms(25);
 		}

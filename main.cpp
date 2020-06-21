@@ -31,8 +31,8 @@ int main(int argc, char *argv[])
 	/////////////////////////
 	///
 	///
-    prgVer = 2.10;
-    prgBuild = 915;
+    prgVer = 2.11;
+    prgBuild = 2;
     ///
     ///
     /////////////////////////

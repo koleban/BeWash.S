@@ -18,6 +18,7 @@ char iddqd_etalon[20];
 
 double dsSize = 0;
 double discSummAdd = 0;
+double dsCurrent = 0;
 extern int dayLightWork;
 
 long noiseRelayTime = 0;
@@ -291,6 +292,10 @@ PI_THREAD(IntCommonThread)
 
 			for (int index=1; index<MONEY_COIN_TYPE_COUNT; index++)
 			{
+				dsCurrent = (double)maxval(settings->discountCardDeposit,settings->cardBonus);
+				if (addStatus.db_RFIDCardInfo.cardDiscount > 0)
+					dsCurrent = (double)maxval(addStatus.db_RFIDCardInfo.cardDiscount,(SDWORD)dsCurrent);
+
 				// Обработаем монеты
 				// Количество монет для обработки
 				int subVal = (status.extDeviceInfo.coin_incomeInfo.Count[index] - inCoinInfo.Count[index]);
@@ -329,10 +334,10 @@ PI_THREAD(IntCommonThread)
 					}
 
 					// Проверим: Если вставлена карта и есть скидка на пополнение
-					if ((status.extDeviceInfo.rfid_cardPresent) && (maxval(settings->discountCardDeposit,settings->cardBonus) > 0))
+					if ((status.extDeviceInfo.rfid_cardPresent) && (dsCurrent > 0))
 					{
 						// Доначислим скидку для карты
-						dsSize += ((double)(subVal * settings->coinWeight.Weight[index]) * ((double)maxval(settings->discountCardDeposit,settings->cardBonus) / 100));
+						dsSize += ((double)(subVal * settings->coinWeight.Weight[index]) * (dsCurrent / 100));
 						if (dsSize >= 1)
 						{
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
@@ -367,10 +372,10 @@ PI_THREAD(IntCommonThread)
 					amountCash += subVal*settings->moneyWeight.Weight[index];
 					printf("[DEBUG] IntThread: Bill index: %d [%d] (%d * %d) = %d\n", index, inMoneyInfo.Count[index], subVal, settings->moneyWeight.Weight[index], subVal*settings->moneyWeight.Weight[index]);
 					// Проверим: Если вставлена карта и есть скидка на пополнение
-					if ((status.extDeviceInfo.rfid_cardPresent) && (maxval(settings->discountCardDeposit,settings->cardBonus) > 0))
+					if ((status.extDeviceInfo.rfid_cardPresent) && (dsCurrent > 0))
 					{
 						// Доначислим скидку для карты
-						dsSize += ((double)(subVal * settings->moneyWeight.Weight[index]) * ((double)maxval(settings->discountCardDeposit,settings->cardBonus) / 100));
+						dsSize += ((double)(subVal * settings->moneyWeight.Weight[index]) * (dsCurrent / 100));
 						if (dsSize >= 1)
 						{
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
@@ -448,6 +453,8 @@ PI_THREAD(IntCommonThread)
 					printf("[DEBUG] IntThread: SERVICE CARD or KEY. Only prg number %d\n", settings->serviceCards.prgNumber);
 					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
 					status.intDeviceInfo.extPrgNeedUpdate = 1;
+					if (status.intDeviceInfo.money_currentBalance <= 1)
+						status.intDeviceInfo.money_currentBalance = settings->serviceCards.washBalance;
 				}
 			}
 			else
@@ -480,10 +487,12 @@ PI_THREAD(IntCommonThread)
 					printf("[DEBUG] IntThread: SERVICE CARD. Only prg number %d\n", settings->serviceCards.prgNumber);
 					status.intDeviceInfo.program_currentProgram = 0;
 					status.intDeviceInfo.extPrgNeedUpdate = 1;
-					delay_ms(2000);
+					delay_ms(1000);
 
 					status.intDeviceInfo.program_currentProgram = settings->serviceCards.prgNumber;
 					status.intDeviceInfo.extPrgNeedUpdate = 1;
+					if (status.intDeviceInfo.money_currentBalance <= 1)
+						status.intDeviceInfo.money_currentBalance = settings->serviceCards.washBalance;
 				}
 			}
 		}

@@ -546,7 +546,7 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 				while (st->Fetch())
 				{
 		    		st->Get(1, outParams->cardBlocked);
-		    		st->Get(1, outParams->cardDiscount);
+		    		st->Get(2, outParams->cardDiscount);
 		    		break;
 				}
 
