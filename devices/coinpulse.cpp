@@ -212,7 +212,7 @@ bool CoinPulseDevice::Lock(bool newLockState)
 	{
 		if (pinCoinLock != 0xFF)  { setPinModeMy(pinCoinLock, 0); }// OUTPUT
 		delay_ms(1);
-		setGPIOState(pinCoinLock, !newLockState);
+		setGPIOState(pinCoinLock, newLockState);
 	}
 	return newLockState;
 }
