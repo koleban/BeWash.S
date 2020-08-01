@@ -169,9 +169,11 @@ bool Settings::loadConfig (char* fileName)
 
 #ifndef _RFID_DEVICE_CP_Z_
 	useRFID2Mobile						= iniparser_getuint(ini, "Common:useRFID2Mobile",		0);
+	useRFID2OnlyDiscount				= iniparser_getuint(ini, "Common:useRFID2OnlyDiscount",	0);
 #endif
 #ifdef _RFID_DEVICE_CP_Z_
 	useRFID2Mobile						= iniparser_getuint(ini, "Common:useRFID2Mobile",		1);
+	useRFID2OnlyDiscount				= iniparser_getuint(ini, "Common:useRFID2OnlyDiscount",	0);
 #endif
 	rfidParam.D0 						= iniparser_getuint(ini, "RFID:D0",						5);
 	rfidParam.D1 						= iniparser_getuint(ini, "RFID:D1",						6);
@@ -415,6 +417,9 @@ bool Settings::loadConfig (char* fileName)
 	sprintf(visaParam.login, 	"%s", iniparser_getstring(ini, 	"VISA:Login", 			""	));
 	sprintf(visaParam.password, 	"%s", iniparser_getstring(ini, 	"VISA:Password", 			""	));
 	visaParam.debug							= iniparser_getuint(ini,"VISA:Debug",	0);
+	sprintf(visaParam.tel, 	"%s", iniparser_getstring(ini, 	"VISA:tel", 			""	));
+	sprintf(visaParam.email, 	"%s", iniparser_getstring(ini, 	"VISA:email", 			""	));
+	visaParam.paymentSumm							= iniparser_getuint(ini,"VISA:PaymentSumm",	0);
 	//--
 	visaParam.workMode						= iniparser_getuint(ini, 	"VISA:WorkMode",	0);
 	visaParam.sub10Btn.pinNum				= (BYTE)iniparser_getuint(ini, 	"VISA:Sub10Btn_PIN",	0);

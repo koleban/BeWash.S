@@ -42,6 +42,7 @@ PI_THREAD(RemoteCounterCtrlWatch)
 		for(int index = 1; index <= settings->modbus.slaveCount; index++)
 			if (remoteCtrl[index].doCmd == 1)
 			{
+				remoteCtrl[index].doCmd = 0;
 		   		int devId = remoteCtrl[index].devId;
 				RS485_ClearBuffer(ctx);
 				remoteCtrl[index].cmdResult = 0;
@@ -88,7 +89,7 @@ PI_THREAD(RemoteCounterCtrlWatch)
 						}
 					}
 
-					delay_ms(500);
+					delay_ms(200);
 
 					if (settings->debugFlag.RemoteCounterCtrlThread)
 						printf("[MODBUS] Salve device %02d do command READ COUNTER 2\n", index);

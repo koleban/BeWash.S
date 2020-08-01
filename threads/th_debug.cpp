@@ -199,7 +199,7 @@ PI_THREAD(DebugThread)
 		printf("$:%6d rur          |", status.intDeviceInfo.allMoney);
 		term_setattr(37);
 		cur_gotoxy(scr_x-46, dbg_pos++);
-		printf("G:%6d rur          |", globalMoneyCounter);
+		printf("G:%6u rur          |", globalMoneyCounter);
 		cur_gotoxy(scr_x-46, dbg_pos++);
 		printf("BAL: %5d I: %s |", status.intDeviceInfo.money_currentBalance, &idkfa[0]);
 		cur_gotoxy(scr_x-46, dbg_pos++);

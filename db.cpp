@@ -1,5 +1,9 @@
 #include "main.h"
 
+
+//INSERT INTO KKM (LOG_DATE, KKM_DATE, DEV_ID, DOC_SUMM, DOC_END_ID, FN_DOC_NUM, NOTE, CMT_FLAG) VALUES ({0}, {1}, {2}, {3}, 0, 0, {4}, 0);
+//SELECT ID, DEV_ID, DOC_SUMM, KKM_DATE, FN_DOC_NUM FROM KKM WHERE (KKM_DATE >= '{0} {1}') AND (CMT_FLAG = 0) ORDER BY KKM_DATE, ID
+
 Database::Database()
 {
 	useDatabase = 1;
@@ -70,6 +74,54 @@ int Database::Log(int eventId, double data1, double data2, char* note)
 	lastError = DB_OK; 
 	queueLog->QueuePut(eventId, data1, data2, note);
 	settings->busyFlag.QueueLog--;
+	return lastError;
+}
+
+int Database::CreateKKMVisaDoc(time_t eventTime, int devId, double summVisa, char* note)
+{
+	if (!useDatabase) { lastError = DB_OK; return lastError;}
+	this->Open();
+	if (!isOpened)
+	{
+        sprintf(lastErrorMessage, "%s", "Database connection is closed");
+		lastError = DB_CONNECTION_CLOSED;
+		return lastError;
+	}
+
+	char eventText[1024];
+	char queryStr[] = "INSERT INTO KKM (LOG_DATE, KKM_DATE, DEV_ID, DOC_SUMM, DOC_END_ID, FN_DOC_NUM, NOTE, CMT_FLAG) VALUES (?, ?, ?, ?, 0, 0, ?, 0);";
+
+	time_t currentTime = time(NULL);
+	struct tm * timeinfo;
+	timeinfo = localtime (&eventTime);
+	IBPP::Timestamp eventTimeVal;
+	if ((currentTime - eventTime) > 90000)
+		timeinfo = localtime (&currentTime);
+	eventTimeVal.SetDate(1900+timeinfo->tm_year, timeinfo->tm_mon+1, timeinfo->tm_mday);
+	eventTimeVal.SetTime(timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+	IBPP::Transaction tr = IBPP::TransactionFactory(db);
+	try
+	{
+		tr->Start();
+		IBPP::Statement st = IBPP::StatementFactory(db, tr);
+		st->Prepare(queryStr);
+		st->Set(1, eventTimeVal);
+		st->Set(2, eventTimeVal);
+		st->Set(3, devId);
+		st->Set(4, summVisa);
+		st->Set(5, note);
+		st->Execute();
+		tr->Commit();
+		lastError = DB_OK;
+	}
+	catch (IBPP::Exception& e)
+	{
+		this->Close();
+		sprintf(lastErrorMessage, "%s", e.ErrorMessage());
+		lastError = DB_QUERY_ERROR;
+		return lastError;
+	}
+	this->Close();
 	return lastError;
 }
 

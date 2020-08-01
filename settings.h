@@ -423,10 +423,14 @@ struct VISAParam			// Настройки эквайринга
 	char login[126];			// Логин сервиса
 	char password[126];			// Пароль сервиса
 	int	 debug;					// Флаг вывода отладки
+	char tel[50];
+	char email[50];
+	int  paymentSumm;
 
 	int workMode;				// Режим работы
 								// 0 - Выбор предопределенной суммы платежа кнопкой
 								// 1 - Кнопки -10 +10 +50 Оплатить Отмена
+								// 2 - Постоянный автоплатеж на сумму VISAParam::paymentSumm
 	VISAButton sub10Btn;
 	VISAButton add10Btn;
 	VISAButton add50Btn;
@@ -526,6 +530,7 @@ public:
 	unsigned int		useHWClock;				// Используется RTC и время мы не контролируем
 	unsigned int		useStoreBalance;		// Сохранять баланс в EEPROM
 	unsigned int		useRFID2Mobile;			// Использовать прикладываемый считыватель
+	unsigned int		useRFID2OnlyDiscount;	// Карта только начисляет скидку и вытаскивается при 0 балансе
 	char				ethName[40];			// Имя сетевого интерфейса (default: eth0)
 	// ***********************************************************************************************************
   	bool 				getEnabledDevice	(int deviceID);								// Усттройство разрешено ?

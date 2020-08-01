@@ -158,5 +158,7 @@ public:
 	int LogDb(time_t eventTime, int eventId, double data1, double data2, char* note);
 	int Log(int eventId, double data1, double data2, char* note);
 	int Query(DWORD queryType, void* queryParam, void* queryOutput);
+	int CreateKKMVisaDoc(time_t eventTime, int devId, double summVisa, char* note);
+
 };
 #endif

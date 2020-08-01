@@ -64,6 +64,15 @@ PI_THREAD(RFIDWatch)
 				if (settings->useRFID2Mobile == 1)
 				{
 					BYTE zeroCrdNum[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+					if (settings->useRFID2OnlyDiscount == 1)
+					{
+						if (status.intDeviceInfo.money_currentBalance == 0)
+						{
+							// активная карта вставленна
+							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
+							status.extDeviceInfo.rfid_cardPresent = 0;
+						}
+					}
 					if ((rfidDevice->cardPresent) && (!emptyCardNumber(rfidDevice->cardNumber)))
 					{
 						if (memcmp(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6) == 0)
@@ -72,18 +81,31 @@ PI_THREAD(RFIDWatch)
 							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
 							status.extDeviceInfo.rfid_cardPresent = 1;
 							prevCard = 1;
+							if (settings->useRFID2OnlyDiscount == 1)
+							{
+								double dsCurrent = (double)maxval(settings->discountCardDeposit,settings->cardBonus);
+								if ((status.extDeviceInfo.rfid_cardPresent) && (dsCurrent > 0))
+								{
+									// Доначислим скидку для карты
+									status.intDeviceInfo.money_currentBalance += (int)(status.intDeviceInfo.money_currentBalance * (dsCurrent / 100));
+									printf("[DEBUG] RFIDThread: Discount for card deposite: add %d rur\n", (int)(status.intDeviceInfo.money_currentBalance * (dsCurrent / 100)));
+								}
+							}
 						}
-						if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) == 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
+						if (settings->useRFID2OnlyDiscount == 0)
 						{
-							// активная карта вставленна
-							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
-							status.extDeviceInfo.rfid_cardPresent = 0;
-						}
-						if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) != 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
-						{
-							// активная карта изменена
-							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
-							prevCard = 1;
+							if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) == 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
+							{
+								// активная карта вставленна
+								memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
+								status.extDeviceInfo.rfid_cardPresent = 0;
+							}
+							if ((memcmp(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6) != 0) && (status.extDeviceInfo.rfid_cardPresent == 1) && (prevCard == 0))
+							{
+								// активная карта изменена
+								memcpy(status.extDeviceInfo.rfid_incomeCardNumber, rfidDevice->cardNumber, 6);
+								prevCard = 1;
+							}
 						}
 					}
 					else

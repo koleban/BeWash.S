@@ -87,15 +87,15 @@ PI_THREAD(AlienDeviceWatch)
 			while ((remoteCtrl[slaveId].cmdResult > 0xFFFF) && (retryCounter-- > 0))
 			{
 				if (settings->debugFlag.AlienDeviceThread)
-					printf ("          [1] READ COMMAND COUNTER 1\n");
+					printf ("          [%d] READ COMMAND COUNTER %d\n", slaveId, slaveId);
 				remoteCtrl[slaveId].cmdRead = 1;
 				remoteCtrl[slaveId].cmdResult = 0xFFFFFFFFUL;
 				remoteCtrl[slaveId].doCmd = 1;
 				while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
 			}
 			if (settings->debugFlag.AlienDeviceThread)
-				printf ("          [1] COMMAND RESULT: %08X (timeout: %d) Counter [1 rur, 10 rur]: [%d, %d]\n", remoteCtrl[slaveId].cmdResult, timeout, remoteCounter[index][0], remoteCounter[index][1]);
-			if ((remoteCtrl[slaveId].cmdResult > 0xFFFFUL) || (timeout < 0)) continue;
+				printf ("          [%d] COMMAND RESULT: %08X (timeout: %d) Counter [1 rur, 10 rur]: [%d, %d]\n", slaveId, remoteCtrl[slaveId].cmdResult, timeout, remoteCounter[index][0], remoteCounter[index][1]);
+			if ((remoteCtrl[slaveId].cmdResult > 0xFFFFUL) || (timeout < 0)) { continue;}
 
 			// If we received ZERO in answer. Continue.
 			if ((remoteCounter[index][0] + remoteCounter[index][1]) == 0) { delay_ms(100); continue;}
