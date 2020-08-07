@@ -64,14 +64,12 @@ PI_THREAD(RFIDWatch)
 				if (settings->useRFID2Mobile == 1)
 				{
 					BYTE zeroCrdNum[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-					if (settings->useRFID2OnlyDiscount == 1)
+					if ((status.intDeviceInfo.money_currentBalance <= 1) && (status.intDeviceInfo.program_currentProgram != 0))
 					{
-						if (status.intDeviceInfo.money_currentBalance == 0)
-						{
-							// активная карта вставленна
-							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
-							status.extDeviceInfo.rfid_cardPresent = 0;
-						}
+						status.intDeviceInfo.money_currentBalance = 0;
+						// активная карта вставленна
+						memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
+						status.extDeviceInfo.rfid_cardPresent = 0;
 					}
 					if ((rfidDevice->cardPresent) && (!emptyCardNumber(rfidDevice->cardNumber)))
 					{
