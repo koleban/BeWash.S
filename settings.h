@@ -131,6 +131,14 @@ enum TDeviceWorkMode
 	VISAMode = 4
 };
 
+struct CardDiscount_v2
+{
+    int				useCardDiscount_v2;
+	int				afterSumm[5];					//	После какой	суммы владельцу карты
+	int 			discountSize[5];				//  Размер скидки определяемый суммой
+	int 			calcDays;						//  Количество учитываемых дней для рассчета суммы
+};
+
 struct MoneyCoinInfo
 {
 	WORD Count[MONEY_COIN_TYPE_COUNT];
@@ -149,11 +157,13 @@ struct DB_RFIDCardInfo
 	SDWORD		cardMoney;
 	SDWORD		cardBlocked;
 	SDWORD		cardDiscount;
+	SDWORD		cardAllMoney;
 };
 
 struct AddDeviceInfo
 {
 	DB_RFIDCardInfo db_RFIDCardInfo;
+	CardDiscount_v2 cardDiscount_v2;
 };
 
 struct ExtDeviceInfo
@@ -497,11 +507,11 @@ private:
 	Settings& operator=( Settings& );
 	//
 	// Общие параметры "Устройств" и "Подсистем"
-	DWORD		 		pinDevice[100];			// Массив конфигурационных параметров (0x01020304) (Для каждого устройства назначается PIN до 4-х шт)
-	BYTE		 		enabledDevice[100];		// Массив флагов разрешения использования
 	dictionary*   		ini;
 
 public:
+	DWORD		 		pinDevice[100];			// Массив конфигурационных параметров (0x01020304) (Для каждого устройства назначается PIN до 4-х шт)
+	BYTE		 		enabledDevice[100];		// Массив флагов разрешения использования
     //
     // Общие параметры "Устройств" и "Подсистем"
 	ThreadFlag			threadFlag;				// Флаги отражающие использования потоков подсистем и устройств
@@ -565,6 +575,8 @@ public:
 	//
 	// Скидки на жетоны
 	CoinDiscount		coinDiscount;
+	// Скидки на карты от накопительной суммы
+	CardDiscount_v2		cardDiscount_v2;
 	//
 	// Устройство "КУПЮРОПРИЕМНИК"
 	MoneyCoinWeight		moneyWeight;

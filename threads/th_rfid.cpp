@@ -82,6 +82,7 @@ PI_THREAD(RFIDWatch)
 							if (settings->useRFID2OnlyDiscount == 1)
 							{
 								double dsCurrent = (double)maxval(settings->discountCardDeposit,settings->cardBonus);
+								
 								if ((status.extDeviceInfo.rfid_cardPresent) && (dsCurrent > 0))
 								{
 									// Доначислим скидку для карты
@@ -112,7 +113,8 @@ PI_THREAD(RFIDWatch)
 						{
 							memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
 							int tmp22 = 0;
-							while ((rfidDevice->cardPresent) && (tmp22++ < 10)) { rfidDevice->cmdPoll(); delay_ms(250);}
+// TEST //					while ((rfidDevice->cardPresent) && (tmp22++ < 10)) { rfidDevice->cmdPoll(); delay_ms(250);}
+							while ((rfidDevice->cardPresent) && (tmp22++ < 3)) { rfidDevice->cmdPoll(); delay_ms(150);}
 						}
 						prevCard = 0;
 					}

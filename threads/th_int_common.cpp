@@ -296,6 +296,16 @@ PI_THREAD(IntCommonThread)
 				if (addStatus.db_RFIDCardInfo.cardDiscount > 0)
 					dsCurrent = (double)maxval(addStatus.db_RFIDCardInfo.cardDiscount,(SDWORD)dsCurrent);
 
+				if (addStatus.cardDiscount_v2.useCardDiscount_v2 == 1)
+				{
+					for (int i=0; i < 5; i++)
+					{
+						if (addStatus.cardDiscount_v2.afterSumm[i] == 0) continue;
+						if (addStatus.cardDiscount_v2.afterSumm[i] >= addStatus.db_RFIDCardInfo.cardAllMoney)
+							dsCurrent = (double)maxval(addStatus.cardDiscount_v2.discountSize[i],(SDWORD)dsCurrent);
+					}
+				}
+
 				// Обработаем монеты
 				// Количество монет для обработки
 				int subVal = (status.extDeviceInfo.coin_incomeInfo.Count[index] - inCoinInfo.Count[index]);
@@ -397,6 +407,7 @@ PI_THREAD(IntCommonThread)
 				}
 			}
 
+/*
 			if (status.extDeviceInfo.rfid_cardPresent)
 			{
 				if ((summWithCardPrev != summWithCard) && (settings->progPrice[12] > 0) && (settings->progPrice[16] > 0))
@@ -411,6 +422,7 @@ PI_THREAD(IntCommonThread)
 					}
 				}
 			}
+*/
 
 			settings->busyFlag.ExtCommonThread--;
 			settings->busyFlag.NetClient--;
@@ -504,7 +516,7 @@ PI_THREAD(IntCommonThread)
 		if ((lastCurrentProgram != status.intDeviceInfo.program_currentProgram) || (t_currFreq > 0))
 		{
 			int timeOutCounter = 100;
-			while ((settings->busyFlag.TimeTickThread) && (timeOutCounter-- > 0)) {delayTime--; delay_ms(1);}
+// TEST //	while ((settings->busyFlag.TimeTickThread) && (timeOutCounter-- > 0)) {delayTime--; delay_ms(1);}
 			lastCurrentProgram = status.intDeviceInfo.program_currentProgram;
 
 			if ((status.intDeviceInfo.program_currentProgram > 0) && (status.intDeviceInfo.program_currentProgram < 16))

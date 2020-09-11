@@ -7,6 +7,7 @@ Settings* Settings::p_instance = 0;
 
 Settings::Settings()
 {
+	memset(&cardDiscount_v2, 	0x00, sizeof(cardDiscount_v2));
 	memset(&coinDiscount, 	0x00, sizeof(coinDiscount));
 	memset(&moneyWeight, 	0x00, sizeof(moneyWeight));
 	memset(&coinWeight, 	0x00, sizeof(coinWeight));
@@ -247,7 +248,7 @@ bool Settings::loadConfig (char* fileName)
 	debugFlag.ButtonTerminalThread		= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:ButtonTerminalThread", 	0);
 	debugFlag.VisaDeviceThread			= (debugFlag.DebugThread == 1) && iniparser_getuint(ini, "DebugFlag:VisaDeviceThread", 	0);
 
-	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyAMA0"	));
+	sprintf(modbus.portName, "%s", iniparser_getstring(ini,	"Modbus:PORT", "/dev/ttyS0"	));
 	modbus.baudRate 						= iniparser_getuint(ini, 	"Modbus:BAUND",			9600);
 	modbus.dataParity 					= (char)(0xFF & iniparser_getuint(ini, 	"Modbus:PARITY",		'N'));	// œ–»Õ»Ã¿≈“ "—»Ã¬ŒÀ" (char) Val: 'N' 'O' 'D'
 	modbus.dataBit 						= iniparser_getuint(ini, 	"Modbus:BIT",			8);
@@ -297,10 +298,10 @@ bool Settings::loadConfig (char* fileName)
 	sprintf(gdatabaseSettings.userId, 		"%s", iniparser_getstring(ini, "GlobalDatabase:UserId", 		"SYSDBA"));
 	sprintf(gdatabaseSettings.userPasswd, 	"%s", iniparser_getstring(ini, "GlobalDatabase:UserPasswd", 	"masterkey"));
 
-	sprintf(comports[10], 	"%s", iniparser_getstring(ini, 	"Engine:PORT", 			"/dev/ttyAMA0"	));
+	sprintf(comports[10], 	"%s", iniparser_getstring(ini, 	"Engine:PORT", 			"/dev/ttyS0"	));
 	engine_baundRate 			= iniparser_getuint(ini, 	"Engine:BAUND",			9600);
 	engine_deviceType 			= iniparser_getuint(ini, 	"Engine:DEVICE_TYPE",	3);
-	valveTimeOff 				= iniparser_getuint(ini, 	"Engine:ValveTimeOff",	2);
+	valveTimeOff 				= iniparser_getuint(ini, 	"Engine:ValveTimeOff",	5);
 	engine_relay 				= (DWORD)iniparser_getuint(ini, 	"Engine:Relay",	0);
 	bypassCounter				= iniparser_getuint(ini, 	"Engine:BypassCounter",	1);
 	bypassTimeMs				= iniparser_getuint(ini, 	"Engine:bypassTimeMs",	100);
@@ -333,6 +334,16 @@ bool Settings::loadConfig (char* fileName)
 	{
 		sprintf(paramName, 	"ServiceCards:CardID_%d", index+1);
 		serviceCards.cardId[index] = iniparser_getuint(ini, paramName, 0);
+	}
+
+	addStatus.cardDiscount_v2.useCardDiscount_v2 	= iniparser_getuint(ini, 	"CardDiscount_v2:UseCardDiscount",	0);
+	addStatus.cardDiscount_v2.calcDays 				= iniparser_getuint(ini, 	"CardDiscount_v2:—alcDays",	90);
+	for (index=0; index < 5; index++)
+	{
+		sprintf(paramName, 	"CardDiscount_v2:Summ_%d", index+1);
+		addStatus.cardDiscount_v2.afterSumm[index] = iniparser_getuint(ini, paramName, 0);
+		sprintf(paramName, 	"CardDiscount_v2:Discount_%d", index+1);
+		addStatus.cardDiscount_v2.discountSize[index] = iniparser_getuint(ini, paramName, 0);
 	}
 
 	//
@@ -478,7 +489,306 @@ Pay150Btn_PIN = 0
 Pay200Btn_PIN = 0
 Pay500Btn_PIN = 0
 */
+/**********************************************/
+/***                USER DEFINE HELPER      ***/
+/**********************************************/
 
+/*--------------------------------------------*/
+/*                   DEVICE NAME              */
+/*--------------------------------------------*/
+/* 
+	DVC_BUTTON_STOP
+	DVC_BUTTON01
+	DVC_BUTTON02
+	DVC_BUTTON03
+	DVC_BUTTON04
+	DVC_BUTTON05
+	DVC_BUTTON06
+	DVC_BUTTON07
+	DVC_BUTTON08
+	DVC_BUTTON09
+	DVC_BUTTON10
+	DVC_BUTTON_COLLECTION
+	DVC_BUTTON_SETTINGS
+	DVC_SENSOR_BYPASS
+	DVC_RELAY01
+	DVC_RELAY02
+	DVC_RELAY03
+	DVC_RELAY04
+	DVC_RELAY05
+	DVC_RELAY06
+	DVC_RELAY07
+	DVC_RELAY08
+	DVC_RELAY_LIGHT
+	DVC_COIN_PULSE_ACCEPTOR
+	DVC_COIN_PULSE_ACCEPTOR_IN1
+	DVC_COIN_PULSE_ACCEPTOR_IN2
+	DVC_COIN_PULSE_ACCEPTOR_IN3
+	DVC_COIN_PULSE_ACCEPTOR_IN4
+	DVC_COIN_PULSE_ACCEPTOR_VISA_IN1
+	DVC_COIN_PULSE_ACCEPTOR_INHIBIT
+	DVC_GPIO_EXTENDER_RESET
+*/
+/*--------------------------------------------*/
+/*--------------------------------------------*/
+
+	index = DVC_BUTTON_STOP;
+	unsigned int tmpVal = 0;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON_STOP", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 0;
+		pinDevice[DVC_BUTTON02] = tmpVal;
+		enabledDevice[DVC_BUTTON02] = 1;
+	}
+
+	index = DVC_BUTTON02+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON01", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON03+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON02", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON04+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON03", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON05+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON04", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON06+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON05", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON07+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON06", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON08+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON07", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON09+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON08", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON10+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON09", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON11+1;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON10", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON_COLLECTION;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON_COLLECTION", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_BUTTON_SETTINGS;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_BUTTON_SETTINGS", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_SENSOR_BYPASS;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_SENSOR_BYPASS", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY01;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY01", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY02;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY02", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY03;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY03", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY04;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY04", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY05;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY05", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY06;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY06", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY07;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY07", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY08;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY08", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_RELAY_LIGHT;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_RELAY_LIGHT", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_IN1", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = (pinDevice[index] & 0xFFFFFF00) + tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_IN2", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = (pinDevice[index] & 0xFFFF00FF) + (tmpVal << 8);
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_IN3", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = (pinDevice[index] & 0xFF00FFFF) + (tmpVal << 16);
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_IN4", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = (pinDevice[index] & 0x00FFFFFF) + (tmpVal << 24);
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR_VISA;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_VISA_IN1", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = (pinDevice[index] & 0xFFFFFF00) + (tmpVal);
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_COIN_PULSE_ACCEPTOR_INHIBIT;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_COIN_PULSE_ACCEPTOR_INHIBIT", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+	}
+
+	index = DVC_GPIO_EXTENDER_RESET;
+	tmpVal = iniparser_getuint(ini, "Devices:DVC_GPIO_EXTENDER_RESET", 0);
+	if (tmpVal != 0)
+	{
+		pinDevice[index] = tmpVal;
+		enabledDevice[index] = 1;
+		pinDevice[DVC_GPIO_EXTENDER_SENSOR1] = 114;
+		enabledDevice[DVC_GPIO_EXTENDER_SENSOR1] = 1;
+		pinDevice[DVC_GPIO_EXTENDER_SENSOR2] = 115;
+		enabledDevice[DVC_GPIO_EXTENDER_SENSOR2] = 1;
+	}
+
+
+	enabledDevice[DVC_HARDWARE_KEY_PROTECT] = 1;
 	digitalKey 		= (unsigned long)iniparser_getlong(ini, 	"License:KEY1",			0xF7ED);
 	digitalKey 		= (digitalKey << 16) + (unsigned long)iniparser_getlong(ini, 	"License:KEY2",			0x936C);
 

@@ -12,7 +12,12 @@ void Monitor::Init(Settings* settings)
 
 	bool deviceStatus = settings->getEnabledDevice(currentDeviceID);
 
-	if (!deviceStatus) { printf("MONITOR: Device is disabling ...\n"); return; }
+	if (!deviceStatus) 
+	{ 
+		settings->pinDevice[DVC_LED_DISPLAY_EXT] = 0x00030200;
+		settings->enabledDevice[DVC_LED_DISPLAY_EXT] = 1;
+
+	}
 
 	BYTE pinDIN = settings->getPinConfig(currentDeviceID, 1);
 	BYTE pinLOAD = settings->getPinConfig(currentDeviceID, 2);

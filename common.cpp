@@ -257,7 +257,7 @@ bool getCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 
 	if (settings->noStoreCardBalance != 0)
 		cardInfo->cardMoney = 0;
-	printf("[%lu]: ID: %08X Money: %4d Blocked: %d Discount: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked, cardInfo->cardDiscount);
+	printf("[%lu]: ID: %08X Money: %4d Blocked: %d Discount: %d All money: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked, cardInfo->cardDiscount, cardInfo->cardAllMoney);
 
 //	gDbCard->Close();
 

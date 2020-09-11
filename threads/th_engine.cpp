@@ -77,6 +77,7 @@ PI_THREAD(EngineWatch)
 			if ((winterModeEngineActive == 0) || (wmaCounter > 500))
 			{
 				wmaCounter = 0;
+				setPinModeMy(settings->engine_relay, PIN_OUTPUT);
 				setGPIOState(settings->engine_relay, 0);
 				printf("[ENG] [WARNING] ENGINE RELAY TURN OFF [ERROR RELAY STATE]\n");
 			}
@@ -110,6 +111,7 @@ PI_THREAD(EngineWatch)
 						printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
 						((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 						getGPIOState(settings->engine_relay), settings->engine_relay);
+					setPinModeMy(settings->engine_relay, PIN_OUTPUT);
 					setGPIOState(settings->engine_relay, 0);
 				}
 				engine->engineUpdate();
@@ -166,6 +168,7 @@ PI_THREAD(EngineWatch)
 								printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN OFF [prev: %d; pin: %d]\n",
 								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 								getGPIOState(settings->engine_relay), settings->engine_relay);
+							setPinModeMy(settings->engine_relay, PIN_OUTPUT);
 							setGPIOState(settings->engine_relay, 0);
 						}
 						engineStatus = engine->engineStart(500);
@@ -187,6 +190,7 @@ PI_THREAD(EngineWatch)
 								printf("[ENG] [%2d:%02d:%02d] ENGINE RELAY TURN ON [prev: %d; pin: %d]\n",
 								((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60,
 								getGPIOState(settings->engine_relay), settings->engine_relay);
+							setPinModeMy(settings->engine_relay, PIN_OUTPUT);
 							setGPIOState(settings->engine_relay, 1);
 						}
 						engineStatus = engine->engineStart(engine->needFreq);

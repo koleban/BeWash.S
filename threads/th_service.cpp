@@ -378,6 +378,31 @@ PI_THREAD(load_params_from_db)
 			settings->resetUsbDevice = (qAnswer >= 0)?1:0;
 		///
 		///----------------------------------
+		qParam[0] = DB_PARAM_DISCOUNT_USE_CARD_DISCOUNT_V2;
+		qParam[1] = 0;
+		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+		else
+			addStatus.cardDiscount_v2.useCardDiscount_v2 = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+
+		for (int index_v2 = 0; index_v2 < 5; index_v2++)
+		{
+			qParam[0] = DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_SUMM_1 + (index_v2*2);
+			qParam[1] = 0;
+			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+			else
+				addStatus.cardDiscount_v2.afterSumm[index_v2] = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+			///
+			qParam[0] = DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_SUMM_1 + (index_v2*2 + 1);
+			qParam[1] = 0;
+			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+			else
+				addStatus.cardDiscount_v2.discountSize[index_v2] = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+		}
+		///
+		///----------------------------------
 		qParam[0] = DB_PARAM_DISCOUNT_CARD_DEPOSIT;
 		qParam[1] = 0;
 		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))

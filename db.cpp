@@ -623,6 +623,27 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 				}
 
 				tr->Commit();
+
+				// Get card all money
+				if (addStatus.cardDiscount_v2.useCardDiscount_v2 == 1)
+				{
+					sprintf( queryStr, "SELECT SUM(DATA2) FROM LOG where event_id = 124 and data1 = %lu", outParams->cardId);
+					printf("[DEBUG] DB: Get card all money [%lu]\n %s\n", outParams->cardId, queryStr);
+					tr->Start();
+					st = IBPP::StatementFactory(db, tr);
+					st->Prepare(queryStr);
+					st->Execute();
+
+					while (st->Fetch())
+					{
+			    		st->Get(1, outParams->cardAllMoney);
+						printf("[DEBUG] DB: Card all money [%lu] = %d\n", outParams->cardId, outParams->cardAllMoney);
+			    		break;
+					}
+	
+					tr->Commit();
+				}
+
 				lastError = DB_OK;
 				this->Close();
 				return lastError;
