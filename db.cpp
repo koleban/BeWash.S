@@ -68,11 +68,11 @@ int Database::Close()
 	return lastError;
 }
 
-int Database::Log(int eventId, double data1, double data2, char* note)
+int Database::Log(int dbType, int eventId, double data1, double data2, char* note)
 {
 	settings->busyFlag.QueueLog++;
 	lastError = DB_OK; 
-	queueLog->QueuePut(eventId, data1, data2, note);
+	queueLog->QueuePut(dbType, eventId, data1, data2, note);
 	settings->busyFlag.QueueLog--;
 	return lastError;
 }
@@ -627,6 +627,7 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 				// Get card all money
 				if (addStatus.cardDiscount_v2.useCardDiscount_v2 == 1)
 				{
+					//  AND (LOG_DATE >= '01.09.2030 00:00:00') AND (LOG_DATE <= '01.09.2030 23:59:59')
 					sprintf( queryStr, "SELECT SUM(DATA2) FROM LOG where event_id = 124 and data1 = %lu", outParams->cardId);
 					printf("[DEBUG] DB: Get card all money [%lu]\n %s\n", outParams->cardId, queryStr);
 					tr->Start();
@@ -636,8 +637,9 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 
 					while (st->Fetch())
 					{
+						printf("[DEBUG] DB: Card all money ");
 			    		st->Get(1, outParams->cardAllMoney);
-						printf("[DEBUG] DB: Card all money [%lu] = %d\n", outParams->cardId, outParams->cardAllMoney);
+						printf("[%lu] = %f\n", outParams->cardId, outParams->cardAllMoney);
 			    		break;
 					}
 	
@@ -698,6 +700,14 @@ void Database::eventId2eventText(int eventId, char* outputBuffer)
 	/////////////////
 		default:
 		sprintf(outputBuffer, "%s", "UNKNOWN LOG EVENT");
+		break;
+	/////////////////
+		case DB_EVENT_TYPE_VISA_PAY_DOC_OK:
+		sprintf(outputBuffer, "%s", "VISA CARD PAYMENT");
+		break;
+	/////////////////
+		case DB_EVENT_TYPE_VISA_PAY_DOC_ERROR:
+		sprintf(outputBuffer, "%s", "ERROR: VISA CARD PAYMENT ERROR");
 		break;
 	/////////////////
 		case DB_EVENT_TYPE_TEST:

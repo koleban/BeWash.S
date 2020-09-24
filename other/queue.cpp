@@ -36,6 +36,7 @@ QueueArray::QueueArray(unsigned int queueSize)
 int QueueArray::QueuePut(QueueType newElement)
 {
 	if (QueueCount++ >= QueueSize) QueueCount = QueueSize;
+	Queue[QueueIn].databaseType = newElement.databaseType;
     Queue[QueueIn].eventTime = newElement.eventTime;
     Queue[QueueIn].eventId = newElement.eventId;
     Queue[QueueIn].data1 = newElement.data1;
@@ -53,6 +54,7 @@ int QueueArray::QueueGet(QueueType *old)
     }
 
 	if (QueueCount-- < 1) QueueCount = 0;
+    old->databaseType = Queue[QueueOut].databaseType;
     old->eventTime = Queue[QueueOut].eventTime;
     old->eventId = Queue[QueueOut].eventId;
     old->data1 = Queue[QueueOut].data1;
@@ -65,9 +67,10 @@ int QueueArray::QueueGet(QueueType *old)
     return 0; // No errors
 }
 
-int QueueArray::QueuePut(int eventId, double data1, double data2, char* note)
+int QueueArray::QueuePut(int dbType, int eventId, double data1, double data2, char* note)
 {
 	QueueType v;
+	v.databaseType = dbType;
 	v.eventTime = time(NULL);
 	v.eventId = eventId;
 	v.data1 = data1;

@@ -15,7 +15,7 @@ PI_THREAD(DataExchangeThread)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Data: Data exchange thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	while (settings->threadFlag.DataExchangeThread)
@@ -51,7 +51,7 @@ PI_THREAD(DataExchangeThread)
 				int u = 0;
 				char noteBuffer[1024];
 				sprintf(noteBuffer, "Prg change [BAL: %2d, BTN: %2d, CRD: %08X]", status.intDeviceInfo.money_currentBalance, status.extDeviceInfo.button_lastEvent, getCardIDFromBytes(status.extDeviceInfo.rfid_incomeCardNumber));
-				db->Log(DB_EVENT_TYPE_INT_PROGRAM_CHANGED, lastCurrentProgram, status.intDeviceInfo.program_currentProgram, noteBuffer);
+				db->Log( 0, DB_EVENT_TYPE_INT_PROGRAM_CHANGED, lastCurrentProgram, status.intDeviceInfo.program_currentProgram, noteBuffer);
 				lastCurrentProgram = status.intDeviceInfo.program_currentProgram;
 			}
 

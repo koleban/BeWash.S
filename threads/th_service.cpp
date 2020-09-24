@@ -66,7 +66,7 @@ PI_THREAD(TurnLightWatch)
 
 	while (delaySize-- > 0)
 	{
-		if (status.intDeviceInfo.money_currentBalance > 0) { lightThreadActive = 0; 	pthread_detach(pthread_self()); return (void*)0;}
+		if ((status.intDeviceInfo.money_currentBalance > 0) || ((status.extDeviceInfo.rfid_cardPresent > 0) && (settings->LightWithCard == 1))) { lightThreadActive = 0; 	pthread_detach(pthread_self()); return (void*)0;}
 		if (dayLightWork)
 			setGPIOState(pinNum, 1);
 		delay_ms(100);
@@ -86,7 +86,6 @@ int thServiceSetupSystemDateTime(Settings* settings)
 	if (!settings->useDatabase) return 1;
 	if (settings->useHWClock) return 1;
 
-	printf ("   >> Init GLOBAL database ... \n");
 	Database* gDb = new Database();
 	gDb->Init(&settings->gdatabaseSettings);
 	if (gDb->Open())
@@ -113,7 +112,7 @@ int thServiceSetupSystemDateTime(Settings* settings)
 				char serverDateTime[100];
 				sprintf(serverDateTime, "%02d/%02d/%04d %02d:%02d:%02d", sm, sd, sy, sh, si, ss);
 				//printf("[Database server]: Server time %s\n", serverDateTime);
-				sprintf(serverDateTime, "sudo date -s\"%02d/%02d/%04d %02d:%02d:%02d\"", sm, sd, sy, sh, si, ss);
+				sprintf(serverDateTime, "sudo date -s\"%02d/%02d/%04d %02d:%02d:%02d\" >> /dev/null", sm, sd, sy, sh, si, ss);
 				if ((settings->useDatabaseDateTime)  && (!settings->useHWClock)) 
 					{ /*printf("DateTime service: [DEBUG] Setting date and time from Database server"); */
 					system(serverDateTime);}
@@ -282,12 +281,6 @@ PI_THREAD(load_params_from_db)
 			settings->thermalParam.tempOff = (qAnswer >= 0)?(int)qAnswer:settings->thermalParam.tempOff;
 		///
 		///----------------------------------
-		qParam[0] = DB_PARAM_ANTIFROST;
-		qParam[1] = 0;
-		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
-			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-		else
-			settings->winterMode.winterMode = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterMode;
 		for (indext=0; indext < 32; indext++)
 		{
 			qParam[0] = DB_PARAM_COMMON_PRG_PRICE;
@@ -304,22 +297,14 @@ PI_THREAD(load_params_from_db)
 			else
 				settings->progRPM[indext] = (qAnswer >= 0)?(int)qAnswer:settings->progRPM[indext];
 		}
-		for (indext=0; indext < MONEY_COIN_TYPE_COUNT; indext++)
-		{
-			qParam[0] = DB_PARAM_COIN_WEIGHT;
-			qParam[1] = indext;
-			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
-				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-			else
-				settings->coinWeight.Weight[indext] = (qAnswer >= 0)?(int)qAnswer:settings->coinWeight.Weight[indext];
-			///-------------------------------
-			qParam[0] = DB_PARAM_BILL_WEIGHT;
-			qParam[1] = indext;
-			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
-				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-			else
-				settings->moneyWeight.Weight[indext] = (qAnswer >= 0)?(int)qAnswer:settings->moneyWeight.Weight[indext];
-		}
+		///
+		///----------------------------------
+		qParam[0] = DB_PARAM_ANTIFROST;
+		qParam[1] = 0;
+		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+		else
+			settings->winterMode.winterMode = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterMode;
 		///
 		///----------------------------------
 		qParam[0] = DB_PARAM_ANTIFROST_DELAY;
@@ -328,14 +313,6 @@ PI_THREAD(load_params_from_db)
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 		else
 			settings->winterMode.winterWaitTime = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterWaitTime;
-		///
-		///----------------------------------
-		qParam[0] = DB_PARAM_ANTIFROST_TEMP;
-		qParam[1] = 0;
-		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
-			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-		else
-			settings->winterMode.winterOnTemperature = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterOnTemperature;
 		///
 		///----------------------------------
 		qParam[0] = DB_PARAM_ANTIFROST_ENGINE;
@@ -370,12 +347,20 @@ PI_THREAD(load_params_from_db)
 			settings->winterMode.winterEngineWorkWait = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterEngineWorkWait;
 		///
 		///----------------------------------
-		qParam[0] = DB_PARAM_COMMON_USE_RESET_USB;
+		qParam[0] = DB_PARAM_ANTIFROST_ENGINE_WAIT;
 		qParam[1] = 0;
 		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 		else
-			settings->resetUsbDevice = (qAnswer >= 0)?1:0;
+			settings->winterMode.winterEngineWorkWait = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterEngineWorkWait;
+		///
+		///----------------------------------
+		qParam[0] = DB_PARAM_COMMON_COLLECTION_MODE;
+		qParam[1] = 0;
+		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+		else
+			settings->CollectionMode = (qAnswer >= 0)?(unsigned char)qAnswer:0;
 		///
 		///----------------------------------
 		qParam[0] = DB_PARAM_DISCOUNT_USE_CARD_DISCOUNT_V2;
@@ -385,6 +370,7 @@ PI_THREAD(load_params_from_db)
 		else
 			addStatus.cardDiscount_v2.useCardDiscount_v2 = (qAnswer >= 0)?(unsigned char)qAnswer:0;
 
+		if (addStatus.cardDiscount_v2.useCardDiscount_v2 != 0){
 		for (int index_v2 = 0; index_v2 < 5; index_v2++)
 		{
 			qParam[0] = DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_SUMM_1 + (index_v2*2);
@@ -392,14 +378,25 @@ PI_THREAD(load_params_from_db)
 			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
 				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 			else
-				addStatus.cardDiscount_v2.afterSumm[index_v2] = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+				addStatus.cardDiscount_v2.afterSumm[index_v2] = (qAnswer >= 0)?(SDWORD)qAnswer:0;
 			///
 			qParam[0] = DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_SUMM_1 + (index_v2*2 + 1);
 			qParam[1] = 0;
 			if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
 				printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 			else
-				addStatus.cardDiscount_v2.discountSize[index_v2] = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+				addStatus.cardDiscount_v2.discountSize[index_v2] = (qAnswer >= 0)?(double)qAnswer:0;
+		}
+		qParam[0] = DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_CALC_DAYS;
+		qParam[1] = 0;
+		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
+			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
+		else
+			addStatus.cardDiscount_v2.calcDays = (qAnswer >= 0)?(SDWORD)qAnswer:0;
+		printf("CARD DISCOUNT V2\n");
+		printf("CalcDays: %d\n", addStatus.cardDiscount_v2.calcDays);
+		for (int index_v2 = 0; index_v2 < 5; index_v2++)
+			printf("  Summ: %d  Discount: %f%\n", addStatus.cardDiscount_v2.afterSumm[index_v2], addStatus.cardDiscount_v2.discountSize[index_v2]);
 		}
 		///
 		///----------------------------------
@@ -408,7 +405,7 @@ PI_THREAD(load_params_from_db)
 		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
 			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
 		else
-			settings->discountCardDeposit = (qAnswer >= 0)?(unsigned char)qAnswer:0;
+			settings->discountCardDeposit = (qAnswer >= 0)?(double)qAnswer:0;
 		///
 		///----------------------------------
 		qParam[0] = DB_PARAM_DISCOUNT_DAY_OF_MONTH;
@@ -463,14 +460,6 @@ PI_THREAD(load_params_from_db)
 				indexd++;
 			}
 		}
-		///
-		///----------------------------------
-		qParam[0] = DB_PARAM_ANTIFROST_ENGINE_WAIT;
-		qParam[1] = 0;
-		if (commonDb->Query(DB_QUERY_TYPE_GET_PARAM, qParam, &qAnswer))
-			printf("  ===> IB ERROR: %s\n", commonDb->lastErrorMessage);
-		else
-			settings->winterMode.winterEngineWorkWait = (qAnswer >= 0)?(int)qAnswer:settings->winterMode.winterEngineWorkWait;
 
 		if (settings->threadFlag.MainWatch == 0) break;
 		printf(" loading params from DB ... done\n");
@@ -505,8 +494,24 @@ PI_THREAD(ClearQueueLog)
 			while(queueLog->QueueGet(&valueLog) >= 0)
 			{
 				timeout = 100;
-				if (db->LogDb(valueLog.eventTime, valueLog.eventId, valueLog.data1, valueLog.data2, valueLog.note) != DB_OK)
-					{ printf("IB ERROR: %s\n", db->lastErrorMessage); break; }
+				if (settings->UseGlobalDB != 0)
+				{
+					if (valueLog.databaseType == 0)
+					{
+						if (db->LogDb(valueLog.eventTime, valueLog.eventId, valueLog.data1, valueLog.data2, valueLog.note) != DB_OK)
+							{ printf("IB ERROR: %s\n", db->lastErrorMessage); queueLog->QueuePut(valueLog); }
+					}
+					if (valueLog.databaseType != 0)
+					{
+						if (gDbCard->LogDb(valueLog.eventTime, valueLog.eventId, valueLog.data1, valueLog.data2, valueLog.note) != DB_OK)
+							{ printf("IB ERROR: %s\n", db->lastErrorMessage); queueLog->QueuePut(valueLog); }
+					}
+				}
+				else
+				{
+					if (db->LogDb(valueLog.eventTime, valueLog.eventId, valueLog.data1, valueLog.data2, valueLog.note) != DB_OK)
+						{ printf("IB ERROR: %s\n", db->lastErrorMessage); queueLog->QueuePut(valueLog); break; }
+				}
 			    while ((timeout-->0) && (settings->busyFlag.QueueLog)) delay_ms(1);
 			}
 		}
@@ -536,14 +541,142 @@ PI_THREAD(gpioext_wd)
 	int errorCount = 0;
 	int errorShowed = 0;
 	char errorNote[] = "[THREAD] GPIO_EXT_WATCHDOG: mcp23017 failed. Reseting device.\x0";
-	while(settings->threadFlag.GPIOExtWatch)
+	if (settings->threadFlag.GPIOExtWatch)
 	{
 		if (!settings->getEnabledDevice(DVC_GPIO_EXTENDER_RESET))
 		{delay_ms(10000); return (void*)0;}
 
-		pinReset = settings->getPinConfig(DVC_GPIO_EXTENDER_RESET, 1);
-		pinSens1 = settings->getPinConfig(DVC_GPIO_EXTENDER_SENSOR1, 1);
-		pinSens2 = settings->getPinConfig(DVC_GPIO_EXTENDER_SENSOR2, 1);
+		int chRes = 0;
+
+		pinReset = 4;
+		pinSens1 = 114;
+		pinSens2 = 115;
+
+		setPinModeMy(pinReset, PIN_OUTPUT);
+		setGPIOState(pinReset, 1);
+
+		setPinModeMy(pinSens1, PIN_OUTPUT);
+		setPinModeMy(pinSens2, PIN_INPUT);
+		setGPIOState(pinSens1, 1);
+		delay_ms(5);
+		if (getGPIOState(pinSens2) == 1)
+			chRes++;
+
+		setGPIOState(pinSens1, 0);
+		delay_ms(5);
+		if (getGPIOState(pinSens2) == 0)
+			chRes++;
+
+		setPinModeMy(pinSens1, PIN_INPUT);
+		setPinModeMy(pinSens2, PIN_OUTPUT);
+
+		setGPIOState(pinSens2, 1);
+		delay_ms(5);
+		if (getGPIOState(pinSens1) == 1)
+			chRes++;
+
+		setGPIOState(pinSens2, 0);
+		delay_ms(5);
+		if (getGPIOState(pinSens1) == 0)
+			chRes++;
+		
+		setGPIOState(pinReset, 0);
+
+		setPinModeMy(pinSens1, PIN_OUTPUT);
+		setPinModeMy(pinSens2, PIN_INPUT);
+
+		setGPIOState(pinSens1, 0);
+		delay_ms(5);
+		if (getGPIOState(pinSens2) == 1)
+			chRes++;
+
+		setPinModeMy(pinSens1, PIN_INPUT);
+		setPinModeMy(pinSens2, PIN_OUTPUT);
+
+		setGPIOState(pinSens2, 0);
+		delay_ms(5);
+		if (getGPIOState(pinSens1) == 1)
+			chRes++;
+		setPinModeMy(pinReset, PIN_OUTPUT);
+		setGPIOState(pinReset, 1);
+		printf("[MCP23017] Check 4 pin [res: %d]\n", chRes);
+		if (chRes != 6)
+		{
+			chRes = 0;
+			setPinModeMy(pinReset, PIN_OUTPUT);
+			setGPIOState(pinReset, 0);
+			pinReset = 14;
+			setPinModeMy(pinReset, PIN_OUTPUT);
+			setGPIOState(pinReset, 1);
+
+			setPinModeMy(pinSens1, PIN_OUTPUT);
+			setPinModeMy(pinSens2, PIN_INPUT);
+			setGPIOState(pinSens1, 1);
+			delay_ms(5);
+			if (getGPIOState(pinSens2) == 1)
+				chRes++;
+	
+			setGPIOState(pinSens1, 0);
+			delay_ms(5);
+			if (getGPIOState(pinSens2) == 0)
+				chRes++;
+	
+			setPinModeMy(pinSens1, PIN_INPUT);
+			setPinModeMy(pinSens2, PIN_OUTPUT);
+	
+			setGPIOState(pinSens2, 1);
+			delay_ms(5);
+			if (getGPIOState(pinSens1) == 1)
+				chRes++;
+	
+			setGPIOState(pinSens2, 0);
+			delay_ms(5);
+			if (getGPIOState(pinSens1) == 0)
+				chRes++;
+			
+			setGPIOState(pinReset, 0);
+	
+			setPinModeMy(pinSens1, PIN_OUTPUT);
+			setPinModeMy(pinSens2, PIN_INPUT);
+	
+			setGPIOState(pinSens1, 0);
+			delay_ms(5);
+			if (getGPIOState(pinSens2) == 1)
+				chRes++;
+	
+			setPinModeMy(pinSens1, PIN_INPUT);
+			setPinModeMy(pinSens2, PIN_OUTPUT);
+	
+			setGPIOState(pinSens2, 0);
+			delay_ms(5);
+			if (getGPIOState(pinSens1) == 1)
+				chRes++;
+			setPinModeMy(pinReset, PIN_OUTPUT);
+			setGPIOState(pinReset, 1);
+			printf("[MCP23017] Check 14 pin [res: %d]\n", chRes);
+			if (chRes != 6)
+			{
+				setPinModeMy(pinReset, PIN_OUTPUT);
+				setGPIOState(pinReset, 0);
+				printf("WARNING!!! Can't detect MCP reset pin !!!\n");
+				printf("WARNING!!! Can't detect MCP reset pin !!!\n");
+				printf("WARNING!!! Can't detect MCP reset pin !!!\n");
+				pinReset = settings->getPinConfig(DVC_GPIO_EXTENDER_RESET, 1);
+				pinSens1 = settings->getPinConfig(DVC_GPIO_EXTENDER_SENSOR1, 1);
+				pinSens2 = settings->getPinConfig(DVC_GPIO_EXTENDER_SENSOR2, 1);
+			}
+			else
+				printf("[MCP23017] Reset pin is: %d\n", pinReset);
+		}
+		else
+			printf("[MCP23017] Reset pin is: %d\n", pinReset);
+
+
+	}
+	while(settings->threadFlag.GPIOExtWatch)
+	{
+		if (!settings->getEnabledDevice(DVC_GPIO_EXTENDER_RESET))
+		{delay_ms(10000); return (void*)0;}
 
 		setPinModeMy(pinReset, 0);
 		setGPIOState(pinReset, 1);
@@ -583,7 +716,7 @@ PI_THREAD(gpioext_wd)
 				if (errorShowed == 0)
 				{
 					MCPErrorCount++;
-					db->Log(DB_EVENT_TYPE_GPIO_EXTENDER_FAIL, errorCount, errorCount, errorNote);
+					db->Log( 0, DB_EVENT_TYPE_GPIO_EXTENDER_FAIL, errorCount, errorCount, errorNote);
 					printf("[DEBUG] mcp23017 comunication failed! Reseting device.\n");
 					errorShowed = 1;
 				}

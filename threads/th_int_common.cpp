@@ -176,7 +176,7 @@ PI_THREAD(IntCommonThread)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Data: Internal block thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	// Флаг активности "Реле света" Вкл/Выкл
@@ -224,7 +224,7 @@ PI_THREAD(IntCommonThread)
 			int devId = settings->commonParams.deviceId;
 			if (devId > 100) devId -= 100;
 			sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
-			queueKkm->QueuePut(amountCash, amountCard, 1, strTmp256);
+			queueKkm->QueuePut(0, amountCash, amountCard, 1, strTmp256);
 			amountCash = 0;
 			amountCard = 0;
 		}
@@ -301,7 +301,7 @@ PI_THREAD(IntCommonThread)
 					for (int i=0; i < 5; i++)
 					{
 						if (addStatus.cardDiscount_v2.afterSumm[i] == 0) continue;
-						if (addStatus.cardDiscount_v2.afterSumm[i] >= addStatus.db_RFIDCardInfo.cardAllMoney)
+						if ((addStatus.db_RFIDCardInfo.cardAllMoney+(double)summWithCard) >= addStatus.cardDiscount_v2.afterSumm[i])
 							dsCurrent = (double)maxval(addStatus.cardDiscount_v2.discountSize[i],(SDWORD)dsCurrent);
 					}
 				}
@@ -350,6 +350,7 @@ PI_THREAD(IntCommonThread)
 						dsSize += ((double)(subVal * settings->coinWeight.Weight[index]) * (dsCurrent / 100));
 						if (dsSize >= 1)
 						{
+							printf("Use card discount (v2): crd_all: %f crd_disc: %f\n", addStatus.db_RFIDCardInfo.cardAllMoney+(double)summWithCard, dsCurrent);
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
 							status.intDeviceInfo.money_currentBalance += (int)dsSize;
 							dsSize -= (int)dsSize;
@@ -388,6 +389,7 @@ PI_THREAD(IntCommonThread)
 						dsSize += ((double)(subVal * settings->moneyWeight.Weight[index]) * (dsCurrent / 100));
 						if (dsSize >= 1)
 						{
+							printf("Use card discount (v2): crd_all: %f crd_disc: %f\n", addStatus.db_RFIDCardInfo.cardAllMoney+(double)summWithCard, dsCurrent);
 							printf("[DEBUG] IntThread: Discount for card deposite: add %d rur\n", (int)dsSize);
 							status.intDeviceInfo.money_currentBalance += (int)dsSize;
 							dsSize -= (int)dsSize;
@@ -433,13 +435,13 @@ PI_THREAD(IntCommonThread)
 				{
 					int mnCount = logCoinInfo.Count[index];
 					logCoinInfo.Count[index] = 0;
-					db->Log(DB_EVENT_TYPE_INT_MONEY_EVENT, mnCount, settings->coinWeight.Weight[index], "COIN INCOME");
+					db->Log( 0, DB_EVENT_TYPE_INT_MONEY_EVENT, mnCount, settings->coinWeight.Weight[index], "COIN INCOME");
 				}
 				if (logMoneyInfo.Count[index] != 0)
 				{
 					int mnCount = logMoneyInfo.Count[index];
 					logMoneyInfo.Count[index] = 0;
-					db->Log(DB_EVENT_TYPE_INT_MONEY_EVENT, mnCount, settings->moneyWeight.Weight[index], "MONEY INCOME");
+					db->Log( 0, DB_EVENT_TYPE_INT_MONEY_EVENT, mnCount, settings->moneyWeight.Weight[index], "MONEY INCOME");
 				}
 			}
 		}
@@ -590,7 +592,7 @@ PI_THREAD(IntCommonThread)
 		///
 		if ((engine->currFreq == 0) && (engine->workTimeSec > 0))
 		{
-			db->Log(DB_EVENT_TYPE_DVC_ENGINE_WORK_TIME, engine->workTimeSec, 0, "Engine worktime value");
+			db->Log( 0, DB_EVENT_TYPE_DVC_ENGINE_WORK_TIME, engine->workTimeSec, 0, "Engine worktime value");
 			gEngineFullWorkTime += engine->workTimeSec;
 			engine->workTimeSec = 0;
 		}
@@ -610,7 +612,7 @@ PI_THREAD(IntCommonThread)
 		///
 		if (dvcLightIfBalance)
 		{
-			lightTurnedOn = (status.intDeviceInfo.money_currentBalance > 0);
+			lightTurnedOn = ((status.intDeviceInfo.money_currentBalance > 0) || ((status.extDeviceInfo.rfid_cardPresent > 0) && (settings->LightWithCard == 1)));
 			turnedLight |= lightTurnedOn;
 			if (lightTurnedOn)
 				commonDevice_TurnLight(1);

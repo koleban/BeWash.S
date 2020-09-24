@@ -37,11 +37,12 @@ int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber, int sended
 	int deviceNumberCalc = deviceNumber + 101;
 
 	if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); printf("[Net Client]: ERROR Interface %s: link down ...\n", settings->ethName); return 2;}
-	netClient->Init(settings);
+/*	netClient->Init(settings);
 	char panelAddr[100] = {0};
 	sprintf(panelAddr, "%s%d", settings->terminalParam.deviceSubnet, deviceNumberCalc);
 	if (settings->debugFlag.ButtonTerminalThread)
 		printf("NetClient: Remote server: %s\n", panelAddr);
+	netClient->CloseConnection();
 	strcpy(netClient->hostAddr, panelAddr);
 	netClient->OpenConnection();
 	if (netClient->isConnected)
@@ -50,6 +51,49 @@ int sendBalanceToRemoteDevice(NetClient* netClient, int deviceNumber, int sended
 		return 1;
 	if (netClient->cmdSendBalance(sendedBalance) == 0) { printf("[netClient]: Error cmdSendBalance()\n"); netClient->CloseConnection(); return 1; }
 	netClient->CloseConnection();
+*/
+
+	char server_ip[100] = {0};
+	sprintf(server_ip, "%s%d", settings->terminalParam.deviceSubnet, deviceNumberCalc);
+	if (settings->debugFlag.ButtonTerminalThread)
+		printf("NetClient: Remote server: %s\n", server_ip);
+
+	int serverFd;
+	struct sockaddr_in server;
+	int len;
+	int port = 3356;
+	char buffer[100] = {0};
+	sprintf(buffer, "add %d", sendedBalance);
+	serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (serverFd < 0) 
+	{
+		perror("Cannot create socket");
+		return 1;
+	}
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = inet_addr(server_ip);
+	server.sin_port = htons(port);
+	len = sizeof(server);
+	if (connect(serverFd, (struct sockaddr *)&server, len) < 0) 
+	{
+		perror("Cannot connect to server");
+		return 2;
+	}
+	if (write(serverFd, buffer, strlen(buffer)) < 0) 
+	{
+		perror("Cannot write");
+		return 3;
+	}
+
+	char recv[1024];
+	memset(recv, 0, sizeof(recv));
+	if (read(serverFd, recv, sizeof(recv)) < 0) 
+	{
+		perror("cannot read");
+		return 4;
+	}
+	printf("Received %s from server\n", recv);
+	close(serverFd);
 
 	return 0;
 }
@@ -63,8 +107,8 @@ PI_THREAD(ButtonTerminalWatch)
 	Database* db = new Database();
 	NetClient* 		netClient	= new NetClient();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (terminal mode): Button thread init");
-	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (terminal mode) panel device opened");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (terminal mode): Button thread init");
+	db->Log( 0, DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (terminal mode) panel device opened");
 
 	if (settings->debugFlag.ButtonTerminalThread)
 		printf("[DEBUG] ButtonTerminalThread: Debug information is showed\n");
@@ -210,7 +254,7 @@ PI_THREAD(ButtonTerminalWatch)
 							printf("[DEBUG] ButtonTerminalThread: Send ERROR\n");
 					}
 
-					delay_ms(1000);
+					delay_ms(2000);
 
 					setGPIOState(currentPin, 0);
 					setPinModeMy(currentPin, PIN_INPUT);
@@ -277,7 +321,7 @@ PI_THREAD(ButtonTerminalWatch)
 				int timeout = 50;
 				if (settings->debugFlag.ButtonTerminalThread)
 					printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY CARD button [PIN: %03d]\n", currentPin);
-				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY CARD button pressed");
+				db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY CARD button pressed");
 				//
 				currentPin = settings->getPinConfig(DVC_BUTTON_OUT_RFID_CARD, 1);
 				setPinModeMy(currentPin, PIN_INPUT);
@@ -321,14 +365,14 @@ PI_THREAD(ButtonTerminalWatch)
 						thread_timeout -= 50;
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Out RFID card\n");
-						db->Log(DB_EVENT_TYPE_CARD_OUT, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
+						db->Log( 0, DB_EVENT_TYPE_CARD_OUT, index, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out RFID card");
 						payRFIDCardCounter = 50;
 					}
 					else
 					{
 						if (settings->debugFlag.ButtonTerminalThread)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY CARD button [PIN: %03d] - failed [%d ms]\n", currentPin, 50 - timeout);
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonTerminalThread]: Button PAY CARD don't detected. Failed");
+						db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonTerminalThread]: Button PAY CARD don't detected. Failed");
 						thread_timeout -= (50 - timeout);
 					}
 				}
@@ -375,7 +419,7 @@ PI_THREAD(ButtonTerminalWatch)
 				int timeout = 30;
 				if (settings->debugFlag.ButtonTerminalThread)
 					printf("[DEBUG] ButtonTerminalThread: Pressed state on PAY COIN button [PIN: %03d]\n", currentPin);
-				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY COIN button pressed");
+				db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonTerminalThread]: PAY COIN button pressed");
 				// Press minimal 50ms
 				while ((timeout-- > 0) && getGPIOState(currentPin)) { delay_ms(1); }
 				// If btn pressed great 2 sec - ERROR
@@ -421,7 +465,7 @@ PI_THREAD(ButtonTerminalWatch)
 								status.intDeviceInfo.money_currentBalance -= settings->progPrice[15];
 								if (settings->debugFlag.ButtonTerminalThread)
 									printf("[DEBUG] ButtonTerminalThread: Out COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
-								db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
+								db->Log( 0, DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
 							}
 							else
 							{
@@ -462,7 +506,7 @@ PI_THREAD(ButtonTerminalWatch)
 							{
 								if (settings->debugFlag.ButtonTerminalThread)
 									printf("[DEBUG] ButtonTerminalThread: Out BONUS COIN [bal: %d rur]\n", status.intDeviceInfo.money_currentBalance);
-								db->Log(DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
+								db->Log( 0, DB_EVENT_TYPE_COIN_OUT, discPrice, status.intDeviceInfo.money_currentBalance, "[ButtonTerminalThread]: Out COIN [price, balance]");
 							}
 							else
 							{
@@ -483,7 +527,7 @@ PI_THREAD(ButtonTerminalWatch)
 				{
 					if (settings->debugFlag.ButtonTerminalThread)
 						printf("[DEBUG] ButtonTerminalThread: Pressed state on %d button [PIN: %03d] - failed [%d ms]\n", index, currentPin, 50 - timeout);
-					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonTerminalThread]: Button don't detected. Failed");
+					db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonTerminalThread]: Button don't detected. Failed");
 					thread_timeout -= (50 - timeout);
 				}
 			}
@@ -510,7 +554,7 @@ PI_THREAD(ButtonTerminalWatch)
 							printf("[DEBUG] ButtonTerminalThread: Pressed state on VISA:CANCEL button [PIN: %03d]\n", pinNum);
 						// Press minimal 50ms
 						while ((timeout-- > 0) && getGPIOState(pinNum)) { delay_ms(1); }
-						db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:CANCEL button pressed");
+						db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:CANCEL button pressed");
 						if ((timeout <= 0))
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
@@ -552,7 +596,7 @@ PI_THREAD(ButtonTerminalWatch)
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
 							setGPIOState(pinNum, 1);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_50 button pressed");
+							db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_50 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 50;
 						}
@@ -573,7 +617,7 @@ PI_THREAD(ButtonTerminalWatch)
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
 							setGPIOState(pinNum, 1);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_100 button pressed");
+							db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_100 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 100;
 						}
@@ -594,7 +638,7 @@ PI_THREAD(ButtonTerminalWatch)
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
 							setGPIOState(pinNum, 1);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_150 button pressed");
+							db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_150 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 150;
 						}
@@ -615,7 +659,7 @@ PI_THREAD(ButtonTerminalWatch)
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
 							setGPIOState(pinNum, 1);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_200 button pressed");
+							db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_200 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 200;
 						}
@@ -636,7 +680,7 @@ PI_THREAD(ButtonTerminalWatch)
 						{
 							setPinModeMy(pinNum, PIN_OUTPUT);
 							setGPIOState(pinNum, 1);
-							db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_500 button pressed");
+							db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, pinNum, "[ButtonTerminalThread]: VISA:PAY_500 button pressed");
 							thread_timeout -= 50;
 							paymentSumm = 500;
 						}
@@ -716,13 +760,13 @@ PI_THREAD(ButtonTerminalWatch)
 						int devId = settings->commonParams.deviceId;
 						if (devId > 100) devId -= 100;
 						sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, devId);
-						queueKkm->QueuePut(0, waitSumm, 1, strTmp256);
+						queueKkm->QueuePut(0, 0, waitSumm, 1, strTmp256);
 						//!!! NEED print in DB payInfo.transactionId;
-						db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_OK, waitSumm, payInfo.result, payInfo.note);
+						db->Log( 0, DB_EVENT_TYPE_VISA_PAY_DOC_OK, waitSumm, payInfo.result, payInfo.note);
 					}
 					else
 					{
-						db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_ERROR, waitSumm, payInfo.result, payInfo.note);
+						db->Log( 0, DB_EVENT_TYPE_VISA_PAY_DOC_ERROR, waitSumm, payInfo.result, payInfo.note);
 					}
 					waitSumm = 0;
 				}
@@ -736,7 +780,7 @@ PI_THREAD(ButtonTerminalWatch)
 		if (thread_timeout < 0) thread_timeout = 0;
 	}
 
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button terminal panel device is closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button terminal panel device is closed");
 	db->Close();
 	printf("[DEBUG]: ButtonTerminalThread: Thread is terminate.\n");
 	return (void*)0;

@@ -20,7 +20,7 @@ PI_THREAD(ExtCommonThread)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Data: External block thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	status.extDeviceInfo.remote_currentBalance = 0;
@@ -57,7 +57,7 @@ PI_THREAD(ExtCommonThread)
 					status.extDeviceInfo.coin_incomeInfo.Count[index] += inCoinInfo.Count[index];
 					int coinCount = inCoinInfo.Count[index];
 					inCoinInfo.Count[index] = 0;
-					db->Log(DB_EVENT_TYPE_EXT_MONEY_EVENT, coinCount, settings->coinWeight.Weight[index], "COIN PULSE INCOME");
+					db->Log( 0, DB_EVENT_TYPE_EXT_MONEY_EVENT, coinCount, settings->coinWeight.Weight[index], "COIN PULSE INCOME");
 				}
 			}
 		}

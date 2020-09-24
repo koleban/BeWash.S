@@ -10,8 +10,8 @@ PI_THREAD(ButtonMasterWatch)
 	if (!(settings->threadFlag.ButtonMasterThread)) return (void*)0;
 	Database* db = new Database();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (master mode): Button thread init");
-	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (master mode) panel device opened");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button (master mode): Button thread init");
+	db->Log( 0, DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button (master mode) panel device opened");
 
 	if (settings->debugFlag.ButtonMasterThread)
 		printf("[DEBUG] ButtonMasterWatch: Debug information is showed\n");
@@ -65,7 +65,7 @@ PI_THREAD(ButtonMasterWatch)
 
 			status.extDeviceInfo.collectionButton = (timeout < 1);
 			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
-				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
+				db->Log( 0, DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
 			if ((settings->debugFlag.ButtonMasterThread) && (!last_collectionButton) && (status.extDeviceInfo.collectionButton))
 				printf("[DEBUG] ButtonMasterThread: Collection button is TURN ON\n");
 			if ((settings->debugFlag.ButtonMasterThread) && (last_collectionButton) && (!status.extDeviceInfo.collectionButton))
@@ -144,13 +144,13 @@ PI_THREAD(ButtonMasterWatch)
 				int timeout = 50;
 				if (settings->debugFlag.ButtonMasterThread)
 					printf("[DEBUG] ButtonMasterThread: Pressed state on %d button [PIN: %03d]\n", index, currentPin);
-				db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonMasterThread]: New button pressed");
+				db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, currentPin, "[ButtonMasterThread]: New button pressed");
 				while((timeout-- > 0) && getGPIOState(currentPin)) { delayTime--; delay_ms(1); }
 				if (timeout <= 0)
 				{
 					if (settings->debugFlag.ButtonMasterThread)
 						printf("[DEBUG] ButtonMasterThread: Send ballance to device %d\n", index);
-					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonMasterThread]: Send money to the remote controller");
+					db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, status.intDeviceInfo.money_currentBalance, "[ButtonMasterThread]: Send money to the remote controller");
 
 					int slaveId = index;
 
@@ -187,7 +187,7 @@ PI_THREAD(ButtonMasterWatch)
 					if ((remoteCtrl[slaveId].cmdResult > 0xFFFFUL) || (timeout < 0)) break;
 					unsigned int cmdCounter = ((unsigned int)remoteCtrl[slaveId].cmdResult);
 					printf ("              COMMAND COUNTER VAL: %d\n", cmdCounter);
-					db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, cmdCounter, "[ButtonMasterThread]: Read counter [id] [counter]");
+					db->Log( 0, DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, cmdCounter, "[ButtonMasterThread]: Read counter [id] [counter]");
 					//
 					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 					printf ("              WRITE COMMAND COUNTER\n");
@@ -203,13 +203,13 @@ PI_THREAD(ButtonMasterWatch)
 					if ((remoteCtrl[slaveId].doCmd != 0) || (remoteCtrl[slaveId].cmdResult > 0xFFFF) || (timeout < 0))
 					{
 						printf ("              WRITE COMMAND ERROR\n");
-						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, timeout, "[ButtonMasterThread]: Write counter ERROR [id] [timeout]");
+						db->Log( 0, DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, timeout, "[ButtonMasterThread]: Write counter ERROR [id] [timeout]");
 					}
 					else
 					{
 						btnMasterProgress = (int)TBtnMasterProgress::SendingCommand;
 						printf ("              WRITE COMMAND OK\n");
-						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, sendedBal, "[ButtonMasterThread]: Write counter with balance [id] [balance]");
+						db->Log( 0, DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, sendedBal, "[ButtonMasterThread]: Write counter with balance [id] [balance]");
 						///
 						/// Waiting while salve device processed recivied data.
 						/// While be slave device processed recived data it is not respond
@@ -247,7 +247,7 @@ PI_THREAD(ButtonMasterWatch)
 						remoteCtrl[slaveId].doCmd = 1;
 						timeout = 2000;
 						while ((remoteCtrl[slaveId].doCmd) && (timeout-- > 0)) delay_ms(1);
-						db->Log(DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, ((unsigned int)remoteCtrl[slaveId].cmdResult), "[ButtonMasterThread]: Read counter [id] [counter]");
+						db->Log( 0, DB_EVENT_TYPE_MODBUS_SLAVE_CTRL, slaveId, ((unsigned int)remoteCtrl[slaveId].cmdResult), "[ButtonMasterThread]: Read counter [id] [counter]");
 					}
 
 					if ((cmdCounter == ((unsigned int)remoteCtrl[slaveId].cmdResult)) && (cmdCounter > 0)) break;
@@ -261,12 +261,12 @@ PI_THREAD(ButtonMasterWatch)
 					}
 */
 					// Add information for print KKM documents
-					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName);
+					// queueKkm->QueuePut(0,  CashSumm, DON'T USED, DON'T USED, ServiceName);
 					//
 					btnMasterProgress = (int)TBtnMasterProgress::PrintCheck;
 					char serviceNote[256];
 					sprintf(serviceNote, "%s (Пост N %d)", settings->kkmParam.ServiceName, slaveId+1);
-					queueKkm->QueuePut(sendedBal, 0, 0, serviceNote);
+					queueKkm->QueuePut(0, sendedBal, 0, 0, serviceNote);
 					// !!!!!!!!!!!!!!!!!!!!
 					///
 
@@ -277,7 +277,7 @@ PI_THREAD(ButtonMasterWatch)
 				{
 					if (settings->debugFlag.ButtonMasterThread)
 						printf("[DEBUG] ButtonMasterThread: Pressed state on %d button [PIN: %03d] - failed [%d ms]\n", index, currentPin, 50 - timeout);
-					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonMasterThread]: Button don't detected. Failed");
+					db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[ButtonMasterThread]: Button don't detected. Failed");
 				}
 			}
 		}
@@ -303,7 +303,7 @@ PI_THREAD(ButtonMasterWatch)
   		pullUpDnControl (currentPin, PUD_DOWN) ;
 	}
 
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button panel device is closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button panel device is closed");
 	db->Close();
 	printf("[DEBUG]: ButtonMasterThread: Thread is terminate.\n");
 	return (void*)0;

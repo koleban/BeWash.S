@@ -15,7 +15,7 @@ PI_THREAD(EngineWatch)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Engine: Engine control thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	settings->workFlag.EngineWatch = 0;

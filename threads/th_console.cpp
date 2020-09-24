@@ -97,7 +97,7 @@ PI_THREAD(ConsoleThread)
 		if (strstr(command, "chk") == command)
 		{
 			sprintf(strTmp256, "%s (Ï:%d)", settings->kkmParam.ServiceName, atoi(param[0]));
-			queueKkm->QueuePut(1, 0, 0, strTmp256);
+			queueKkm->QueuePut(0, 1, 0, 0, strTmp256);
 		}
 		// Block
 		if (strstr(command, "block") == command)

@@ -8,8 +8,8 @@ PI_THREAD(ButtonWatch)
 	if (!(settings->threadFlag.ButtonWatch)) return (void*)0;
 	Database* db = new Database();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button: Button thread init");
-	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button panel device opened");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Button: Button thread init");
+	db->Log( 0, DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "Button panel device opened");
 
 	if (settings->debugFlag.ButtonWatch)
 		printf("[DEBUG] ButtonWatch: Debug information is showed\n");
@@ -128,7 +128,7 @@ PI_THREAD(ButtonWatch)
 			{ delayTime--; delay_ms(1); }
 			status.extDeviceInfo.collectionButton = (timeout < 1);
 			if ((!last_collectionButton) && (status.extDeviceInfo.collectionButton))
-				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
+				db->Log( 0, DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Collection button pressed!");
 			if ((settings->debugFlag.ButtonWatch) && (!last_collectionButton) && (status.extDeviceInfo.collectionButton))
 				printf("[DEBUG] ButtonWatch: Collection button is TURN ON\n");
 			if ((settings->debugFlag.ButtonWatch) && (last_collectionButton) && (!status.extDeviceInfo.collectionButton))
@@ -165,7 +165,7 @@ PI_THREAD(ButtonWatch)
 					deviceWorkMode = TDeviceWorkMode::WorkMode;
 			}
 			if ((!last_settingsButton) && (deviceWorkMode == TDeviceWorkMode::SettingsMode))
-				db->Log(DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Settings button pressed!");
+				db->Log( 0, DB_EVENT_TYPE_EXT_COLL_BUTTON, 0, 0, "[External]: Settings button pressed!");
 			if ((settings->debugFlag.ButtonWatch) && (!last_settingsButton) && (deviceWorkMode == TDeviceWorkMode::SettingsMode))
 				printf("[DEBUG] ButtonWatch: Settings button is TURN ON\n");
 			if ((settings->debugFlag.ButtonWatch) && (last_settingsButton) && (deviceWorkMode != TDeviceWorkMode::SettingsMode))
@@ -277,7 +277,7 @@ PI_THREAD(ButtonWatch)
 							if ((settings->debugFlag.ButtonWatch) && (status.extDeviceInfo.button_currentLight != lastMyEvent))
 							{
 								printf("[DEBUG] ButtonWatch: New button pressed - %d [%3d:%02d:%02d]\n", status.extDeviceInfo.button_currentLight, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
-								db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, status.extDeviceInfo.button_currentLight, status.extDeviceInfo.button_currentLight, "[External]: New button pressed");
+								db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, status.extDeviceInfo.button_currentLight, status.extDeviceInfo.button_currentLight, "[External]: New button pressed");
 								lastMyEvent = status.extDeviceInfo.button_currentLight;
 							}
 							setPinModeMy(currentPin, PIN_OUTPUT);
@@ -369,7 +369,7 @@ PI_THREAD(ButtonWatch)
   		pullUpDnControl (currentPin, PUD_DOWN) ;
 	}
 
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button panel device is closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Button panel device is closed");
 	db->Close();
 	printf("[DEBUG]: ButtonWatch: Thread is terminate.\n");
 	return (void*)0;

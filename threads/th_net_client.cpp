@@ -24,18 +24,18 @@ PI_THREAD(NetClientThread)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] NetClient: NetClient thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	while (settings->threadFlag.NetClient)
 	{
-		if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); db->Log(DB_EVENT_TYPE_NET_LINKDOWN, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR Interface eth0: link down ..."); break;}
+		if (!CheckLink(settings->ethName)) { netClient->CloseConnection(); settings->intErrorCode.NetClient = 100; delay_ms(1000); db->Log( 0, DB_EVENT_TYPE_NET_LINKDOWN, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR Interface eth0: link down ..."); break;}
 		result = (int)netClient->OpenConnection();
 		if (!netClient->isConnected)
 			settings->intErrorCode.NetClient = 101;
 		if (!netClient->isConnected)
-			db->Log(DB_EVENT_TYPE_NET_RECONNECT, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR - Reconnect ...");
+			db->Log( 0, DB_EVENT_TYPE_NET_RECONNECT, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: ERROR - Reconnect ...");
 		else
-			db->Log(DB_EVENT_TYPE_NET_CONNECTED, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: Connected ... OK!");
+			db->Log( 0, DB_EVENT_TYPE_NET_CONNECTED, 0, status.intDeviceInfo.money_currentBalance, "[Net Client]: Connected ... OK!");
 		if (netClient->isConnected)
 			printf("NetClient: Remote server - connected [OK]\n");
 		while ((settings->threadFlag.NetClient) && (netClient->isConnected))

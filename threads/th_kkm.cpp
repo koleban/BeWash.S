@@ -416,7 +416,7 @@ PI_THREAD(KKMWatch)
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[2000];
 	sprintf(myNote, "[THREAD] KKM: Online KMM thread init");
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	printf("Thread KKM is now working TaxType: %d\n", settings->kkmParam.TaxType);
 	printf("    TaxType  1 : NDS\n");
@@ -435,13 +435,13 @@ PI_THREAD(KKMWatch)
 	while (settings->threadFlag.KKMWatch)
 	{
 		sprintf(myNote, "[THREAD] KKM: Creating KKM driver instance and trying to connect to the device");
-		db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
+		db->Log( 0, DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 		if (settings->debugFlag.KKMWatch)
 			printf("%s\n", myNote);
 		if (drv->Connect() > 0)
 		{
 			sprintf(myNote, "[THREAD] KKM: Connecting to KKM device successfully");
-			db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
+			db->Log( 0, DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 			if (settings->debugFlag.KKMWatch)
 				printf("%s\n", myNote);
 			settings->workFlag.KKMWatch = 0;
@@ -502,7 +502,7 @@ PI_THREAD(KKMWatch)
 				if (error)
 				{
 					sprintf(myNote, "[THREAD] KKM: Connection worked. Device: %s", drv->UDescription);
-					db->Log(DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
+					db->Log( 0, DB_EVENT_TYPE_KKM_THREAD, 0, 0, myNote);
 					if (settings->debugFlag.KKMWatch)
 						printf("%s\n", myNote);
 				}
@@ -540,7 +540,7 @@ PI_THREAD(KKMWatch)
 						if (valueKkm.eventId >= settings->kkmParam.MaxAmount)
 						{
 							sprintf(myNote, "[THREAD] KKM: Error on amount size [MAX: %d, Curr: %d]", settings->kkmParam.MaxAmount, valueKkm.eventId);
-							db->Log(DB_EVENT_TYPE_KKM_AMOUNT_ERROR, (double)valueKkm.eventId, valueKkm.data1, myNote);
+							db->Log( 0, DB_EVENT_TYPE_KKM_AMOUNT_ERROR, (double)valueKkm.eventId, valueKkm.data1, myNote);
 							sprintf(tmpCPStr, "[THREAD] KKM: Обнаружена ОШИБКА. Сумма оплаты больше допустимой (%d руб) : %d руб\n", settings->kkmParam.MaxAmount, valueKkm.eventId);
 							cp2utf(tmpCPStr, tmpUTFStr);
 							printf("%s", tmpUTFStr);
@@ -550,14 +550,14 @@ PI_THREAD(KKMWatch)
 						delay_ms(1000);
 						OpenPaymentDocument(drv);
 						sprintf(myNote, "[THREAD] KKM: Opening the payment document");
-						db->Log(DB_EVENT_TYPE_KKM_FN_OPEN_DOC, 0, 0, myNote);
+						db->Log( 0, DB_EVENT_TYPE_KKM_FN_OPEN_DOC, 0, 0, myNote);
 						if (settings->debugFlag.KKMWatch)
 							printf("%s\n", myNote);
 						result = AddWareString(drv, TCheckType::Sale, 1, valueKkm.eventId+valueKkm.data1, valueKkm.note, TTaxType::NoNds, TPaymentItemSign::Service, TPaymentTypeSign::Prepayment100);
 						if (result != 0)
 						{
 							sprintf(myNote, "[THREAD] KKM: Cancel payment document");
-							db->Log(DB_EVENT_TYPE_KKM_FN_CANCEL_DOC, 0, 0, myNote);
+							db->Log( 0, DB_EVENT_TYPE_KKM_FN_CANCEL_DOC, 0, 0, myNote);
 							term_setattr(31);
 							sprintf(tmpCPStr, "Печать чека ОТМЕНА\n");
 							cp2utf(tmpCPStr, tmpUTFStr);
@@ -582,13 +582,13 @@ PI_THREAD(KKMWatch)
 						printf("%s", tmpUTFStr);
 						term_setattr(37);
 						sprintf(myNote, "[THREAD] KKM: Close the payment document [$: %d, VISA: %d]", valueKkm.eventId, (int)valueKkm.data1);
-						db->Log(DB_EVENT_TYPE_KKM_FN_CLOSE_DOC, (double)valueKkm.eventId, valueKkm.data1, myNote);
+						db->Log( 0, DB_EVENT_TYPE_KKM_FN_CLOSE_DOC, (double)valueKkm.eventId, valueKkm.data1, myNote);
 
 						ClosePaymentDocument(drv, valueKkm.eventId, 0, 0, valueKkm.data1);
 						if ((drv->ResultCode != 0) && (drv->ResultCode != 69) && (drv->ResultCode != 70))
 						{
 							sprintf(myNote, "[THREAD] KKM: Close the payment document ERROR %d %s", drv->ResultCode, drv->ResultCodeDescription);
-							db->Log(DB_EVENT_TYPE_KKM_ERROR, (double)valueKkm.eventId, valueKkm.data1, myNote);
+							db->Log( 0, DB_EVENT_TYPE_KKM_ERROR, (double)valueKkm.eventId, valueKkm.data1, myNote);
 							printf("KKM: Close check ERROR %d %s\n", drv->ResultCode, drv->ResultCodeDescription);
 						}
 						fflush(stdout);

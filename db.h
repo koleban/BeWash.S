@@ -126,6 +126,9 @@ class Settings;
 #define DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_DISCOUNT_4	38
 #define DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_SUMM_5		39
 #define DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_DISCOUNT_5	40
+#define DB_PARAM_DISCOUNT_CARD_DISCOUNT_V2_CALC_DAYS	41
+//
+#define DB_PARAM_COMMON_COLLECTION_MODE 		 		42
 
 struct DBParam_DiscountParam
 {
@@ -168,7 +171,10 @@ public:
 	int Close();
 
 	int LogDb(time_t eventTime, int eventId, double data1, double data2, char* note);
-	int Log(int eventId, double data1, double data2, char* note);
+	//  dbType
+	//	0 - Local DB
+	//	1 - Global DB
+	int Log(int dbType, int eventId, double data1, double data2, char* note);
 	int Query(DWORD queryType, void* queryParam, void* queryOutput);
 	int CreateKKMVisaDoc(time_t eventTime, int devId, double summVisa, char* note);
 

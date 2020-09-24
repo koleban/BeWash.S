@@ -17,7 +17,7 @@ PI_THREAD(CoinPulseWatch)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Money: Impulse coin acceptor thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	while (settings->threadFlag.CoinPulseWatch)
@@ -43,7 +43,7 @@ PI_THREAD(CoinPulseWatch)
 			delay_ms(25);
 		}
 	}
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Coin acceptor [pulise] device closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Coin acceptor [pulise] device closed");
 	db->Close();
 	printf("[COIN IMP]: Thread ended.\n");
 	return (void*)0;

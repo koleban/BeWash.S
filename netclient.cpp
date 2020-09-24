@@ -24,6 +24,14 @@ bool NetClient::OpenConnection()
 	addr.sin_port = htons(port); // или любой другой порт...
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_addr.s_addr = inet_addr(hostAddr);
+	
+	struct timeval tv;
+	struct timeval tv_snd;
+	tv.tv_sec = 10;
+	tv_snd.tv_sec = 10;
+	setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)&tv_snd,sizeof(struct timeval));
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv,sizeof(struct timeval));
+
 	if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) return 0;
 	isConnected = 1;
 	return 1;
@@ -140,8 +148,6 @@ bool NetClient::cmdSendBalance(int valBalance)
 
 	int recvBalance = 0;
 	int zeroBalance = 0;
-	int nTimeout = 1000;
-	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&nTimeout,sizeof(int));
 	ssize_t result = netSendData(sock, CMD_SEND_BALANCE, (BYTE*)&zeroBalance, sizeof(zeroBalance));
 	if (result < 0) { CloseConnection(); printf("[NetClient::cmdSendBalance] Error 0x01\n"); return 0; }
 
@@ -150,6 +156,8 @@ bool NetClient::cmdSendBalance(int valBalance)
 	index = netReadData(sock, &in_buff[0], 0xFFF0);
 
 	if (index <= 5) { delay_ms(20); netReadData(sock, &in_buff[0], 0xFFF0); CloseConnection(); printf("[NetClient::cmdSendBalance] Error 0x02\n"); return 0; }
+
+//	printf("[DEBUG]: NetClient recvd %d bytes\n", index);
 
 	if (index > 5)
 	{

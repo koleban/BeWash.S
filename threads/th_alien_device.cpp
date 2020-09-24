@@ -16,7 +16,7 @@ PI_THREAD(AlienDeviceWatch)
 	if (!(settings->threadFlag.AlienDeviceThread)) return (void*)0;
 	Database* db = new Database();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Alien device control: AlienDevice thread init");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] Alien device control: AlienDevice thread init");
 
 	if (settings->debugFlag.AlienDeviceThread)
 		printf("[DEBUG] AlienDeviceThread: Debug information is showed\n");
@@ -60,7 +60,7 @@ PI_THREAD(AlienDeviceWatch)
 				if ((((DWORD)rcv_timer_out) - remoteCounterSumm[index][2]) > settings->remoteCounterParam.DocumentCreationTime)
 				{
 					// Add information for print KKM documents
-					// queueKkm->QueuePut( CashSumm, DON'T USED, DON'T USED, ServiceName);
+					// queueKkm->QueuePut(0,  CashSumm, DON'T USED, DON'T USED, ServiceName);
 					//
 					DWORD sendedBal = remoteCounterSumm[index][0]*settings->remoteCounterParam.PriceIN1 + remoteCounterSumm[index][1]*settings->remoteCounterParam.PriceIN2;
 					remoteCounterSumm[index][0] = 0;
@@ -74,7 +74,7 @@ PI_THREAD(AlienDeviceWatch)
 					term_setattr(32);
 					printf("Пост №: %2d на %3d руб.\n", slaveId, sendedBal);
 					term_setattr(37);
-					queueKkm->QueuePut(sendedBal, 0, 0, serviceNote);
+					queueKkm->QueuePut(0, sendedBal, 0, 0, serviceNote);
 				}
 			}
 

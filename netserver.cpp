@@ -82,7 +82,7 @@ PI_THREAD(NetServerClientThread)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] NetServer: Start server network thread";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log(0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	int recvError = 0;
@@ -92,8 +92,8 @@ PI_THREAD(NetServerClientThread)
 		if (bytes_read < 0)
 		{
 			if (externalCtrl-- < 1) externalCtrl = 0;
-			if (recvError++ > 10) break;
-			delay_ms(400);
+			if (recvError++ > 1000) break;
+			delay_ms(4);
 			continue;
 		}
 		if (bytes_read == 0) { printf("[DEBUG]: NetServer Connection timeout ... : %d\n", bytes_read); break;}
@@ -107,6 +107,9 @@ PI_THREAD(NetServerClientThread)
 			bytes_read += recv(myClient, &ask[bytes_read], 60000-bytes_read, 0);
 			delay_ms(10);
 		}
+
+//		printf("[DEBUG]: NetClient recvd %d bytes\n", index);
+
 		if (DataLen > bytes_read)
 		{
 			if (settings->debugFlag.NetServer)
@@ -241,7 +244,7 @@ PI_THREAD(NetServerClientThread)
 				{
 					if (settings->debugFlag.NetServer)
 						printf("[NETCTRL] External command: Setting new prg: %2d\n", (*(packetData)& 0x0F));
-					if (db->Log(DB_EVENT_TYPE_EXT_SRV_NEW_PRG, (*(packetData)& 0x0F), 0, "External command: Set new prg"))
+					if (db->Log( 0, DB_EVENT_TYPE_EXT_SRV_NEW_PRG, (*(packetData)& 0x0F), 0, "External command: Set new prg"))
 						printf("[NETCTRL {CMD_SRV_SET_EXT_PRG} ] IB ERROR: %s\n", db->lastErrorMessage);
 					answer[5] = (unsigned char)(*(packetData) & 0x0F);
 					answer[6] = (unsigned char)(status.intDeviceInfo.program_currentProgram);
@@ -283,7 +286,7 @@ PI_THREAD(NetServerClientThread)
 
 				if (settings->debugFlag.NetServer)
 					printf("[NETCTRL] External command: Add money: %2d\n", tmp22);
-				if (db->Log(DB_EVENT_TYPE_EXT_SRV_ADD_MONEY, tmp22, 0, "External command: Add money"))
+				if (db->Log( 0, DB_EVENT_TYPE_EXT_SRV_ADD_MONEY, tmp22, 0, "External command: Add money"))
 					printf("[NETCTRL {CMD_SRV_ADD_MONEY} ] IB ERROR: %s\n", db->lastErrorMessage);
 				break;
 			case CMD_SRV_RELOAD_APP:
@@ -390,6 +393,14 @@ PI_THREAD(NetServerThread)
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	int reuse = 1;
 	setsockopt(mySocket, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse));
+/*
+	struct timeval tv;
+	struct timeval tv_snd;
+	tv.tv_sec = 10;
+	tv_snd.tv_sec = 10;
+	setsockopt(mySocket, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)&tv_snd,sizeof(struct timeval));
+	setsockopt(mySocket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv,sizeof(struct timeval));
+*/
 	if (bind(mySocket, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error: Bind error\n");
@@ -404,8 +415,6 @@ PI_THREAD(NetServerThread)
 		settings->workFlag.NetServer = 0;
 		globalInSock = accept(mySocket, NULL, NULL);
 		printf("Connection accepted [%d] ...\n", ++globalThreadId);
-		int nTimeout = 10000;
-		setsockopt(globalInSock, SOL_SOCKET, SO_RCVTIMEO, (char*)&nTimeout,sizeof(int));
 		try
 		{
 			piThreadCreate(NetServerClientThread);

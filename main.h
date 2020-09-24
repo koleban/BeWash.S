@@ -177,6 +177,8 @@ PI_THREAD(ButtonTerminalWatch);
 
 PI_THREAD(VisaDeviceWatch);
 
+PI_THREAD(TerminalCtrlThread);
+
 // ����������
 extern Settings* 		settings;
 extern NetServer* 		netServer;
@@ -337,7 +339,7 @@ long get_uptime();
 long get_prguptime();
 int mygetch( );
 
-SDWORD maxval (SDWORD prm1, SDWORD prm2);
+double maxval (double prm1, double prm2);
 
 void commonDevice_TurnLight(bool flag);
 void commonDevice_TurnAntiFrost();

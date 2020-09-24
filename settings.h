@@ -135,7 +135,7 @@ struct CardDiscount_v2
 {
     int				useCardDiscount_v2;
 	int				afterSumm[5];					//	После какой	суммы владельцу карты
-	int 			discountSize[5];				//  Размер скидки определяемый суммой
+	double 			discountSize[5];				//  Размер скидки определяемый суммой
 	int 			calcDays;						//  Количество учитываемых дней для рассчета суммы
 };
 
@@ -156,8 +156,8 @@ struct DB_RFIDCardInfo
 	char		cardOwner[102];
 	SDWORD		cardMoney;
 	SDWORD		cardBlocked;
-	SDWORD		cardDiscount;
-	SDWORD		cardAllMoney;
+	double		cardDiscount;
+	double		cardAllMoney;
 };
 
 struct AddDeviceInfo
@@ -259,6 +259,7 @@ struct ThreadFlag
 	BYTE OsmosThread;				// ПОТОК ОСМОСА: Управление установкой ОСМОСа
 	BYTE ButtonTerminalThread;		// ПОТОК терминала пополнения, выдачи карт и жетонов
 	BYTE VisaDeviceThread;			// ПОТОК устройства Эквайринга (PAX D200)
+	BYTE TerminalCtrlThread;
 };
 
 struct ErrorFlag
@@ -542,6 +543,9 @@ public:
 	unsigned int		useRFID2Mobile;			// Использовать прикладываемый считыватель
 	unsigned int		useRFID2OnlyDiscount;	// Карта только начисляет скидку и вытаскивается при 0 балансе
 	char				ethName[40];			// Имя сетевого интерфейса (default: eth0)
+	unsigned int		UseGlobalDB;			// Использовать распределенную базу данных
+	unsigned int		LightWithCard;			// Включает свет при наличии карты клиента
+
 	// ***********************************************************************************************************
   	bool 				getEnabledDevice	(int deviceID);								// Усттройство разрешено ?
   	bool 				setEnabledDevice	(int deviceID, bool state);				// Установить статус устройства
@@ -652,8 +656,8 @@ public:
 	//
 	// СКИДКИ
 	int 				discountSize;			// Текущая скидка на стоиомсть программы из БД
-	int 				discountCardDeposit;	// Скидка на пополнение при активной карте из БД
-	int 				cardBonus;				// Скидка на пополнение при активной карте из Конф файла
+	double 				discountCardDeposit;	// Скидка на пополнение при активной карте из БД
+	double 				cardBonus;				// Скидка на пополнение при активной карте из Конф файла
 	int 				moneyBonus;				// Скидка на пополнение наличными
 	int					noStoreCardBalance;
 	//

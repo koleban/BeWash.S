@@ -257,7 +257,7 @@ bool getCardInfo(BYTE* cardNumberBytes, DB_RFIDCardInfo* cardInfo)
 
 	if (settings->noStoreCardBalance != 0)
 		cardInfo->cardMoney = 0;
-	printf("[%lu]: ID: %08X Money: %4d Blocked: %d Discount: %d All money: %d\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked, cardInfo->cardDiscount, cardInfo->cardAllMoney);
+	printf("[%lu]: ID: %08X Money: %4d Blocked: %d Discount: %f All money: %f\n", cardNumber, cardInfo->cardId, cardInfo->cardMoney, cardInfo->cardBlocked, cardInfo->cardDiscount, cardInfo->cardAllMoney);
 
 //	gDbCard->Close();
 
@@ -319,7 +319,7 @@ ssize_t netSendData(SDWORD sock, BYTE cmd, BYTE* data, WORD dataSize)
     *(buffer+4) 			= cmd;
     memcpy(buffer+5, data, dataSize);
 
-    result = send(sock, buffer, 5+dataSize, 0);
+    result = send(sock, buffer, 5+dataSize, MSG_NOSIGNAL);
 
     free((void*)buffer);
     return result;
@@ -657,7 +657,7 @@ void cp2utf( char* str, char* res ) {
 	res[ j ] = '\0';
 }
 
-SDWORD maxval (SDWORD prm1, SDWORD prm2)
+double maxval (double prm1, double prm2)
 {
 	if (prm1 >= prm2)
 		return prm1;

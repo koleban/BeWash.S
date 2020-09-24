@@ -8,8 +8,8 @@ PI_THREAD(OsmosWatch)
 	if (!(settings->threadFlag.OsmosThread)) return (void*)0;
 	Database* db = new Database();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] OSMOS: OSMOS thread init");
-	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "OSMOS device opened");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] OSMOS: OSMOS thread init");
+	db->Log( 0, DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "OSMOS device opened");
 
 	if (settings->debugFlag.OsmosThread)
 		printf("[DEBUG] OsmosWatch: Debug information is showed\n");
@@ -111,7 +111,7 @@ PI_THREAD(OsmosWatch)
 				{
 					if (settings->debugFlag.OsmosThread)
 						printf("[DEBUG] OsmosThread: Pressed state on %d button (50 ms) [PIN: %03d] - failed [%d ms]\n", index, currentPin, 50 - timeout);
-					db->Log(DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[OsmosThread]: Button don't detected. Failed");
+					db->Log( 0, DB_EVENT_TYPE_EXT_NEW_BUTTON, index, 50 - timeout, "[OsmosThread]: Button don't detected. Failed");
 				}
 			}
 		}
@@ -281,7 +281,7 @@ PI_THREAD(OsmosWatch)
   		pullUpDnControl (currentPin, PUD_DOWN) ;
 	}
 
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "OSMOS device is closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "OSMOS device is closed");
 	db->Close();
 	printf("[DEBUG]: OsmosThread: Thread is terminate.\n");
 	return (void*)0;

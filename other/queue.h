@@ -2,6 +2,7 @@
 #define QUEUE_ARRAY
 struct LogDataStruct {
 	public:
+		int databaseType;
 		time_t eventTime;
 		int eventId;
 		double data1;
@@ -52,7 +53,7 @@ class QueueArray
 		int QueuePut(QueueType newElement);
 		int QueueGet(QueueType *old);
 		//////////////////////////////////////
-		int QueuePut(int eventId, double data1, double data2, char* note);
+		int QueuePut(int dbType, int eventId, double data1, double data2, char* note);
 };
 
 class KKMQueueArray

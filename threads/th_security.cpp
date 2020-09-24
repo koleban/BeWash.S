@@ -40,7 +40,7 @@ PI_THREAD(DigitalKey)
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[100];
 	sprintf(myNote, "[THREAD] Hardware: Hardware thread init [%08X]", settings->digitalVector);
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	int i1 = (rand()&0x0F);
@@ -106,7 +106,7 @@ PI_THREAD(DigitalKey)
 				printf("[DEBUG] SECURITY: Q: %08X - A: %08X\n", settings->digitalKey, answer);
 			#endif
 			sprintf(note, "WARNING: Hardware error [%08X]-[%08X]!", settings->digitalVector, answer);
-			db->Log(DB_EVENT_TYPE_HARDWARE_ERROR, (double)settings->digitalVector, (double)answer, note);
+			db->Log( 0, DB_EVENT_TYPE_HARDWARE_ERROR, (double)settings->digitalVector, (double)answer, note);
 			keyErrorCount++;
 			/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			int device = DVC_ERROR_LED_1;
@@ -219,7 +219,7 @@ PI_THREAD(DigitalKey)
 		if (keyErrorCount > 5)
 		{
 			sprintf(note, "ERROR: Hardware error! Process terminate.");
-			db->Log(DB_EVENT_TYPE_HARDWARE_ERROR, (double)settings->digitalVector, (double)answer, note);
+			db->Log( 0, DB_EVENT_TYPE_HARDWARE_ERROR, (double)settings->digitalVector, (double)answer, note);
 			settings->threadFlag.MainWatch = 0;
 			memset(&settings->threadFlag, 0, sizeof(settings->threadFlag));
 			//system("aplay /home/pi/bewash/snd/police_s.wav");

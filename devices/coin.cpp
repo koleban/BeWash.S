@@ -326,22 +326,22 @@ DWORD CoinDevice::cmdReadEventBuffer(BYTE* bufData)
 				if (first)
 				{
 					sprintf(coinInfo, "[DEBUG DEVICE] Income coin in COIN DEVICE [Event: %d from CntEvent: %d, Dt1(Crd):%d, Dt2[Err]:%d] RESULT: %04X", eventId, currentEventId, command->data[counter+1], command->data[counter+2], result);
-					queueLog->QueuePut(DB_EVENT_TYPE_EXT_MONEY_EVENT, 0, 0, coinInfo);
+					queueLog->QueuePut(0, DB_EVENT_TYPE_EXT_MONEY_EVENT, 0, 0, coinInfo);
 					printf("%s\n", coinInfo);
 					if (command->data[counter+2] > 0)
 					{
-						queueLog->QueuePut(DB_EVENT_TYPE_EXT_COIN_REJECTED, 0, 0, coinErrors[command->data[counter+2]]);
+						queueLog->QueuePut(0, DB_EVENT_TYPE_EXT_COIN_REJECTED, 0, 0, coinErrors[command->data[counter+2]]);
 						printf("     *=======> Coin error: %s\n",coinErrors[command->data[counter+2]]);
 					}
 				}
 				else
 				{
 					sprintf(coinInfo, "[DEBUG DEVICE] Income coin in COIN DEVICE [Event: %d from CntEvent: %d, Dt1(Crd):%d, Dt2[Err]:%d] RESULT: %04X", eventId, currentEventId, command->data[counter+1], command->data[counter+2], result);
-					queueLog->QueuePut(DB_EVENT_TYPE_EXT_MONEY_EVENT, 0, 0, coinInfo);
+					queueLog->QueuePut(0, DB_EVENT_TYPE_EXT_MONEY_EVENT, 0, 0, coinInfo);
 					printf("%s\n", coinInfo);
 					if (command->data[counter+1] > 0)
 					{
-						queueLog->QueuePut(DB_EVENT_TYPE_EXT_COIN_REJECTED, 0, 0, coinErrors[command->data[counter+1]]);
+						queueLog->QueuePut(0, DB_EVENT_TYPE_EXT_COIN_REJECTED, 0, 0, coinErrors[command->data[counter+1]]);
 						printf("     ========> Coin error: %s\n",coinErrors[command->data[counter+1]]);
 					}
 				}

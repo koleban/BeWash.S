@@ -12,7 +12,7 @@ int exitStatus;
 unsigned long gEngineFullWorkTime = 0;
 int	wrkOpenedFlag = 1;
 time_t wrkOpenedDateTime = (time_t)0;
-QueueArray* queueLog = new QueueArray(10000);
+QueueArray* queueLog = new QueueArray(30000);
 QueueArray* queueKkm = new QueueArray(1000);
 int stopWork = 0;
 int stopWorkPrev = 0;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	///
 	///
     prgVer = 2.11;
-    prgBuild = 2;
+    prgBuild = 992;
     ///
     ///
     /////////////////////////
@@ -335,6 +335,8 @@ int main(int argc, char *argv[])
 	piThreadCreate(ButtonTerminalWatch);
 
 	piThreadCreate(VisaDeviceWatch);
+
+	piThreadCreate(TerminalCtrlThread);
 
 	settings->threadFlag.MainWatch = 1;
 	int counter_for_live_massage = 0;

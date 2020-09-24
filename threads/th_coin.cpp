@@ -17,7 +17,7 @@ PI_THREAD(CoinWatch)
 	if (db->Open())
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[] = "[THREAD] Money: CCTalk coin acceptor thread init";
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	int retryCount = 0;
@@ -28,7 +28,7 @@ PI_THREAD(CoinWatch)
 		coinDevice1->OpenDevice();
 		if ((coinDevice1->IsOpened()) && (coinDevice1->cmdReset() == 1))
 		{
-			db->Log(DB_EVENT_TYPE_DVC_COIN_INIT, 0, 0, "Coin acceptor device opened");
+			db->Log( 0, DB_EVENT_TYPE_DVC_COIN_INIT, 0, 0, "Coin acceptor device opened");
 			printf("[DEBUG] Coin acceptor device opened (%d)\n", retryCount);
 			coinDevice1->cmdReset();
 			coinDevice1->cmdSiplePoll();
@@ -58,7 +58,7 @@ PI_THREAD(CoinWatch)
 					char messageText[250];
 					rejectedCoinInfo.coinRejected = 0;
 					sprintf(messageText, "WARNING: COIN DOUBLE INCOME");
-					db->Log(DB_EVENT_TYPE_EXT_COIN_REJECTED, 999, 999, messageText);
+					db->Log( 0, DB_EVENT_TYPE_EXT_COIN_REJECTED, 999, 999, messageText);
 				}
 				if (eventCount == 0xFFFF) { retryCount++; delay_ms(delayTime); continue; }
 				retryCount=0;
@@ -73,7 +73,7 @@ PI_THREAD(CoinWatch)
 						status.extDeviceInfo.coin_incomeInfo.Count[index] += inCoinInfo.Count[index];
 						int coinCount = inCoinInfo.Count[index];
 						inCoinInfo.Count[index] = 0;
-						db->Log(DB_EVENT_TYPE_EXT_MONEY_EVENT, coinCount, settings->coinWeight.Weight[index], "COIN INCOME");
+						db->Log( 0, DB_EVENT_TYPE_EXT_MONEY_EVENT, coinCount, settings->coinWeight.Weight[index], "COIN INCOME");
 					}
 				}
 				if (rejectedCoinInfo.coinRejected == 1)
@@ -81,14 +81,14 @@ PI_THREAD(CoinWatch)
 					char messageText[250];
 					rejectedCoinInfo.coinRejected = 0;
 					sprintf(messageText, "COIN REJECTED: Cnt: %d Res: %d, Crd: %d, Err: %d", rejectedCoinInfo.dataCnt, rejectedCoinInfo.dataRes, rejectedCoinInfo.dataCrd, rejectedCoinInfo.dataErr);
-					db->Log(DB_EVENT_TYPE_EXT_COIN_REJECTED, rejectedCoinInfo.dataCrd, rejectedCoinInfo.dataErr, messageText);
+					db->Log( 0, DB_EVENT_TYPE_EXT_COIN_REJECTED, rejectedCoinInfo.dataCrd, rejectedCoinInfo.dataErr, messageText);
 				}
 				delay_ms(delayTime);
 			}
 		}
 		else
 			retryCount++;
-		db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Coin acceptor device closed");
+		db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Coin acceptor device closed");
 		coinDevice1->CloseDevice();
 		if (retryCount < 2) { settings->workFlag.CoinWatch = 0; delay(1);}
 		else {retryCount = 0; if (!errorDisplay) {errorDisplay = 1; settings->intErrorCode.MainWatch = 220;} while (retryCount++ < 60) {delay(1); settings->workFlag.CoinWatch = 0;} }

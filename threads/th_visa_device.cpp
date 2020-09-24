@@ -10,8 +10,8 @@ PI_THREAD(VisaDeviceWatch)
 	if (!(settings->threadFlag.VisaDeviceThread)) return (void*)0;
 	Database* db = new Database();
 	db->Init(settings);
-	db->Log(DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] VISA Device: VISA thread init");
-	db->Log(DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "VISA (card terminal) device thread opened");
+	db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 		0, 0, "[THREAD] VISA Device: VISA thread init");
+	db->Log( 0, DB_EVENT_TYPE_DVC_BUTTON_INIT, 	0, 0, "VISA (card terminal) device thread opened");
 
 	VisaDevice* visaDevice = new VisaDevice();
 
@@ -44,16 +44,16 @@ PI_THREAD(VisaDeviceWatch)
 				int devId = settings->commonParams.deviceId;
 				if (devId > 100) devId -= 100;
 				sprintf(strTmp256, "%s (П:%d)", settings->kkmParam.ServiceName, devId);
-				queueKkm->QueuePut(0, settings->visaParam.paymentSumm, 1, strTmp256);
-				db->Log(DB_EVENT_TYPE_VISA_PAY_DOC_OK, settings->visaParam.paymentSumm, payInfo.result, payInfo.note);
+				queueKkm->QueuePut(0, 0, settings->visaParam.paymentSumm, 1, strTmp256);
+				db->Log( 0, DB_EVENT_TYPE_VISA_PAY_DOC_OK, settings->visaParam.paymentSumm, payInfo.result, payInfo.note);
 				time_t eventTime = time(NULL);
-				db->CreateKKMVisaDoc(eventTime, settings->commonParams.deviceId, double(settings->visaParam.paymentSumm), strTmp256);
+				db->CreateKKMVisaDoc(eventTime, settings->commonParams.deviceId, double(settings->visaParam.paymentSumm), "Оплата банковской картой");
 			}
 		}
 		delay_ms(500);
 	}
 	visaDevice->CloseDevice();
-	db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "VISA (card terminal) device thread is closed");
+	db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "VISA (card terminal) device thread is closed");
 	db->Close();
 	printf("[DEBUG]: VISA Thread: Thread is terminate.\n");
 	return (void*)0;

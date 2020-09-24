@@ -21,7 +21,7 @@ PI_THREAD(MoneyWatch)
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 	char myNote[200];
 	sprintf(myNote, "[THREAD] Money: CashCode bill validator thread init [%s %s %04X%04X]", billDevice->model, billDevice->serial, billDevice->cashCodeID.digId[0], billDevice->cashCodeID.digId[1]);
-	if (db->Log(DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
+	if (db->Log( 0, DB_EVENT_TYPE_THREAD_INIT, 0, 0, myNote))
 		printf("IB ERROR: %s\n", db->lastErrorMessage);
 
 	while (settings->threadFlag.MoneyWatch)
@@ -71,7 +71,7 @@ PI_THREAD(MoneyWatch)
 						{
 							printf("[DEBUG] MoneyWatch: Bill validator DROP CASSETE REMOVED![%3d:%02d:%02d]\n", ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
 						}
-						db->Log(DB_EVENT_TYPE_DVC_BILL_WARNING, result, casseteRemoved, "Bill validator DROP CASSETE REMOVED!");
+						db->Log( 0, DB_EVENT_TYPE_DVC_BILL_WARNING, result, casseteRemoved, "Bill validator DROP CASSETE REMOVED!");
 					}
 					casseteRemoved = 1;
 				}
@@ -81,7 +81,7 @@ PI_THREAD(MoneyWatch)
 					if (billError == 0)
 						if (settings->debugFlag.MoneyWatch)
 						{
-							db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "REMOVE SHEET FROM BILL VALIDATOR");
+							db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "REMOVE SHEET FROM BILL VALIDATOR");
 							printf("[DEBUG] MoneyWatch: REMOVE SHEET FROM BILL VALIDATOR!!! (%02X) [%3d:%02d:%02d]\n", result&0xFF, ((long)(get_prguptime()/3600)), ((long)(get_prguptime()/60))%60, get_prguptime()%60);
 						}
 					billError = 1;
@@ -96,22 +96,22 @@ PI_THREAD(MoneyWatch)
 					}
 					billDevice->cmdGetStatus();
 					billDevice->cmdSetAcceptBillType(0xFF, 0xFF, 0xFF);
-					db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
+					db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
 				}
 				if (result == 0xFFFF)
 				{
-					db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
+					db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
 					if (billErrorCounter++ < 3) continue;
 					else
 					{
 						printf("BILL ERROR \n");
-						db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, 9, 0, "BILL READ ERROR");
+						db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, 9, 0, "BILL READ ERROR");
 						break;
 					}
 				}
 				if (result == 0xFF00)
 				{
-					db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
+					db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, result, 0, "Bill validator RESET!");
 					if (billErrorCounter++ < 2)	continue;
 					else
 					{
@@ -122,7 +122,7 @@ PI_THREAD(MoneyWatch)
 								sprintf(usbPath, "/dev/bus/usb/%03d/%03d", usbBus, usbDev);
 								usbreset(usbPath);
 							}
-						db->Log(DB_EVENT_TYPE_DVC_BILL_ERROR, 99, 0, "BILL MISSING");
+						db->Log( 0, DB_EVENT_TYPE_DVC_BILL_ERROR, 99, 0, "BILL MISSING");
 						printf("BILL MISSING \n");
 						delay(3);
 						break;
@@ -140,13 +140,13 @@ PI_THREAD(MoneyWatch)
 						billDevice->moneyCoinInfo.Count[index] = 0;
 						double d1 = (double)billCount;
 						double d2 = (double)settings->moneyWeight.Weight[index];
-						db->Log(DB_EVENT_TYPE_EXT_MONEY_EVENT, d1, d2, "MONEY INCOME");
+						db->Log( 0, DB_EVENT_TYPE_EXT_MONEY_EVENT, d1, d2, "MONEY INCOME");
 					}
 				}
 				delay_ms(200);
 			}
 		}
-		db->Log(DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Bill validator device closed");
+		db->Log( 0, DB_EVENT_TYPE_DVC_CLOSE, 0, 0, "Bill validator device closed");
 		billDevice->CloseDevice();
 		int tmp = 0;
 		while (tmp++ < 5) { settings->workFlag.MoneyWatch = 0; delay(1);}
