@@ -70,6 +70,8 @@ PI_THREAD(RFIDWatch)
 						// активная карта вставленна
 						memcpy(status.extDeviceInfo.rfid_incomeCardNumber, zeroCrdNum, 6);
 						status.extDeviceInfo.rfid_cardPresent = 0;
+						rfidDevice->cardPresent = 0;
+						memset(&rfidDevice->cardNumber, 0, sizeof(rfidDevice->cardNumber));
 					}
 					if ((rfidDevice->cardPresent) && (!emptyCardNumber(rfidDevice->cardNumber)))
 					{

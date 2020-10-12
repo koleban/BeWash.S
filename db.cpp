@@ -628,6 +628,8 @@ int Database::Query(DWORD queryType, void* queryParam, void* queryOutput)
 				if (addStatus.cardDiscount_v2.useCardDiscount_v2 == 1)
 				{
 					//  AND (LOG_DATE >= '01.09.2030 00:00:00') AND (LOG_DATE <= '01.09.2030 23:59:59')
+					char dateTime4Card[256] = {0};
+					sprintf( dateTime4Card, "SELECT SUM(DATA2) FROM LOG where event_id = 124 and data1 = %lu", outParams->cardId);
 					sprintf( queryStr, "SELECT SUM(DATA2) FROM LOG where event_id = 124 and data1 = %lu", outParams->cardId);
 					printf("[DEBUG] DB: Get card all money [%lu]\n %s\n", outParams->cardId, queryStr);
 					tr->Start();

@@ -18,7 +18,7 @@ void intCoin1()
 	}
 //	while ((!digitalRead(exchangeDevice->pinCoinType1)) && (sigTime++ < 500)) delay_ms(1);
 	if (sigTime < 5) return;
-	if (sigTime >= exchangeDevice->sigWidth)
+	if ((sigTime >= exchangeDevice->sigWidth) && (sigTime < 1001))
 	{
 		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
 		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;
@@ -43,7 +43,7 @@ void intCoin2()
 		delay_ms(1);
 	}
 	if (sigTime < 5) return;
-	if (sigTime >= exchangeDevice->sigWidth)
+	if ((sigTime >= exchangeDevice->sigWidth) && (sigTime < 1001))
 	{
 		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
 		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;
@@ -68,7 +68,7 @@ void intCoin3()
 		delay_ms(1);
 	}
 	if (sigTime < 5) return;
-	if (sigTime >= exchangeDevice->sigWidth)
+	if ((sigTime >= exchangeDevice->sigWidth) && (sigTime < 1001))
 	{
 		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
 		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;
@@ -93,7 +93,7 @@ void intCoin4()
 		delay_ms(1);
 	}
 	if (sigTime < 5) return;
-	if (sigTime >= exchangeDevice->sigWidth)
+	if ((sigTime >= exchangeDevice->sigWidth) && (sigTime < 1001))
 	{
 		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
 		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;
@@ -118,7 +118,7 @@ void intCoinVISA()
 		delay_ms(1);
 	}
 	if (sigTime < 5) return;
-	if (sigTime >= exchangeDevice->sigWidth)
+	if ((sigTime >= exchangeDevice->sigWidth) && (sigTime < 1001))
 	{
 		exchangeDevice->moneyCoinInfo.Count[coinNum]++;
 		exchangeDevice->allMoneyCoinInfo.Count[coinNum]++;

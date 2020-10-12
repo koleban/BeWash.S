@@ -38,6 +38,11 @@ PI_THREAD(MonitorWatch)
 	char digit_out[40];
 	char errText[30];
 	bool tmpFlag = 0;
+	struct timespec __dispTimer;
+	unsigned int showCardState = 0;
+	unsigned int showCardState_a = 3;
+
+	clock_gettime(CLOCK_MONOTONIC, &__dispTimer);
 
 	///
 	/// Ïîêà ÏÎÒÎÊ ÀÊÒÈÂÅÍ îáðàáàòûâàåì äàííûå
@@ -88,6 +93,8 @@ PI_THREAD(MonitorWatch)
 //		if ((settings->threadFlag.ExtCommonThread != 0) && (status.extDeviceInfo.collectionButton == 0))
 		if ((settings->threadFlag.ExtCommonThread) && (deviceWorkMode == TDeviceWorkMode::WorkMode))
 		{
+
+
 			counter = status.extDeviceInfo.remote_currentBalance;
 			memset(&digit, 0, sizeof(digit));
 			sprintf(&digit[0], "%4d", counter);
@@ -114,6 +121,20 @@ PI_THREAD(MonitorWatch)
 				sprintf(&digit_out[0], "%s", "o0o0");
 			}
 			memcpy(status.extDeviceInfo.monitor_currentText, digit_out, 4);
+
+    		struct timespec now, delta;
+    		clock_gettime(CLOCK_MONOTONIC, &now);
+    		delta.tv_sec = now.tv_sec - __dispTimer.tv_sec;
+    		if ((delta.tv_sec >= 1) && (status.extDeviceInfo.rfid_cardPresent == 1))
+    		{
+	    		clock_gettime(CLOCK_MONOTONIC, &__dispTimer);
+	    		showCardState++;
+	    		if (showCardState > 6) showCardState = 1;
+    		}
+    		if ((status.extDeviceInfo.rfid_cardPresent == 1) && (showCardState%2 != 0))
+    		{
+				digit_out[0] = 'o';
+			}
 			monitor->showText(&digit_out[0]);
 		}
 		///
