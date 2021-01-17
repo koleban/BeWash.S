@@ -432,7 +432,7 @@ int mygetch( )
 }
 /////////////////////////////////////////////////////////////////////////////
 
-void commonDevice_TurnLight(bool flag)
+void commonDevice_TurnLight(BYTE flag)
 {
 	if (settings->getEnabledDevice(DVC_RELAY_LIGHT) == 0) return;
 	int pinNum = settings->getPinConfig(DVC_RELAY_LIGHT, 1);
@@ -465,14 +465,13 @@ void commonDevice_TurnLight(bool flag)
 		setGPIOState(pinNum, 0);
 	}
 
-	if (flag)
+	if (flag > 0)
 	{
 		if (dayLightWork)
 			setGPIOState(pinNum, 1);
 	}
 	else
 	{
-//		printf("[DEBUG] Start thread -> Turn light OFF\n");
 		if ((lightThreadActive == 0) && (dayLightWork == 1))
 		{
 			lightThreadActive  = 1;

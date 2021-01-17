@@ -342,6 +342,7 @@ int main(int argc, char *argv[])
 	int counter_for_live_massage = 0;
 	sprintf(iddqd, "%s%d", "", 0);
 	// Replace 5 sec on 2 sec for app starting faster
+	commonDevice_TurnLight(0);
 	delay_ms(2000);
 
 	int detect_timeout = 0;
@@ -385,7 +386,7 @@ int main(int argc, char *argv[])
 		settings->workFlag.ThermalWatch++;
 		delay_ms(1000);
 
-		if (settings->workTimeDevice.UseWorkTime) 
+		if (settings->workTimeDevice.UseWorkTime)
 		{
 			time_t currTime = time(NULL);
   			struct tm* timeInfo;
@@ -404,7 +405,7 @@ int main(int argc, char *argv[])
 					piThreadCreate(ButtonWatch);
 				}
 			}
-			else 
+			else
 			{
 				if (stopWork == 0)
 				{

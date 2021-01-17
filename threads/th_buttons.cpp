@@ -252,7 +252,7 @@ PI_THREAD(ButtonWatch)
 				currentDeviceID = DVC_BUTTON01 + index;
 				if (!settings->getEnabledDevice(currentDeviceID)) continue;
 				currentPin = settings->getPinConfig(currentDeviceID, 1);
-				if (currentPin == 0xFF) continue;
+				if ((currentPin == 0xFF) || (currentPin == 0)) continue;
 
 				if (lightDeviceID != currentDeviceID)
 				{
@@ -282,6 +282,7 @@ PI_THREAD(ButtonWatch)
 							}
 							setPinModeMy(currentPin, PIN_OUTPUT);
 							setGPIOState(currentPin, 1);
+							break;
 						}
 					}
 				}
@@ -289,7 +290,7 @@ PI_THREAD(ButtonWatch)
 				// >>>>
 				else
 				{
-					if (!status.extDeviceInfo.collectionButton && (status.extDeviceInfo.remote_currentBalance > 0))
+					if (status.extDeviceInfo.remote_currentBalance > 0)
 					{
 						setPinModeMy(currentPin, PIN_OUTPUT);
 						setGPIOState(currentPin, 1);

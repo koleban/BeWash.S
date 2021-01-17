@@ -166,7 +166,7 @@ PI_THREAD(DataExchangeThread)
 			}
 		}
 
-		delay_ms(2000);
+		delay_ms(500);
 	}
 	db->Close();
 	printf("[EXCHANGE]: Thread ended.\n");
