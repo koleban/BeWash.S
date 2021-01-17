@@ -1,5 +1,8 @@
 #include "../main.h"
 
+extern int blockWork;
+extern int blockWorkPrev;
+
 //#pragma region Обработка событий монетоприемника [PULSE MODE]
 /*
 	- Обработка событий монетоприемника
@@ -25,15 +28,22 @@ PI_THREAD(CoinPulseWatch)
 		while (settings->threadFlag.CoinPulseWatch)
 		{
 			settings->workFlag.CoinPulseWatch = 0;
-			if (settings->workTimeDevice.UseWorkTime)
+			if (blockWork == 0)
 			{
-				if (stopWork == 0)
+				if (settings->workTimeDevice.UseWorkTime)
 				{
-					coinDevice->Lock(1);
-					delay_ms(200);
+					if (stopWork == 0)
+					{
+						coinDevice->Lock(1);
+						delay_ms(200);
+					}
+					else
+						coinDevice->Lock(0);
 				}
 				else
+				{
 					coinDevice->Lock(0);
+				}
 			}
 			else
 			{
